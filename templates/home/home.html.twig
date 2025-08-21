@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réunion signal
+{% endblock %}
+
+{% block body %}
+
+	<div class="container">
+		<div class="text-center">
+			<h1 class="text-center">Réunion signal</h1>
+			{# <ul>
+				<li class="">
+					<a class="" href="{{ asset('guide_utilisateur/guide_utilisateur.html') }}" target="_blank">Guide utilisateur</a>
+				</li>
+				{% if is_granted('ROLE_SUPER_ADMIN') %}
+					<li class="">
+						<a class="" href="{{ asset('guide_utilisateur/guide_utilisateur_administrateur.html') }}" target="_blank">Guide utilisateur administrateur</a>
+					</li>
+				{% endif %}
+				{% if is_granted('ROLE_DMM_EVAL') or is_granted('ROLE_SURV_PILOTEVEC') %}
+				<li class="">
+					<a class="" href="{{ path ('app_liste_susar_eu_init') }}">Liste des SUSARs</a>
+				</li>
+				{% endif %}
+				{% if is_granted('ROLE_SURV_PILOTEVEC') %}
+				<li class="">
+					<a class="" href="{{ path ('app_intervenant_substance') }}">Intervenants/substances</a>
+				</li>
+				{% endif %}
+				{% if is_granted('ROLE_DMFR_ADMIN') or is_granted('ROLE_SURV_PILOTEVEC') %}
+				<li class="">
+					<a class="" href="{{ path ('app_bilan_imports_ctll') }}">Bilan des imports des fichiers CTLL</a>
+				</li>
+				{% endif %}
+				{% if is_granted('ROLE_DMFR_GEST') %}
+				<li class="">
+					<a class="" href="{{ path ('app_liste_HL_SA') }}">Liste des substances (pour requête EVDAS)</a>
+				</li>
+				<li class="">
+					<a class="" href="{{ path ('app_import_excel_ctll') }}">Import d'un fichier CTLL</a>
+				</li>
+				{% endif %}
+			</ul> #}
+		</div>
+	</div>
+	{# Affichage d'un message en cas de redirection vers cette page d'accueil, par exemple après la modif du mot de passe par l'utilisateur connecté #}
+	<div class="p-3">
+		{% for message in app.flashes('success') %}
+			<div class="alert alert-success">
+				{{ message }}
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}
