@@ -90,18 +90,18 @@
 
       {# Liens pour la connexion/deconnexion #}
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        {# {% if app.user %} #}
+        {% if app.user %}
           <li class="nav-item">
             {# <a class="nav-link" href="#">Deconnexion</a> #}
             <a class="nav-link" href="{{ path ('app_logout') }}">Deconnexion</a>
           </li>
-          {# {% if is_granted('ROLE_SUPER_ADMIN') == false %} #}
+          {% if is_granted('ROLE_SUPER_ADMIN') == false %}
             <li class="nav-item">
               <a class="nav-link" href="#">Modification de mon mot de passe</a>
               {# <a class="nav-link" href="{{ path ('app_modif_user_password') }}">Modification de mon mot de passe</a> #}
             </li>
-          {# {% endif %} #}
-        {# {% else %} #}
+          {% endif %}
+        {% else %}
           <li class="nav-item">
             {# <a class="nav-link" href="#">Connexion</a> #}
             <a class="nav-link" href="{{ path ('app_login') }}">Connexion</a>
@@ -110,7 +110,7 @@
             <a class="nav-link" href="#">Inscription</a>
             {# <a class="nav-link" href="{{ path ('app_contact_admin') }}">Inscription</a> #}
           </li>
-        {# {% endif %} #}
+        {% endif %}
       </ul>
     </div>
   </div>

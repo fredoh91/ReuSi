@@ -21,6 +21,6 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@symfony/ux-toggle-password": "^2.29.2"
+        "bootstrap-icons": "^1.13.1"
     }
 }

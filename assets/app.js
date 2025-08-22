@@ -12,10 +12,11 @@ import './styles/app.scss';
 import { startStimulusApp } from '@symfony/stimulus-bridge';
 // import '@symfony/autoimport';
 
-// Importez le contrôleur UX Toggle Password
-import '@symfony/ux-toggle-password';
-
-// Démarrez l'application Stimulus
-const app = startStimulusApp();
+// Démarrez l'application Stimulus et enregistrez les contrôleurs locaux
+export const app = startStimulusApp(require.context(
+    '@symfony/stimulus-bridge/lazy-controller-loader!./controllers',
+    true,
+    /\.js$/
+));
 
 
