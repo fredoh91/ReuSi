@@ -33,6 +33,37 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    public function findByPassEnClair(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.passwordEnClair IS NOT NULL')
+            ->orderBy('u.id', 'ASC')
+            // ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
+    /**
+     * Pour l'authentification des utilisateurs, on vérifie si il est actif
+     *
+     * @param string $userEmail
+     * @return User|null
+     */
+    //$dateDesactivation !== null && $dateDesactivation <= new \DateTime()
+    public function findUserActifByEmail(string $userEmail): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.email = :val')
+            ->andWhere('u.dateDesactivation IS NULL OR u.dateDesactivation > :currentDate')
+            ->setParameter('val', $userEmail)
+            ->setParameter('currentDate', new \DateTime())
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

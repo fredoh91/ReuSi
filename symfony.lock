@@ -270,14 +270,8 @@
             "./templates/base.html.twig"
         ]
     },
-    "symfony/ux-turbo": {
-        "version": "2.27",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "2.20",
-            "ref": "e4b951d7de760751e170c6d2e3b565cf9ed5182f"
-        }
+    "symfony/ux-toggle-password": {
+        "version": "v2.29.2"
     },
     "symfony/validator": {
         "version": "7.3",

@@ -8,3 +8,14 @@ import 'bootstrap';
 import './styles/app.scss';
 
 // console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+
+import { startStimulusApp } from '@symfony/stimulus-bridge';
+// import '@symfony/autoimport';
+
+// Importez le contrôleur UX Toggle Password
+import '@symfony/ux-toggle-password';
+
+// Démarrez l'application Stimulus
+const app = startStimulusApp();
+
+
