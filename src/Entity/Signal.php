@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SignalRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -59,6 +61,17 @@ class Signal
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
+
+    /**
+     * @var Collection<int, ReleveDeDecision>
+     */
+    #[ORM\OneToMany(targetEntity: ReleveDeDecision::class, mappedBy: 'SignalLie')]
+    private Collection $ReleveDeDecision;
+
+    public function __construct()
+    {
+        $this->ReleveDeDecision = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -241,6 +254,36 @@ class Signal
     public function setUpdatedAt(?\DateTimeImmutable $UpdatedAt): static
     {
         $this->UpdatedAt = $UpdatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ReleveDeDecision>
+     */
+    public function getReleveDeDecision(): Collection
+    {
+        return $this->ReleveDeDecision;
+    }
+
+    public function addReleveDeDecision(ReleveDeDecision $releveDeDecision): static
+    {
+        if (!$this->ReleveDeDecision->contains($releveDeDecision)) {
+            $this->ReleveDeDecision->add($releveDeDecision);
+            $releveDeDecision->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReleveDeDecision(ReleveDeDecision $releveDeDecision): static
+    {
+        if ($this->ReleveDeDecision->removeElement($releveDeDecision)) {
+            // set the owning side to null (unless already changed)
+            if ($releveDeDecision->getSignalLie() === $this) {
+                $releveDeDecision->setSignalLie(null);
+            }
+        }
 
         return $this;
     }

@@ -10,11 +10,13 @@
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Liste des SUSARs
+              Signaux
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               {# <li><a class="dropdown-item" href="{{ path ('app_affiche_susar_eu') }}">test : liste des SUSARs (master_id)</a></li> #}
-              <li><a class="dropdown-item" href="#">Liste des SUSARs</a></li>
+              <li><a class="dropdown-item" href="#">Liste des signaux</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_signal_new') }}">Nouveau signal</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_signal_detail') }}">Test : detail signal</a></li>
             </ul>
           </li>
         </ul>
@@ -24,21 +26,21 @@
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Gestion des substances
+              Reunion signal
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               {# {% if is_granted('ROLE_SURV_PILOTEVEC') %} #}
-                <li><a class="dropdown-item" href="#">Intervenants/substances</a></li>
+                <li><a class="dropdown-item" href="#">Préparation d'une réunion - sélection des signaux</a></li>
               {# {% endif %} #}
               {# {% if is_granted('ROLE_SURV_ADMIN') %} #}
-                <li><a class="dropdown-item" href="#">Intervenants/substances (nb SUSARs)</a></li>
+                <li><a class="dropdown-item" href="#">Saisie d'information pendant une réunion</a></li>
               {# {% endif %} #}
-              <li><a class="dropdown-item" href="#">Liste des substances (pour requête EVDAS)</a></li>
+              <li><a class="dropdown-item" href="#">Liste des réunions signal</a></li>
 
-              <li><a class="dropdown-item" href="#">Import d'un fichier CTLL</a></li>
+              {# <li><a class="dropdown-item" href="#">Import d'un fichier CTLL</a></li> #}
 
               {# {% if is_granted('ROLE_DMFR_REF') %} #}
-                <li><a class="dropdown-item" href="#">Bilan des imports des fichiers CTLL</a></li>
+                {# <li><a class="dropdown-item" href="#">Bilan des imports des fichiers CTLL</a></li> #}
               {# {% endif %} #}
             </ul>
           </li>
@@ -49,14 +51,14 @@
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Exports pilotage
+              Actions
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
 
-              <li><a class="dropdown-item" href="#">Exports pilotage</a></li>
+              <li><a class="dropdown-item" href="#">Suivi des actions</a></li>
               {# <li><a class="dropdown-item" href="#">Exports pilotage</a></li> #}
 
-              <li><a class="dropdown-item" href="#">Bilan des imports des fichiers CTLL</a></li>
+              <li><a class="dropdown-item" href="#">Recherche des actions</a></li>
 
 
             </ul>
