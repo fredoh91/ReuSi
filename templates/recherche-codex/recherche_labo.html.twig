@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche Laboratoire
+{% endblock %}
+
+{% block body %}
+
+	{{ encore_entry_link_tags('rechlabo_css') }}
+	<div class="container mt-5" data-controller="recherche-labo-spinner">
+		<div class="row justify-content-center">
+			<div class="col-md-6">
+				{{ form_start(form, {'attr': {'data-recherche-labo-spinner-target': 'form'}}) }}
+				<div class="mb-3">
+					{{ form_label(form.dci, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.dci, {'attr': {'class': 'form-control'}}) }}
+					{{ form_errors(form.dci) }}
+				</div>
+				<div class="mb-3">
+					{{ form_label(form.denomination, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.denomination, {'attr': {'class': 'form-control'}}) }}
+					{{ form_errors(form.denomination) }}
+				</div>
+
+				<div class="row">
+					<div class="col-4">
+                        <div class="mb-3">
+                            {{ form_widget(form.recherche, {'attr': {
+                                'data-action': 'click->recherche-labo-spinner#showSpinner',
+                                'data-message': 'Recherche en cours ...'
+                            }}) }}
+                        </div>
+					</div>
+					<div class="col-4">
+                        <div class="mb-3">
+                            {{ form_widget(form.reset, {'attr': {
+                                'data-action': 'click->recherche-labo-spinner#showSpinner',
+                                'data-message': 'Réinitialisation en cours ...'
+                            }}) }}
+                        </div>
+					</div>
+					<div class="col-4">
+					</div>
+				</div>
+
+				{{ form_end(form) }}
+				<div class="text-center mt-3 d-none" data-recherche-labo-spinner-target="spinner">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+					<div class="mt-2">Recherche en cours ...</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="page_liste_medic p-3">
+		<div class="row mt-4">
+			<div class="col-md-12">
+				{% if medics is not empty %}
+					<p>Nombre de <strong>médicaments actifs</strong> trouvés (non-archivés) : {{ NbMedics }}</p>
+					<ul class="list-group">
+						{% for medic in medics %}
+
+							<li class="list-group-item">
+								<strong>{{ medic.nomVU }}</strong>
+								- CodeATC: {{ medic.dbo_ClasseATC_libAbr }}
+								- CodeCIS: {{ medic.codeCIS }}
+								- Type procédure : <strong>{{ medic.dbo_Autorisation_libAbr }}</strong>
+								- Statut de commercialisation : <strong>{{ medic.commercialise ? 'Commercialisé' : 'Non commercialisé ou pas d\'information' }}</strong>
+								- Actif/archivé : <strong>{{ medic.dbo_StatutSpeci_libAbr }}</strong>
+								
+								<br>
+								<span class="text-muted">Substances: {{ medic.substances|join(', ') }}</span>
+								<div class="container-fluid ps-1 pe-1">
+									<div class="row">
+										<div class="col-1 fw-bold">Exploitant</div>
+										<div class="col-2">{{ medic.nomActeurLong }}</div>
+										<div class="col-3">{{ medic.adresse }}</div>
+										<div class="col-1">{{ medic.adresseComplExpl }}</div>
+										<div class="col-1">{{ medic.codePostExpl }}</div>
+										<div class="col-2">{{ medic.nomVilleExpl }}</div>
+										<div class="col-1">{{ medic.tel }}</div>
+										<div class="col-1">{{ medic.fax }}</div>
+									</div>
+									<div class="row">
+										<div class="col-1 fw-bold">Titulaire</div>
+										<div class="col-2">{{ medic.nomContactLibra }}</div>
+										<div class="col-3">{{ medic.adresseContact }}</div>
+										<div class="col-1">{{ medic.adresseCompl }}</div>
+										<div class="col-1">{{ medic.codePost }}</div>
+										<div class="col-2">{{ medic.nomVille }}</div>
+										<div class="col-1">{{ medic.telContact }}</div>
+										<div class="col-1">{{ medic.faxContact }}</div>
+									</div>
+								</div>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -120,16 +120,23 @@
                         <div class="col-2">
                             {{ form_label(form.releve.NumeroRDD, 'Numéro du relevé de décision') }}
                         </div>
-                        <div class="col-10">
+                        <div class="col-8">
                             {{ form_label(form.releve.DescriptionRDD, 'Description du relevé de décision') }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_label(form.releve.DescriptionRDD, 'Date de la réunion') }}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-2">
                             {{ form_widget(form.releve.NumeroRDD) }}
                         </div>
-                        <div class="col-10">
+                        <div class="col-8">
                             {{ form_widget(form.releve.DescriptionRDD) }}
+                        </div>
+                        <div class="col-2">
+                            {# pour affichage du menu déroulant de la DateReunion #}
+                            {{ form_widget(form.reunionSignal) }}
                         </div>
                     </div>
                 </div>

@@ -16,6 +16,25 @@ class ReunionSignalRepository extends ServiceEntityRepository
         parent::__construct($registry, ReunionSignal::class);
     }
 
+
+    /**
+     * Retourne la liste des "réunions signal" qui ne sont pas annulés.
+     *
+     * @param integer $days - Nombre de jours à considérer, au dela de ce nombre de jour les réunions ne sont pas retournées.
+     * @return array array<ReunionSignal>
+     */
+    public function findReunionsNotCancelled(int $days = 100): array
+    {
+        $dateLimit = new \DateTime(sprintf('-%d days', $days));
+
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.DateReunion > :dateLimit')
+            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('annulee', 0)
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return ReunionSignal[] Returns an array of ReunionSignal objects
     //     */

@@ -68,9 +68,23 @@ class Signal
     #[ORM\OneToMany(targetEntity: ReleveDeDecision::class, mappedBy: 'SignalLie')]
     private Collection $ReleveDeDecision;
 
+    /**
+     * @var Collection<int, ReunionSignal>
+     */
+    #[ORM\ManyToMany(targetEntity: ReunionSignal::class, mappedBy: 'SignalLie')]
+    private Collection $reunionSignals;
+
+    /**
+     * @var Collection<int, Produits>
+     */
+    #[ORM\OneToMany(targetEntity: Produits::class, mappedBy: 'SignalLie')]
+    private Collection $produits;
+
     public function __construct()
     {
         $this->ReleveDeDecision = new ArrayCollection();
+        $this->reunionSignals = new ArrayCollection();
+        $this->produits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -282,6 +296,63 @@ class Signal
             // set the owning side to null (unless already changed)
             if ($releveDeDecision->getSignalLie() === $this) {
                 $releveDeDecision->setSignalLie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ReunionSignal>
+     */
+    public function getReunionSignals(): Collection
+    {
+        return $this->reunionSignals;
+    }
+
+    public function addReunionSignal(ReunionSignal $reunionSignal): static
+    {
+        if (!$this->reunionSignals->contains($reunionSignal)) {
+            $this->reunionSignals->add($reunionSignal);
+            $reunionSignal->addSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReunionSignal(ReunionSignal $reunionSignal): static
+    {
+        if ($this->reunionSignals->removeElement($reunionSignal)) {
+            $reunionSignal->removeSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Produits>
+     */
+    public function getProduits(): Collection
+    {
+        return $this->produits;
+    }
+
+    public function addProduit(Produits $produit): static
+    {
+        if (!$this->produits->contains($produit)) {
+            $this->produits->add($produit);
+            $produit->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduit(Produits $produit): static
+    {
+        if ($this->produits->removeElement($produit)) {
+            // set the owning side to null (unless already changed)
+            if ($produit->getSignalLie() === $this) {
+                $produit->setSignalLie(null);
             }
         }
 

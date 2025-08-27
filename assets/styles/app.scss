@@ -2,9 +2,29 @@
 //     background-color: skyblue;
 // }
 
-// customize some Bootstrap variables
-$primary: darken(#428bca, 20%);
+// // customize some Bootstrap variables
+// $primary: darken(#428bca, 20%);
 
-// the ~ allows you to reference things in node_modules
-@import "~bootstrap/scss/bootstrap";
+// // the ~ allows you to reference things in node_modules
+// @import "~bootstrap/scss/bootstrap";
+// @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+
+// --- Nouvelle méthode avec @use ---
+// On importe le module `sass:color` pour utiliser ses fonctions
+@use "sass:color";
+
+// // On charge Bootstrap et on configure ses variables avec `with`
+// @use "~bootstrap/scss/bootstrap" with (
+//     $primary: color.adjust(#428bca, $lightness: -20%)
+// );
+
+// Import Bootstrap first
+@use "bootstrap/scss/bootstrap" as *;
+
+// Then override variables
+$primary: color.adjust(#428bca, $lightness: -20%);
+
+// Pour les fichiers CSS purs (comme la police d'icônes), @import reste la bonne méthode.
+// @use est fait pour les modules Sass (.scss).
 @import "~bootstrap-icons/font/bootstrap-icons.css";

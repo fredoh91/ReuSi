@@ -37,9 +37,19 @@ class ReunionSignal
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $ReunionAnnulee = null;
+
+    /**
+     * @var Collection<int, Signal>
+     */
+    #[ORM\ManyToMany(targetEntity: Signal::class, inversedBy: 'reunionSignals')]
+    private Collection $SignalLie;
+
     public function __construct()
     {
         $this->ReleveDeDecision = new ArrayCollection();
+        $this->SignalLie = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -133,6 +143,42 @@ class ReunionSignal
     public function setUpdatedAt(?\DateTimeImmutable $UpdatedAt): static
     {
         $this->UpdatedAt = $UpdatedAt;
+
+        return $this;
+    }
+
+    public function isReunionAnnulee(): ?bool
+    {
+        return $this->ReunionAnnulee;
+    }
+
+    public function setReunionAnnulee(?bool $ReunionAnnulee): static
+    {
+        $this->ReunionAnnulee = $ReunionAnnulee;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Signal>
+     */
+    public function getSignalLie(): Collection
+    {
+        return $this->SignalLie;
+    }
+
+    public function addSignalLie(Signal $signalLie): static
+    {
+        if (!$this->SignalLie->contains($signalLie)) {
+            $this->SignalLie->add($signalLie);
+        }
+
+        return $this;
+    }
+
+    public function removeSignalLie(Signal $signalLie): static
+    {
+        $this->SignalLie->removeElement($signalLie);
 
         return $this;
     }

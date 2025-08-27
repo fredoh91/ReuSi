@@ -42,7 +42,16 @@ class SignalRDDDetailType extends AbstractType
             ->add('releve', RDDDetailType::class, [
                 'label' => false, // Pas de label pour le sous-formulaire
             ])
-
+            ->add('reunionSignal', EntityType::class, [
+                'class' => ReunionSignal::class,
+                'choices' => $options['date_reunion'] ?? [],
+                'choice_label' => function ($reunion) {
+                    return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
+                },
+                'placeholder' => '-- Choisir une réunion --',
+                'required' => false,
+                'label' => 'Date de la réunion',
+            ])
             ->add('validation', SubmitType::class, [
                 'attr' => ['class' => 'btn btn-primary m-2'],
                 'label' => 'Validation',
@@ -60,6 +69,8 @@ class SignalRDDDetailType extends AbstractType
     {
         $resolver->setDefaults([
             // 'data_class' => ReleveDeDecision::class,
+            'data_class' => \App\Form\Model\SignalReleveReunionDTO::class,
+            'date_reunion' => [],
         ]);
     }
 }
