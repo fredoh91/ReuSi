@@ -113,6 +113,9 @@ class Produits
     #[ORM\ManyToOne(inversedBy: 'produits')]
     private ?Signal $SignalLie = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $StatutActifSpecialite = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -510,6 +513,18 @@ class Produits
     public function setSignalLie(?Signal $SignalLie): static
     {
         $this->SignalLie = $SignalLie;
+
+        return $this;
+    }
+
+    public function getStatutActifSpecialite(): ?string
+    {
+        return $this->StatutActifSpecialite;
+    }
+
+    public function setStatutActifSpecialite(?string $StatutActifSpecialite): static
+    {
+        $this->StatutActifSpecialite = $StatutActifSpecialite;
 
         return $this;
     }

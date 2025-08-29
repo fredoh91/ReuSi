@@ -20,16 +20,13 @@ final class CodexSearchController extends AbstractController
         $this->codexPresentationRepository = $codexPresentationRepository;
     }
 
-    #[Route('/recherche-codex', name: 'app_recherche-codex')]
-    public function index(): Response
-    {
-
-
-
-        return $this->render('recherche-codex/recherche-codex.html.twig', [
-            'controller_name' => 'CodexSearchController',
-        ]);
-    }
+    // #[Route('/recherche_codex', name: 'app_recherche_codex')]
+    // public function index(): Response
+    // {
+    //     return $this->render('recherche-codex/recherche-codex.html.twig', [
+    //         'controller_name' => 'CodexSearchController',
+    //     ]);
+    // }
 
     
     #[Route('/recherche_labo', name: 'app_recherche_labo')]

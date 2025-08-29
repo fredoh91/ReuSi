@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Recherche Laboratoire
+{% block title %}Ajout de produit à un signal
 {% endblock %}
 
 {% block body %}
@@ -10,35 +10,60 @@
 		<div class="row justify-content-center">
 			<div class="col-md-6">
 				{{ form_start(form, {'attr': {'data-recherche-labo-spinner-target': 'form'}}) }}
-				<div class="mb-3">
-					{{ form_label(form.dci, null, {'label_attr': {'class': 'form-label'}}) }}
-					{{ form_widget(form.dci, {'attr': {'class': 'form-control'}}) }}
-					{{ form_errors(form.dci) }}
-				</div>
-				<div class="mb-3">
-					{{ form_label(form.denomination, null, {'label_attr': {'class': 'form-label'}}) }}
-					{{ form_widget(form.denomination, {'attr': {'class': 'form-control'}}) }}
-					{{ form_errors(form.denomination) }}
-				</div>
-
+				{# <div class="mb-3"> #}
 				<div class="row">
+					<div class="col">
+						{{ form_label(form.dci) }}
+						{{ form_widget(form.dci) }}
+						{{ form_errors(form.dci) }}
+					</div>
+					<div class="col">
+						{{ form_label(form.denomination) }}
+						{{ form_widget(form.denomination) }}
+						{{ form_errors(form.denomination) }}
+					</div>
+				</div>
+				{# <div class="row">
+					<div class="col">
+						{{ form_label(form.CodeATC) }}
+						{{ form_widget(form.CodeATC) }}
+						{{ form_errors(form.CodeATC) }}
+					</div>
+					<div class="col">
+						{{ form_label(form.LibATC) }}
+						{{ form_widget(form.LibATC) }}
+						{{ form_errors(form.LibATC) }}
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						{{ form_label(form.codeCIS) }}
+						{{ form_widget(form.codeCIS) }}
+						{{ form_errors(form.codeCIS) }}
+					</div>
+					<div class="col">
+						{{ form_label(form.libRechDenomination) }}
+						{{ form_widget(form.libRechDenomination) }}
+						{{ form_errors(form.libRechDenomination) }}
+					</div>
+				</div> #}
+				{# </div> #}
+
+				<div class="row m-3">
 					<div class="col-4">
-                        <div class="mb-3">
-                            {{ form_widget(form.recherche, {'attr': {
+							{{ form_widget(form.recherche, {'attr': {
                                 'data-action': 'click->recherche-labo-spinner#showSpinner',
                                 'data-message': 'Recherche en cours ...'
                             }}) }}
-                        </div>
 					</div>
 					<div class="col-4">
-                        <div class="mb-3">
-                            {{ form_widget(form.reset, {'attr': {
+							{{ form_widget(form.reset, {'attr': {
                                 'data-action': 'click->recherche-labo-spinner#showSpinner',
                                 'data-message': 'Réinitialisation en cours ...'
                             }}) }}
-                        </div>
 					</div>
 					<div class="col-4">
+							{{ form_widget(form.annulation) }}
 					</div>
 				</div>
 
@@ -54,7 +79,7 @@
 	</div>
 
 	<div class="page_liste_medic p-3">
-		<div class="row mt-4">
+        <div class="row mt-4">
 			<div class="col-md-12">
 				{% if medics is not empty %}
 					<p>Nombre de médicaments trouvés : {{ NbMedics }}</p>
@@ -64,7 +89,10 @@
 							<li class="list-group-item">
 								<strong>{{ medic.nomVU }}</strong>
 								- CodeATC: {{ medic.dbo_ClasseATC_libAbr }}
-								- CodeCIS: {{ medic.codeCIS }}
+								- CodeCIS: 
+								<a href="{{ path('app_ajout_produit', { signalId: signalId, codeCIS: medic.codeCIS }) }}">
+									{{ medic.codeCIS }}
+								</a>
 								- Type procédure : <strong>{{ medic.dbo_Autorisation_libAbr }}</strong>
 								- Statut de commercialisation : <strong>{{ medic.commercialise ? 'Commercialisé' : 'Non commercialisé ou pas d\'information' }}</strong>
 								- Actif/archivé : <strong>{{ medic.dbo_StatutSpeci_libAbr }}</strong>

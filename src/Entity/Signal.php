@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: '`signal`')]
 class Signal
 {
+
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_COMPLETED = 'completed';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -65,7 +69,7 @@ class Signal
     /**
      * @var Collection<int, ReleveDeDecision>
      */
-    #[ORM\OneToMany(targetEntity: ReleveDeDecision::class, mappedBy: 'SignalLie')]
+    #[ORM\OneToMany(targetEntity: ReleveDeDecision::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $ReleveDeDecision;
 
     /**
@@ -77,14 +81,18 @@ class Signal
     /**
      * @var Collection<int, Produits>
      */
-    #[ORM\OneToMany(targetEntity: Produits::class, mappedBy: 'SignalLie')]
+    #[ORM\OneToMany(targetEntity: Produits::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $produits;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $StatutCreation = null;
 
     public function __construct()
     {
         $this->ReleveDeDecision = new ArrayCollection();
         $this->reunionSignals = new ArrayCollection();
         $this->produits = new ArrayCollection();
+        $this->StatutCreation = self::STATUS_DRAFT; // Par défaut, un signal est un brouillon
     }
 
     public function getId(): ?int
@@ -355,6 +363,18 @@ class Signal
                 $produit->setSignalLie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getStatutCreation(): ?string
+    {
+        return $this->StatutCreation;
+    }
+
+    public function setStatutCreation(?string $StatutCreation): static
+    {
+        $this->StatutCreation = $StatutCreation;
 
         return $this;
     }

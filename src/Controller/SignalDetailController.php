@@ -27,8 +27,12 @@ final class SignalDetailController extends AbstractController
     }
 
 
-    #[Route('/signal_new', name: 'app_signal_new')]
-    public function signal_new(EntityManagerInterface $em, Request $request): Response
+    #[Route('/signal_new/{signalId}', name: 'app_signal_new', requirements: ['signalId' => '\d+'], defaults: ['signalId' => null])]
+    public function signal_new(
+        EntityManagerInterface $em,
+        Request $request,
+        ?int $signalId = null
+    ): Response
     {
 
         $signal = new Signal();
@@ -76,6 +80,22 @@ final class SignalDetailController extends AbstractController
                 } else {
                     // Formulaire invalide
                     dump('03 - formulaire invalide');
+                }
+            }
+
+            if ($form->get('ajout_produit')->isClicked()) {
+                if ($form->isValid()) {
+                    // Traitement de l'ajout de produit
+                    dump('04 - bouton ajout produit');
+                    // On persist et flush pour créer le signal "brouillon" et obtenir un ID
+                    $em->persist($signal);
+                    $em->flush();
+        
+                    // Redirection vers la route pour creations des produits
+                    return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);                    
+                } else {
+                    // Formulaire invalide
+                    dump('05 - formulaire invalide');
                 }
             }
         }

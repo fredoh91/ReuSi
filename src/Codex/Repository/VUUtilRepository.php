@@ -70,7 +70,7 @@ class VUUtilRepository extends ServiceEntityRepository
      * @param [type] $sub
      * @return array
      */
-    public function findByDenoOrBySub($sub, $deno): array
+    public function findByDenoOrBySub($sub, $deno, $statut = null): array
     {
         // Fonction de normalisation des paramètres
         $normalize = function ($str) {
@@ -114,10 +114,14 @@ class VUUtilRepository extends ServiceEntityRepository
                         vu.libRechDenomination, 
                         sa.libRechSubstance')
             ->distinct()
-            ->innerJoin(SAVU::class, 'sa', 'WITH', 'vu.codeVU = sa.codeVU')
-            // ->where('vu.dbo_StatutSpeci_libAbr = :statut')
-            // ->setParameter('statut', 'Actif')
-            ->orderBy('vu.nomVU', 'ASC');
+            ->innerJoin(SAVU::class, 'sa', 'WITH', 'vu.codeVU = sa.codeVU');
+        if ($statut !== null) {
+            $qb->andWhere('vu.dbo_StatutSpeci_libAbr = :statut')
+                ->setParameter('statut', $statut);
+        }
+        // ->where('vu.dbo_StatutSpeci_libAbr = :statut')
+        // ->setParameter('statut', 'Actif')
+        $qb->orderBy('vu.nomVU', 'ASC');
 
         if ($denoNorm) {
             $qb->andWhere('vu.libRechDenomination LIKE :deno')
@@ -141,7 +145,7 @@ class VUUtilRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    
+
 
     /**
      * Permet de faire une recherche par Dénomination ou par Substance sur les champs libRech
@@ -150,7 +154,7 @@ class VUUtilRepository extends ServiceEntityRepository
      * @param [type] $sub
      * @return array
      */
-    public function findByDenoOrBySubCourt($sub, $deno): array
+    public function findByDenoOrBySubCourt($sub, $deno, $statut = null): array
     {
         // Fonction de normalisation des paramètres
         $normalize = function ($str) {
@@ -173,10 +177,14 @@ class VUUtilRepository extends ServiceEntityRepository
                         vu.libRechDenomination, 
                         sa.libRechSubstance')
             ->distinct()
-            ->innerJoin(SAVU::class, 'sa', 'WITH', 'vu.codeVU = sa.codeVU')
-            // ->where('vu.dbo_StatutSpeci_libAbr = :statut')
-            // ->setParameter('statut', 'Actif')
-            ->orderBy('vu.nomVU', 'ASC');
+            ->innerJoin(SAVU::class, 'sa', 'WITH', 'vu.codeVU = sa.codeVU');
+        if ($statut !== null) {
+            $qb->andWhere('vu.dbo_StatutSpeci_libAbr = :statut')
+                ->setParameter('statut', $statut);
+        };
+        // ->where('vu.dbo_StatutSpeci_libAbr = :statut')
+        // ->setParameter('statut', 'Actif')
+        $qb->orderBy('vu.nomVU', 'ASC');
 
         if ($denoNorm) {
             $qb->andWhere('vu.libRechDenomination LIKE :deno')
@@ -200,6 +208,21 @@ class VUUtilRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+
+    /**
+     * Permet de retourner un Array de VUUtils à partir de son CodeCIS
+     * @return VUUtil[] Returns an array of VUUtil objects
+     */
+    public function findByCodeCIS($codeCIS): array
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.codeCIS = :codeCIS')
+            ->setParameter('codeCIS', $codeCIS)
+            ->orderBy('v.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
     //    /**
     //     * @return VUUtil[] Returns an array of VUUtil objects

@@ -14,11 +14,29 @@ class CodexSearchType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            // ->add('dci', TextType::class, [
-            //     'label' => 'DCI',
+            ->add('dci', TextType::class, [
+                'label' => 'DCI',
+                'required' => false,
+            ])
+            ->add('denomination', TextType::class, [
+                'label' => 'Dénomination',
+                'required' => false,
+            ])
+            // ->add('codeCIS', TextType::class, [
+            //     'label' => 'Code CIS',
+            //     'required' => false,
             // ])
-            // ->add('denomination', TextType::class, [
-            //     'label' => 'Dénomination',
+            // ->add('CodeATC', TextType::class, [
+            //     'label' => 'Code ATC',
+            //     'required' => false,
+            // ])
+            // ->add('LibATC', TextType::class, [
+            //     'label' => 'Libellé ATC',
+            //     'required' => false,
+            // ])
+            // ->add('libRechDenomination', TextType::class, [
+            //     'label' => 'Dénomination rech',
+            //     'required' => false,
             // ])
             ->add(
                 'recherche',
@@ -29,7 +47,6 @@ class CodexSearchType extends AbstractType
                     'row_attr' => ['id' => 'recherche'],
                 ]
             )
-        
             ->add(
                 'reset',
                 SubmitType::class,
@@ -39,13 +56,19 @@ class CodexSearchType extends AbstractType
                     'row_attr' => ['id' => 'reset'],
                 ]
             )
+            ->add(
+                'annulation',
+                SubmitType::class,
+                [
+                    'attr' => ['class' => 'btn btn-primary btn-sm m-1'],
+                    'label' => 'Annuler',
+                    'row_attr' => ['id' => 'annulation'],
+                ]
+            )
             // ->add('codeVU')
-            ->add('codeCIS')
             // ->add('codeDossier')
             // ->add('nomVU')
             // ->add('dbo_Autorisation_libAbr')
-            ->add('dbo_ClasseATC_libAbr')
-            ->add('dbo_ClasseATC_libCourt')
             // ->add('libCourt')
             // ->add('codeContact')
             // ->add('nomContactLibra')
@@ -70,7 +93,6 @@ class CodexSearchType extends AbstractType
             // ->add('fax')
             // ->add('dbo_Pays_libAbr')
             // ->add('codeProduit')
-            ->add('libRechDenomination')
             // ->add('codeVUPrinceps')
         ;
     }

@@ -1,0 +1,294 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajout de produit à un signal
+{% endblock %}
+
+{% block body %}
+
+	{# {{ encore_entry_link_tags('rechlabo_css') }} #}
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			{# <div class="col-md-6"> #}
+				{{ form_start(form) }}
+				{# <div class="mb-3"> #}
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Informations médicament</h5>
+                        </div>
+                        <div class="card-body">
+
+							<div class="row">
+								<div class="col-6">
+									{{ form_label(form.Denomination) }}
+								</div>
+								<div class="col-6">
+									{{ form_label(form.DCI) }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-6">
+									{{ form_widget(form.Denomination) }}
+								</div>
+								<div class="col-6">
+									{{ form_widget(form.DCI) }}
+								</div>
+							</div>
+
+
+							<div class="row">
+								<div class="col-2">
+									{{ form_label(form.CodeATC) }}
+								</div>
+								<div class="col-4">
+									{{ form_label(form.LibATC) }}
+								</div>
+								<div class="col-2">
+									{{ form_label(form.Dosage) }}
+								</div>
+								<div class="col-2">
+									{{ form_label(form.Voie) }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-2">
+									{{ form_widget(form.CodeATC) }}
+								</div>
+								<div class="col-4">
+									{{ form_widget(form.LibATC) }}
+								</div>
+								<div class="col-2">
+									{{ form_widget(form.Dosage) }}
+								</div>
+								<div class="col-2">
+									{{ form_widget(form.Voie) }}
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-2">
+									{{ form_label(form.TypeProcedure) }}
+								</div>
+								<div class="col-2">
+									{{ form_label(form.CodeDossier) }}
+								</div>
+								<div class="col-2">
+									{{ form_label(form.CodeCIS) }}
+								</div>
+								<div class="col-2">
+									{# {{ form_label(form.TypeProcedure) }} #}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-2">
+									{{ form_widget(form.TypeProcedure) }}
+								</div>
+								<div class="col-2">
+									{{ form_widget(form.CodeDossier) }}
+								</div>
+								<div class="col-2">
+									{{ form_widget(form.CodeCIS) }}
+								</div>
+								<div class="col-2">
+									{# {{ form_widget(form.TypeProcedure) }} #}
+								</div>
+							</div>
+                        </div>
+                    </div>
+					
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Informations exploitant</h5>
+                        </div>
+                        <div class="card-body">
+							
+							<div class="row">
+								<div class="col-1">
+									{{ form_label(form.idLaboratoire, 'ID labo') }}
+								</div>
+								<div class="col-4">
+									{{ form_label(form.Laboratoire) }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-1">
+									{{ form_widget(form.idLaboratoire) }}
+								</div>
+								<div class="col-4">
+									{{ form_widget(form.Laboratoire) }}
+								</div>
+							</div>
+                            
+                            <div class="row">
+                                <div class="col-3">
+                                    {{ form_label(form.Adresse, 'Adresse') }}
+                                </div>
+                                <div class="col-3">
+                                    {{ form_label(form.AdresseComplExpl, 'Adresse complémentaire') }}
+                                </div>
+                                <div class="col-1">
+                                    {{ form_label(form.CodePostExpl, 'CP') }}
+                                </div>
+                                <div class="col-3">
+                                    {{ form_label(form.NomVilleExpl, 'Ville') }}
+                                </div>
+                                <div class="col-1">
+                                    {# {{ form_label(form.DboPaysLibAbr) }} #}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    {{ form_widget(form.Adresse) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ form_widget(form.AdresseComplExpl) }}
+                                </div>
+                                <div class="col-1">
+                                    {{ form_widget(form.CodePostExpl) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ form_widget(form.NomVilleExpl) }}
+                                </div>
+                                <div class="col-1">
+                                    {# {{ form_widget(form.DboPaysLibAbr) }} #}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-2">
+                                    {{ form_label(form.Tel) }}
+                                </div>
+                                <div class="col-2">
+                                    {{ form_label(form.Fax) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    {{ form_widget(form.Tel) }}
+                                </div>
+                                <div class="col-2">
+                                    {{ form_widget(form.Fax) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Informations titulaire</h5>
+                        </div>
+                        <div class="card-body">
+                            {# --- Ici, tes lignes de labels et widgets --- #}
+                            <div class="row">
+                                <div class="col-1">
+                                    {{ form_label(form.idTitulaire, 'ID tit.') }}
+                                </div>
+                                <div class="col-4">
+                                    {{ form_label(form.Titulaire) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-1">
+                                    {{ form_widget(form.idTitulaire) }}
+                                </div>
+                                <div class="col-4">
+                                    {{ form_widget(form.Titulaire) }}
+                                </div>
+                            </div>
+							
+							<div class="row">
+								<div class="col-3">
+									{{ form_label(form.AdresseContact, 'Adresse') }}
+								</div>
+								<div class="col-3">
+									{{ form_label(form.AdresseCompl, 'Adresse complémentaire') }}
+								</div>
+								<div class="col-1">
+									{{ form_label(form.CodePost, 'CP') }}
+								</div>
+								<div class="col-3">
+									{{ form_label(form.NomVille, 'Ville') }}
+								</div>
+								<div class="col-1">
+									{{ form_label(form.DboPaysLibAbr) }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-3">
+									{{ form_widget(form.AdresseContact) }}
+								</div>
+								<div class="col-3">
+									{{ form_widget(form.AdresseCompl) }}
+								</div>
+								<div class="col-1">
+									{{ form_widget(form.CodePost) }}
+								</div>
+								<div class="col-3">
+									{{ form_widget(form.NomVille) }}
+								</div>
+								<div class="col-1">
+									{{ form_widget(form.DboPaysLibAbr) }}
+								</div>
+							</div>
+							
+							<div class="row">
+								<div class="col-2">
+									{{ form_label(form.TelContact, 'Téléphone') }}
+								</div>
+								<div class="col-2">
+									{{ form_label(form.FaxContact, 'Fax') }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-2">
+									{{ form_widget(form.TelContact) }}
+								</div>
+								<div class="col-2">
+									{{ form_widget(form.FaxContact) }}
+								</div>
+							</div>
+                        </div>
+                    </div>
+				{# <div class="row">
+					<div class="col">
+						{{ form_label(form.CodeATC) }}
+						{{ form_widget(form.CodeATC) }}
+						{{ form_errors(form.CodeATC) }}
+					</div>
+					<div class="col">
+						{{ form_label(form.LibATC) }}
+						{{ form_widget(form.LibATC) }}
+						{{ form_errors(form.LibATC) }}
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						{{ form_label(form.codeCIS) }}
+						{{ form_widget(form.codeCIS) }}
+						{{ form_errors(form.codeCIS) }}
+					</div>
+					<div class="col">
+						{{ form_label(form.libRechDenomination) }}
+						{{ form_widget(form.libRechDenomination) }}
+						{{ form_errors(form.libRechDenomination) }}
+					</div>
+				</div> #}
+				{# </div> #}
+
+				<div class="row justify-content-center mt-3">
+
+					<div class="col-6 d-flex justify-content-center">
+							{{ form_widget(form.validation) }}
+					</div>
+					<div class="col-6 d-flex justify-content-center">
+							{{ form_widget(form.annulation) }}
+					</div>
+				</div>
+
+				{{ form_end(form) }}
+
+			{# </div> #}
+		</div>
+	</div>
+
+{% endblock %}
