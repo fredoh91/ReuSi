@@ -23,6 +23,7 @@ Encore
      */
     .addEntry('app', './assets/app.js')
 
+    .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
 

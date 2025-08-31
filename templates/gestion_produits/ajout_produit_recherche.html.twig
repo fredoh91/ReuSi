@@ -277,11 +277,16 @@
 
 				<div class="row justify-content-center mt-3">
 
-					<div class="col-6 d-flex justify-content-center">
+					<div class="col-4 d-flex justify-content-center">
 							{{ form_widget(form.validation) }}
 					</div>
-					<div class="col-6 d-flex justify-content-center">
+					<div class="col-4 d-flex justify-content-center">
 							{{ form_widget(form.annulation) }}
+					</div>
+					<div class="col-4 d-flex justify-content-center">
+						<button type="button" id="BtnFormatDCI" class="btn btn-primary m-1">
+							Formatage du produit de type DCI
+						</button>							
 					</div>
 				</div>
 
@@ -291,4 +296,9 @@
 		</div>
 	</div>
 
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{{ encore_entry_script_tags('AjoutProduitRecherche') }}
 {% endblock %}
