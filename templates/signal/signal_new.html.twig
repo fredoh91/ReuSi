@@ -110,8 +110,11 @@
         
         {# Boutons #}
         <div class="row">
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-6 d-flex justify-content-center">
                 {{ form_widget(form.ajout_produit) }}
+            </div>
+            <div class="col-6 d-flex justify-content-center">
+                {{ form_widget(form.ajout_produit_saisie_manu) }}
             </div>
         </div>
 
@@ -157,7 +160,7 @@
                 {{ form_widget(form.validation) }}
             </div>
             <div class="col-6 d-flex justify-content-center">
-                {{ form_widget(form.reset) }}
+                {{ form_widget(form.annulation) }}
             </div>
         </div>
 

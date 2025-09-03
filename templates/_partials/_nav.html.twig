@@ -14,9 +14,9 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               {# <li><a class="dropdown-item" href="{{ path ('app_affiche_susar_eu') }}">test : liste des SUSARs (master_id)</a></li> #}
-              <li><a class="dropdown-item" href="#">Liste des signaux</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_signal_liste') }}">Liste des signaux</a></li>
               <li><a class="dropdown-item" href="{{ path ('app_signal_new') }}">Nouveau signal</a></li>
-              <li><a class="dropdown-item" href="{{ path ('app_signal_detail') }}">Test : detail signal</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_signal_detail',{'signalId': 5}) }}">Test : detail signal</a></li>
             </ul>
           </li>
         </ul>
@@ -35,7 +35,7 @@
               {# {% if is_granted('ROLE_SURV_ADMIN') %} #}
                 <li><a class="dropdown-item" href="#">Saisie d'information pendant une réunion</a></li>
               {# {% endif %} #}
-              <li><a class="dropdown-item" href="#">Liste des réunions signal</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_reunion_signal_liste') }}">Liste des réunions signal</a></li>
 
               {# <li><a class="dropdown-item" href="#">Import d'un fichier CTLL</a></li> #}
 

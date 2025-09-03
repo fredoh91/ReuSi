@@ -17,23 +17,23 @@ use App\Codex\Repository\CODEXPresentationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class GestionProduitsController extends AbstractController
-{    
-    
+{
+
     private $codexPresentationRepository;
 
     public function __construct(CODEXPresentationRepository $codexPresentationRepository)
     {
         $this->codexPresentationRepository = $codexPresentationRepository;
     }
-    
+
     #[Route('/signal/{signalId}/creation_produits', name: 'app_creation_produits')]
     public function creation_produits(int $signalId, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine): Response
     {
         $signal = $signalRepo->find($signalId);
 
-        // Gérer le cas où le signal n'existe pas ou n'est pas un brouillon
-        if (!$signal || $signal->getStatutCreation() !== Signal::STATUS_DRAFT) {
-            // ... lancer une erreur 404 ou rediriger
+        // Gérer le cas où le signal n'existe pas
+        if (!$signal ) {
+            throw $this->createNotFoundException('Le signal avec l\'id ' . $signalId . ' n\'existe pas.');
         }
 
         $form = $this->createForm(CodexSearchType::class);
@@ -43,7 +43,7 @@ final class GestionProduitsController extends AbstractController
             $data = $form->getData();
             if ($form->get('recherche')->isClicked()) {
                 if ($form->isValid()) {
-                    
+
                     $data = $form->getData();
                     // dd($data);
                     [$medics, $NbMedics] = $this->getMedics($doctrine, $data);
@@ -69,8 +69,8 @@ final class GestionProduitsController extends AbstractController
     }
 
 
-    #[Route('/signal/{signalId}/ajout_produit/{codeCIS}', name: 'app_ajout_produit')]
-    public function ajout_produits(int $signalId, string $codeCIS, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine): Response
+    #[Route('/signal/{signalId}/ajout_produit/{codeCIS}', name: 'app_ajout_produit', defaults: ['codeCIS' => null])]
+    public function ajout_produits(int $signalId, ?string $codeCIS = null, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine): Response
     {
         $signal = $signalRepo->find($signalId);
 
@@ -78,53 +78,59 @@ final class GestionProduitsController extends AbstractController
         if (!$signal || $signal->getStatutCreation() !== Signal::STATUS_DRAFT) {
             // ... lancer une erreur 404 ou rediriger
         }
+        if ($codeCIS) {
+            // Traitement si codeCIS est fourni
+            $vuUtil = $doctrine
+                ->getRepository(VUUtil::class, 'codex')
+                ->findByCodeCIS($codeCIS);
+            [$DCI, $dosage] = $doctrine
+                ->getRepository(SAVU::class, 'codex')
+                ->findByCodeCIS_DCI_Dosage($codeCIS);
+            $voieAdmin = $doctrine
+                ->getRepository(SAVU::class, 'codex')
+                ->findByCodeCIS_VoieAdmin($codeCIS);
 
-        $vuUtil = $doctrine
-                    ->getRepository(VUUtil::class, 'codex')
-                    ->findByCodeCIS($codeCIS);
-        [$DCI, $dosage] = $doctrine
-                    ->getRepository(SAVU::class, 'codex')
-                    ->findByCodeCIS_DCI_Dosage($codeCIS);
-        $voieAdmin = $doctrine
-                    ->getRepository(SAVU::class, 'codex')
-                    ->findByCodeCIS_VoieAdmin($codeCIS);
+            // dump($vuUtil[0]);
+            // dump($DCI);
+            $produit = new Produits();
+            $produit->setSignalLie($signal);
+            $produit->setDenomination($vuUtil[0]->getNomVU());
+            $produit->setDosage($dosage);
+            $produit->setDci($DCI);
+            $produit->setVoie($voieAdmin);
+            $produit->setCodeATC($vuUtil[0]->getDboClasseATCLibAbr());
+            $produit->setLibATC($vuUtil[0]->getDboClasseATCLibCourt());
+            $produit->setTypeProcedure($vuUtil[0]->getDboAutorisationLibAbr());
+            $produit->setCodeCIS($vuUtil[0]->getCodeCIS());
+            $produit->setCodeVU($vuUtil[0]->getCodeVU());
+            $produit->setCodeDossier(trim($vuUtil[0]->getCodeDossier()));
+            $produit->setNomVU($vuUtil[0]->getNomVU());
+            // Titulaire
+            $produit->setIdTitulaire(trim($vuUtil[0]->getCodeContact()));
+            $produit->setTitulaire($vuUtil[0]->getNomContactLibra());
+            $produit->setAdresseContact($vuUtil[0]->getAdresseContact());
+            $produit->setAdresseCompl($vuUtil[0]->getAdresseCompl());
+            $produit->setCodePost($vuUtil[0]->getCodePost());
+            $produit->setNomVille($vuUtil[0]->getNomVille());
+            $produit->setTelContact($vuUtil[0]->getTelContact());
+            $produit->setFaxContact($vuUtil[0]->getFaxContact());
+            $produit->setDboPaysLibAbr($vuUtil[0]->getDboPaysLibAbr());
 
-        // dump($vuUtil[0]);
-        // dump($DCI);
-        $produit = new Produits();
-        $produit->setSignalLie($signal);
-        $produit->setDenomination($vuUtil[0]->getNomVU());
-        $produit->setDosage($dosage);
-        $produit->setDci($DCI);
-        $produit->setVoie($voieAdmin);
-        $produit->setCodeATC($vuUtil[0]->getDboClasseATCLibAbr());
-        $produit->setLibATC($vuUtil[0]->getDboClasseATCLibCourt());
-        $produit->setTypeProcedure($vuUtil[0]->getDboAutorisationLibAbr());
-        $produit->setCodeCIS($vuUtil[0]->getCodeCIS());
-        $produit->setCodeVU($vuUtil[0]->getCodeVU());
-        $produit->setCodeDossier(trim($vuUtil[0]->getCodeDossier()));
-        $produit->setNomVU($vuUtil[0]->getNomVU());
-        // Titulaire
-        $produit->setIdTitulaire(trim($vuUtil[0]->getCodeContact()));
-        $produit->setTitulaire($vuUtil[0]->getNomContactLibra());
-        $produit->setAdresseContact($vuUtil[0]->getAdresseContact());
-        $produit->setAdresseCompl($vuUtil[0]->getAdresseCompl());
-        $produit->setCodePost($vuUtil[0]->getCodePost());
-        $produit->setNomVille($vuUtil[0]->getNomVille());
-        $produit->setTelContact($vuUtil[0]->getTelContact());
-        $produit->setFaxContact($vuUtil[0]->getFaxContact());
-        $produit->setDboPaysLibAbr($vuUtil[0]->getDboPaysLibAbr());
+            // Laboratoire
+            $produit->setIdLaboratoire(trim($vuUtil[0]->getCodeActeur()));
+            $produit->setLaboratoire($vuUtil[0]->getNomActeurLong());
+            $produit->setAdresse($vuUtil[0]->getAdresse());
+            $produit->setAdresseComplExpl($vuUtil[0]->getAdresseComplExpl());
+            $produit->setCodePostExpl($vuUtil[0]->getCodePostExpl());
+            $produit->setNomVilleExpl($vuUtil[0]->getNomVilleExpl());
 
-        // Laboratoire
-        $produit->setIdLaboratoire(trim($vuUtil[0]->getCodeActeur()));
-        $produit->setLaboratoire($vuUtil[0]->getNomActeurLong());
-        $produit->setAdresse($vuUtil[0]->getAdresse());
-        $produit->setAdresseComplExpl($vuUtil[0]->getAdresseComplExpl());
-        $produit->setCodePostExpl($vuUtil[0]->getCodePostExpl());
-        $produit->setNomVilleExpl($vuUtil[0]->getNomVilleExpl());
-
-        $produit->setStatutActifSpecialite($vuUtil[0]->getDboStatutSpeciLibAbr());
-        // dd($produit);
+            $produit->setStatutActifSpecialite($vuUtil[0]->getDboStatutSpeciLibAbr());
+            // dd($produit);
+        } else {
+            // Traitement si codeCIS n'est pas fourni
+            $produit = new Produits();
+            $produit->setSignalLie($signal);
+        }
 
 
         $form = $this->createForm(ProduitsType::class, $produit);
@@ -134,18 +140,24 @@ final class GestionProduitsController extends AbstractController
             $data = $form->getData();
             if ($form->get('validation')->isClicked()) {
                 if ($form->isValid()) {
-                    
+
                     $data = $form->getData();
                     // dd($data);
-                    [$medics, $NbMedics] = $this->getMedics($doctrine, $data);
+                    // [$medics, $NbMedics] = $this->getMedics($doctrine, $data);
                     // dd([$medics, $NbMedics]);
+                    $em = $doctrine->getManager();
+                    $em->persist($produit);
+                    $em->flush();
+                    // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
                 }
             }
             // if ($form->get('reset')->isClicked()) {
             //     return $this->redirectToRoute('app_creation_produits', ['signalId' => $signalId]);
             // }
             if ($form->get('annulation')->isClicked()) {
-                return $this->redirectToRoute('app_signal_new', ['signalId' => $signalId]);
+                // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
             }
         }
 
@@ -210,5 +222,4 @@ final class GestionProduitsController extends AbstractController
         $NbMedics = count($medics);
         return [$medics, $NbMedics];
     }
-
 }

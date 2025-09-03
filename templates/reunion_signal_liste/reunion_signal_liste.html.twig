@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des réunions signal{% endblock %}
+
+{% block body %}
+
+<div class="container-md">
+    {% if reunionsSignal is not empty %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date de Réunion</th>
+                    <th>Jour</th>
+                    <th>Réunion annulée</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reunionSignal in reunionsSignal %}
+                    <tr>
+                        <td>
+                            {# <a href="{{ path('app_signal_modif', {'signalId': signal.id}) }}"> #}
+                                {{ reunionSignal.id }}
+                            {# </a> #}
+                        </td>
+
+                        <td>
+                            {% if reunionSignal.DateReunion != null %}
+                                {{ reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reunionSignal.DateReunion != null %}
+                                {{ reunionSignal.DateReunion|format_datetime(pattern: "EEEE", timeFormat='none', locale='fr') }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reunionSignal.ReunionAnnulee == true %}
+                                Oui
+                            {% else %}
+                                Non
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun signal trouvé.</p>
+    {% endif %}
+</div>
+{% endblock %}

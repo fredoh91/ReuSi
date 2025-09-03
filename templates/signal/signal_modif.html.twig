@@ -1,0 +1,255 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Signal
+{% endblock %}
+
+{% block body %}
+
+
+	{# Affichage des messages flash #}
+	{% for type, messages in app.flashes %}
+		{% for message in messages %}
+			{% if type == 'error' %}
+				<div class="alert alert-danger">{{ message }}</div>
+			{% elseif type == 'success' %}
+				<div class="alert alert-success">{{ message }}</div>
+			{% elseif type == 'warning' %}
+				<div class="alert alert-warning">{{ message }}</div>
+			{% else %}
+				<div class="alert alert-info">{{ message }}</div>
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
+<div class="display-4 text-center mt-3 mb-3">Modification du signal</div>
+<div class="container-md">
+    {{ form_start(form) }}
+
+    <div class="row g-3">
+        <!-- Card Signal -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi"></i> Signal
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    {# Titre #}
+                    <div class="row">
+                        <div class="col-12">
+                            {{ form_label(form.Titre, 'Titre') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            {{ form_widget(form.Titre) }}
+                        </div>
+                    </div>
+
+                    {# Description, Indication et contexte #}
+                    <div class="row">
+                        <div class="col-4">
+                            {{ form_label(form.Indication, 'Indication') }}
+                        </div>
+                        <div class="col-4">
+                            {{ form_label(form.DescriptionSignal, 'Description du signal') }}
+                        </div>
+                        <div class="col-4">
+                            {{ form_label(form.Contexte, 'Contexte') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            {{ form_widget(form.Indication) }}
+                        </div>
+                        <div class="col-4">
+                            {{ form_widget(form.DescriptionSignal) }}
+                        </div>
+                        <div class="col-4">
+                            {{ form_widget(form.Contexte) }}
+                        </div>
+                    </div>
+
+                    {# Niveaux de risque #}
+                    <div class="row">
+                        <div class="col-2">
+                            {{ form_label(form.NiveauRisqueInitial, 'Niveau de risque initial') }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_label(form.NiveauRisqueFinal, 'Niveau de risque final') }}
+                        </div>
+                        <div class="col-8">
+                            {{ form_label(form.AnaRisqueComment, "Commentaire de l'analyse de risque") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">
+                            {{ form_widget(form.NiveauRisqueInitial) }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_widget(form.NiveauRisqueFinal) }}
+                        </div>
+                        <div class="col-8">
+                            {{ form_widget(form.AnaRisqueComment) }}
+                        </div>
+                    </div>
+
+                    {# Source du signal #}
+                    <div class="row">
+                        <div class="col-2">
+                            {{ form_label(form.SourceSignal, 'Source du signal') }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_label(form.RefSignal, 'Référence du signal') }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_label(form.IdentifiantSource, 'Identifiant source') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">
+                            {{ form_widget(form.SourceSignal) }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_widget(form.RefSignal) }}
+                        </div>
+                        <div class="col-2">
+                            {{ form_widget(form.IdentifiantSource) }}
+                        </div>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="row">
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.validation) }}
+                        </div>
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.annulation) }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <!-- Card Produit -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi"></i> Produits
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    {% if lstProduits is not empty %}
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Dénomination</th>
+                                    <th>DCI</th>
+                                    <th>Dosage</th>
+                                    <th>Voie</th>
+                                    <th>Type procédure</th>
+                                    <th>Code CIS</th>
+                                    <th>Code ATC</th>
+                                    <th>Libellé ATC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produit in lstProduits %}
+                                    <tr>
+                                        <td>{{ produit.id }}</td>
+                                        <td>{{ produit.Denomination }}</td>
+                                        <td>{{ produit.DCI }}</td>
+                                        <td>{{ produit.Dosage }}</td>
+                                        <td>{{ produit.Voie }}</td>
+                                        <td>{{ produit.TypeProcedure }}</td>
+                                        <td>{{ produit.CodeCIS }}</td>
+                                        <td>{{ produit.CodeATC }}</td>
+                                        <td>{{ produit.LibATC }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Aucun produit associé.</p>
+                    {% endif %}
+
+                    {# Boutons Produits #}
+
+                    <div class="row">
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.ajout_produit) }}
+                        </div>
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.ajout_produit_saisie_manu) }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Card relevé de décision -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi"></i> Relevé de décision
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    {% if lstRDD is not empty %}
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Numéro RDD</th>
+                                    <th>Date réunion</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rdd in lstRDD %}
+                                    <tr>
+                                        <td>{{ rdd.id }}</td>
+                                        <td>{{ rdd.reunionSignal and rdd.reunionSignal.dateReunion ? rdd.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
+                                        <td>{{ rdd.DescriptionRDD }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Aucun relevé de décision associé.</p>
+                    {% endif %}
+
+                    {# Boutons relevé de décision #}
+
+                    <div class="row">
+                        <div class="col-12 d-flex justify-content-center">
+                            {{ form_widget(form.ajout_RDD) }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        
+
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

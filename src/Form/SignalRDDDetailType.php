@@ -62,6 +62,11 @@ class SignalRDDDetailType extends AbstractType
                 'label' => 'Ajout produit(s)',
                 'row_attr' => ['id' => 'ajout_produit'],
             ])
+            ->add('ajout_produit_saisie_manu', SubmitType::class, [
+                'attr' => ['class' => 'btn btn-primary m-2'],
+                'label' => 'Ajout produit(s) manuellement',
+                'row_attr' => ['id' => 'ajout_produit_saisie_manu'],
+            ])
             ->add('reset', SubmitType::class, [
                 'attr' => ['class' => 'btn btn-primary m-2'],
                 'label' => 'Annulation',

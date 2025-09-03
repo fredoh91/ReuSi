@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des signaux{% endblock %}
+
+{% block body %}
+
+<div class="container-md">
+    {% if signals is not empty %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Créé le</th>
+                    <th>Modifié le</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for signal in signals %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('app_signal_modif', {'signalId': signal.id}) }}">
+                                {{ signal.id }}
+                            </a>
+                        </td>
+                        <td>{{ signal.titre }}</td>
+                        <td>{{ signal.DescriptionSignal }}</td>
+                        <td>
+                            {% if signal.createdAt != null %}
+                                {{ signal.createdAt|format_datetime(dateFormat='short', timeFormat='short', locale='fr') }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if signal.updatedAt != null %}
+                                {{ signal.updatedAt|format_datetime(dateFormat='short', timeFormat='short', locale='fr') }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun signal trouvé.</p>
+    {% endif %}
+</div>
+{% endblock %}

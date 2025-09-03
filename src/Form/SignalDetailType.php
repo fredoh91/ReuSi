@@ -44,6 +44,16 @@ class SignalDetailType extends AbstractType
             //     'label' => 'Annulation',
             //     'row_attr' => ['id' => 'reset'],
             // ])
+            ->add('validation', SubmitType::class, [
+                'attr' => ['class' => 'btn btn-primary m-2'],
+                'label' => 'Validation',
+                'row_attr' => ['id' => 'validation'],
+            ])
+            ->add('annulation', SubmitType::class, [
+                'attr' => ['class' => 'btn btn-primary m-2'],
+                'label' => 'Annulation',
+                'row_attr' => ['id' => 'annulation'],
+            ])
         ;
     }
 
