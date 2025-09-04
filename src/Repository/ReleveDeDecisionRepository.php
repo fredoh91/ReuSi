@@ -16,6 +16,30 @@ class ReleveDeDecisionRepository extends ServiceEntityRepository
         parent::__construct($registry, ReleveDeDecision::class);
     }
 
+
+    /**
+     * Retourne le prochain numéro de RDD pour un signal donné
+     *
+     * @param integer $signalId
+     * @return integer
+     */
+    public function donneNextNumeroRDD(int $signalId): int
+    {
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery(
+            'SELECT MAX(r.NumeroRDD) 
+            FROM App\Entity\ReleveDeDecision r
+            WHERE r.SignalLie = :signalId'
+        )->setParameter('signalId', $signalId);
+
+        $maxNumero = $query->getSingleScalarResult();
+
+        return $maxNumero !== null ? $maxNumero + 1 : 1;
+    }
+
+
+    
     //    /**
     //     * @return ReleveDeDecision[] Returns an array of ReleveDeDecision objects
     //     */

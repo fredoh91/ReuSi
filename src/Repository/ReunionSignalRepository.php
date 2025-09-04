@@ -35,6 +35,39 @@ class ReunionSignalRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+
+    /**
+     * Retourne la liste des "réunions signal" qui ne sont pas annulés et qui ne sont pas liées à un signal donné.
+     *
+     * @param integer $signalId
+     * @param integer $days - Nombre de jours à considérer, au dela de ce nombre de jour les réunions ne sont pas retournées.
+     * @return array array<ReunionSignal>
+     */
+    public function findReunionsNotCancelledAndNotLinkedToSignal(int $signalId, int $days = 100, string $sensTri = 'ASC'): array
+    {
+        $dateLimit = new \DateTime(sprintf('-%d days', $days));
+
+        $qb = $this->createQueryBuilder('r')
+            ->andWhere('r.DateReunion > :dateLimit')
+            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->orderBy('r.DateReunion', $sensTri)
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('annulee', 0);
+
+        // Exclure les réunions déjà liées à un RDD du signal
+        $qb->andWhere('r.id NOT IN (
+            SELECT IDENTITY(rdd.reunionSignal)
+            FROM App\Entity\ReleveDeDecision rdd
+            WHERE rdd.SignalLie = :signalId
+        )')
+        ->setParameter('signalId', $signalId);
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+
     //    /**
     //     * @return ReunionSignal[] Returns an array of ReunionSignal objects
     //     */

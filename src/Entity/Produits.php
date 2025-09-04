@@ -116,6 +116,18 @@ class Produits
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $StatutActifSpecialite = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $UserCreate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $UserModif = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $CreatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $UpdatedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -525,6 +537,54 @@ class Produits
     public function setStatutActifSpecialite(?string $StatutActifSpecialite): static
     {
         $this->StatutActifSpecialite = $StatutActifSpecialite;
+
+        return $this;
+    }
+
+    public function getUserCreate(): ?string
+    {
+        return $this->UserCreate;
+    }
+
+    public function setUserCreate(?string $UserCreate): static
+    {
+        $this->UserCreate = $UserCreate;
+
+        return $this;
+    }
+
+    public function getUserModif(): ?string
+    {
+        return $this->UserModif;
+    }
+
+    public function setUserModif(?string $UserModif): static
+    {
+        $this->UserModif = $UserModif;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->CreatedAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $CreatedAt): static
+    {
+        $this->CreatedAt = $CreatedAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->UpdatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $UpdatedAt): static
+    {
+        $this->UpdatedAt = $UpdatedAt;
 
         return $this;
     }

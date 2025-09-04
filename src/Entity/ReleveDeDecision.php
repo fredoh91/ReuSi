@@ -14,7 +14,7 @@ class ReleveDeDecision
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column]
     private ?int $NumeroRDD = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

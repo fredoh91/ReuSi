@@ -74,10 +74,19 @@ final class GestionProduitsController extends AbstractController
     {
         $signal = $signalRepo->find($signalId);
 
-        // Gérer le cas où le signal n'existe pas ou n'est pas un brouillon
-        if (!$signal || $signal->getStatutCreation() !== Signal::STATUS_DRAFT) {
-            // ... lancer une erreur 404 ou rediriger
+        // Gérer le cas où le signal n'existe pas
+        if (!$signal) {
+            throw $this->createNotFoundException('Ce signal n\'existe pas');
         }
+
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
         if ($codeCIS) {
             // Traitement si codeCIS est fourni
             $vuUtil = $doctrine
@@ -131,6 +140,12 @@ final class GestionProduitsController extends AbstractController
             $produit = new Produits();
             $produit->setSignalLie($signal);
         }
+
+
+        $produit->setCreatedAt(new \DateTimeImmutable());
+        $produit->setUpdatedAt(new \DateTimeImmutable());
+        $produit->setUserCreate($userName);
+        $produit->setUserModif($userName);
 
 
         $form = $this->createForm(ProduitsType::class, $produit);
