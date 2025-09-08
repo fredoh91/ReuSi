@@ -114,6 +114,8 @@ final class GestionProduitsController extends AbstractController
             $produit->setCodeVU($vuUtil[0]->getCodeVU());
             $produit->setCodeDossier(trim($vuUtil[0]->getCodeDossier()));
             $produit->setNomVU($vuUtil[0]->getNomVU());
+            $produit->setNomProduit($vuUtil[0]->getNomProduit());
+            
             // Titulaire
             $produit->setIdTitulaire(trim($vuUtil[0]->getCodeContact()));
             $produit->setTitulaire($vuUtil[0]->getNomContactLibra());

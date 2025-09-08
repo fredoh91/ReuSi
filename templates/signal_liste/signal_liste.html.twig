@@ -4,7 +4,21 @@
 
 {% block body %}
 
-<div class="container-md">
+<div class="container-fluid m-20">
+    {# Affichage des messages flash #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            {% if type == 'error' %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% elseif type == 'success' %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elseif type == 'warning' %}
+                <div class="alert alert-warning">{{ message }}</div>
+            {% else %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
     {% if signals is not empty %}
         <table class="table">
             <thead>
@@ -14,6 +28,8 @@
                     <th>Description</th>
                     <th>Créé le</th>
                     <th>Modifié le</th>
+                    <th>Statut</th>
+                    <th>Relevé de décision</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,7 +41,10 @@
                             </a>
                         </td>
                         <td>{{ signal.titre }}</td>
-                        <td>{{ signal.DescriptionSignal }}</td>
+                        <td>
+                            {# {{ signal.DescriptionSignal }} #}
+                            {{ signal.DescriptionSignal|slice(0, 500) }}{% if signal.DescriptionSignal|length > 500 %}...{% endif %}
+                            </td>
                         <td>
                             {% if signal.createdAt != null %}
                                 {{ signal.createdAt|format_datetime(dateFormat='short', timeFormat='short', locale='fr') }}
@@ -40,12 +59,41 @@
                                 ---
                             {% endif %}
                         </td>
+                        <td>{{ signal.StatutCreation }}</td>
+                        <td>
+                            {% if signal.getReleveDeDecision() is not empty %}
+                                {% for rdd in signal.getReleveDeDecision() %}
+                                    {% if rdd.DescriptionRDD is not empty %}
+                                        <ul>
+                                            <li>
+                                                {{ rdd.NumeroRDD }} - 
+                                                {{ rdd.getReunionSignal().DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') }} - 
+                                                {# {{ rdd.DescriptionRDD }} #}
+                                                {{ rdd.DescriptionRDD|slice(0, 300) }}{% if rdd.DescriptionRDD|length > 300 %}...{% endif %}
+                                            </li>
+                                        </ul>
+                                    {% else %}
+                                        <ul>
+                                            <li>
+                                                {{ rdd.NumeroRDD }} - 
+                                                {{ rdd.getReunionSignal().DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') }} - 
+                                                Pas de description
+                                            </li>
+                                        </ul>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Pas de relevé de décision
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>Aucun signal trouvé.</p>
+        <div class="alert alert-danger mt-3">
+            Aucun signal trouvé.
+        </div>
     {% endif %}
 </div>
 {% endblock %}

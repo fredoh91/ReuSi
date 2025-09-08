@@ -128,6 +128,9 @@ class Produits
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nomProduit = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -585,6 +588,18 @@ class Produits
     public function setUpdatedAt(?\DateTimeImmutable $UpdatedAt): static
     {
         $this->UpdatedAt = $UpdatedAt;
+
+        return $this;
+    }
+
+    public function getNomProduit(): ?string
+    {
+        return $this->nomProduit;
+    }
+
+    public function setNomProduit(?string $nomProduit): static
+    {
+        $this->nomProduit = $nomProduit;
 
         return $this;
     }

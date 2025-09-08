@@ -221,7 +221,7 @@
                             <tbody>
                                 {% for rdd in lstRDD %}
                                     <tr>
-                                        <td>{{ rdd.id }}</td>
+                                        <td>{{ rdd.NumeroRDD }}</td>
                                         <td>{{ rdd.reunionSignal and rdd.reunionSignal.dateReunion ? rdd.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
                                         <td>{{ rdd.DescriptionRDD }}</td>
                                     </tr>

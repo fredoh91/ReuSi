@@ -99,7 +99,9 @@ final class GestionRelevesDeDecisionController extends AbstractController
                         ]);
                     } else {
                         $RDD->setReunionSignal($reunionSelectionnee);
+                        $signal->addReunionSignal($reunionSelectionnee); // Met à jour la relation ManyToMany dans l'entité Signal
                         $em->persist($RDD);
+                        $em->persist($signal);
                         $em->flush();
 
                         $this->addFlash('success', 'Le relevé de décision pour la date ' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ' a bien été créé');

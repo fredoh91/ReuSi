@@ -76,7 +76,7 @@
 									{{ form_label(form.CodeCIS) }}
 								</div>
 								<div class="col-2">
-									{# {{ form_label(form.TypeProcedure) }} #}
+									{{ form_label(form.nomProduit) }}
 								</div>
 							</div>
 							<div class="row">
@@ -90,7 +90,7 @@
 									{{ form_widget(form.CodeCIS) }}
 								</div>
 								<div class="col-2">
-									{# {{ form_widget(form.TypeProcedure) }} #}
+									{{ form_widget(form.nomProduit) }}
 								</div>
 							</div>
                         </div>
@@ -277,15 +277,20 @@
 
 				<div class="row justify-content-center mt-3">
 
-					<div class="col-4 d-flex justify-content-center">
+					<div class="col-3 d-flex justify-content-center">
 							{{ form_widget(form.validation) }}
 					</div>
-					<div class="col-4 d-flex justify-content-center">
+					<div class="col-3 d-flex justify-content-center">
 							{{ form_widget(form.annulation) }}
 					</div>
-					<div class="col-4 d-flex justify-content-center">
+					<div class="col-3 d-flex justify-content-center">
 						<button type="button" id="BtnFormatDCI" class="btn btn-primary m-1">
-							Formatage du produit de type DCI
+							Formatage du produit de type "DCI"
+						</button>							
+					</div>
+					<div class="col-3 d-flex justify-content-center">
+						<button type="button" id="BtnFormatProduit" class="btn btn-primary m-1">
+							Formatage du produit de type "produit"
 						</button>							
 					</div>
 				</div>

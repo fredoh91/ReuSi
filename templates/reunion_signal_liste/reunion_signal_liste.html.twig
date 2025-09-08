@@ -13,6 +13,7 @@
                     <th>Date de Réunion</th>
                     <th>Jour</th>
                     <th>Réunion annulée</th>
+                    <th>Signaux</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,13 +46,49 @@
                                 Non
                             {% endif %}
                         </td>
+                        <td>
+                            {# <a href="{{ path('app_signal_modif', {'signalId': signal.id}) }}"> #}
+                                {% if reunionSignal.getSignalLie() is not empty %}
+                                    <ul>
+                                        {% for signal in reunionSignal.getSignalLie() %}
+                                            <li>
+                                                {{ signal.titre }} <BR>
+                                                <div>
+                                                    <strong>Description du signal :</strong>
+                                                    {{ signal.DescriptionSignal|slice(0, 100) }}{% if signal.DescriptionSignal|length > 100 %}...{% endif %}
+                                                </div>
+                                                
+
+                                                {% set rddTrouve = null %}
+                                                {% for rdd in reunionSignal.getReleveDeDecision() %}
+                                                    {% if rdd.SignalLie == signal %}
+                                                        {% set rddTrouve = rdd %}
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                {% if rddTrouve %}
+                                                    <div>
+                                                        <strong>Description du relevé de décision :</strong>
+                                                        {{ rddTrouve.DescriptionRDD|slice(0, 100) }}{% if rddTrouve.DescriptionRDD|length > 100 %}...{% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    Pas de signaux
+                                {% endif %}
+                            {# </a> #}
+                        </td>
 
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>Aucun signal trouvé.</p>
+        <div class="alert alert-danger mt-3">
+            Aucun signal trouvé.
+        </div>
     {% endif %}
 </div>
 {% endblock %}

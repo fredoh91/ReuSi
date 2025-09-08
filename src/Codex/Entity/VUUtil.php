@@ -122,6 +122,9 @@ class VUUtil
     #[ORM\Column(length: 8, nullable: true)]
     private ?string $codeVUPrinceps = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nomProduit = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -519,6 +522,18 @@ class VUUtil
     public function setCodeVUPrinceps(?string $codeVUPrinceps): static
     {
         $this->codeVUPrinceps = $codeVUPrinceps;
+
+        return $this;
+    }
+
+    public function getNomProduit(): ?string
+    {
+        return $this->nomProduit;
+    }
+
+    public function setNomProduit(?string $nomProduit): static
+    {
+        $this->nomProduit = $nomProduit;
 
         return $this;
     }
