@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ReleveDeDecisionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -37,6 +39,26 @@ class ReleveDeDecision
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $PassageCTP = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $PassageRSS = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $EmetteurSuivi = null;
+
+    /**
+     * @var Collection<int, MesuresRDD>
+     */
+    #[ORM\OneToMany(targetEntity: MesuresRDD::class, mappedBy: 'RddLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $mesuresRDDs;
+
+    public function __construct()
+    {
+        $this->mesuresRDDs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -135,6 +157,72 @@ class ReleveDeDecision
     public function setUpdatedAt(?\DateTimeImmutable $UpdatedAt): static
     {
         $this->UpdatedAt = $UpdatedAt;
+
+        return $this;
+    }
+
+    public function getPassageCTP(): ?string
+    {
+        return $this->PassageCTP;
+    }
+
+    public function setPassageCTP(?string $PassageCTP): static
+    {
+        $this->PassageCTP = $PassageCTP;
+
+        return $this;
+    }
+
+    public function getPassageRSS(): ?string
+    {
+        return $this->PassageRSS;
+    }
+
+    public function setPassageRSS(?string $PassageRSS): static
+    {
+        $this->PassageRSS = $PassageRSS;
+
+        return $this;
+    }
+
+    public function getEmetteurSuivi(): ?string
+    {
+        return $this->EmetteurSuivi;
+    }
+
+    public function setEmetteurSuivi(?string $EmetteurSuivi): static
+    {
+        $this->EmetteurSuivi = $EmetteurSuivi;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MesuresRDD>
+     */
+    public function getMesuresRDDs(): Collection
+    {
+        return $this->mesuresRDDs;
+    }
+
+    public function addMesuresRDD(MesuresRDD $mesuresRDD): static
+    {
+        if (!$this->mesuresRDDs->contains($mesuresRDD)) {
+            $this->mesuresRDDs->add($mesuresRDD);
+            $mesuresRDD->setRddLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMesuresRDD(MesuresRDD $mesuresRDD): static
+    {
+        if ($this->mesuresRDDs->removeElement($mesuresRDD)) {
+            // set the owning side to null (unless already changed)
+            if ($mesuresRDD->getRddLie() === $this) {
+                $mesuresRDD->setRddLie(null);
+            }
+        }
 
         return $this;
     }

@@ -172,7 +172,16 @@
                                         <td>{{ produit.Dosage }}</td>
                                         <td>{{ produit.Voie }}</td>
                                         <td>{{ produit.TypeProcedure }}</td>
-                                        <td>{{ produit.CodeCIS }}</td>
+                                        <td>
+                                        {# http://newintranet.ansm-intra.fr/Applis/iMono/prod/ms.php?codeCIS={{ produit.CodeCIS }} - Monographie de la spécialité #}
+                                        {# https://agence-prd.ansm.sante.fr/php/ecodex/extrait.php?specid={{ produit.CodeCIS }} -  	Répertoire des Spécialités Pharmaceutiques #}
+                                        {# https://base-donnees-publique.medicaments.gouv.fr/medicament/{{ produit.CodeCIS }}/extrait - Base de Données Publiques des Médicaments #}
+                                            {% if produit.CodeCIS %}
+                                                <a href="http://newintranet.ansm-intra.fr/Applis/iMono/prod/ms.php?codeCIS={{ produit.CodeCIS }}" target="_blank" rel="noopener noreferrer">
+                                                    {{ produit.CodeCIS }}
+                                                </a>
+                                            {% endif %}
+                                        </td>
                                         <td>{{ produit.CodeATC }}</td>
                                         <td>{{ produit.LibATC }}</td>
                                     </tr>
@@ -221,7 +230,11 @@
                             <tbody>
                                 {% for rdd in lstRDD %}
                                     <tr>
-                                        <td>{{ rdd.NumeroRDD }}</td>
+                                        <td>
+                                            <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">
+                                                {{ rdd.NumeroRDD }}
+                                            </a>
+                                        </td>       {#  app_modif_RDD #}
                                         <td>{{ rdd.reunionSignal and rdd.reunionSignal.dateReunion ? rdd.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
                                         <td>{{ rdd.DescriptionRDD }}</td>
                                     </tr>

@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Form\RDDDetailType;
+use App\Entity\StatutSignal;
+use Psr\Log\LoggerInterface;
 use App\Entity\ReunionSignal;
 use App\Entity\ReleveDeDecision;
 use App\Repository\SignalRepository;
@@ -11,10 +13,20 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class GestionRelevesDeDecisionController extends AbstractController
 {
+    private $logger;
+    private $kernel;
+    
+    public function __construct(LoggerInterface $logger, KernelInterface $kernel)
+    {
+        $this->logger = $logger;
+        $this->kernel = $kernel;
+    }
+
     #[Route('/signal/{signalId}/creation_RDD', name: 'app_creation_RDD')]
     public function creation_RDD(
         int $signalId, 
@@ -67,8 +79,11 @@ final class GestionRelevesDeDecisionController extends AbstractController
         if ($form->isSubmitted()) {
             if ($form->get('annulation')->isClicked()) {
                 // Annulation
-                
-                dump('01 - bouton annulation');
+
+                if ($this->kernel->getEnvironment() === 'dev') {
+                    dump('creation RDD - 01 - bouton annulation');
+                    $this->logger->info('creation RDD - 01 - bouton annulation');
+                }
 
                 return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
             }
@@ -80,8 +95,10 @@ final class GestionRelevesDeDecisionController extends AbstractController
                 }
                 if ($form->isValid()) {
                     // Traitement de la validation
-                    dump('02 - bouton validation');
-
+                    if ($this->kernel->getEnvironment() === 'dev') {
+                        dump('creation RDD - 02 - bouton validation');
+                        $this->logger->info('creation RDD - 02 - bouton validation');
+                    }
                     // avant de faire le persist, on vérifie que la date de la réunion selectionnée n'est pas déjà liée à un autre RDD de ce signal
                     $reunionSelectionnee = $form->get('reunionSignal')->getData();
                     $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBy([
@@ -98,8 +115,38 @@ final class GestionRelevesDeDecisionController extends AbstractController
                             'form' => $form->createView(),
                         ]);
                     } else {
+                        
+                        
                         $RDD->setReunionSignal($reunionSelectionnee);
                         $signal->addReunionSignal($reunionSelectionnee); // Met à jour la relation ManyToMany dans l'entité Signal
+
+                        $StatutSignal_ancien = $em->getRepository(StatutSignal::class)->findOneBySomeIdAndActif($signalId);
+                        if ($StatutSignal_ancien) {
+                            // On désactive l'ancien statut
+                            $StatutSignal_ancien->setStatutActif(false);
+                            $StatutSignal_ancien->setDateDesactivation(new \DateTimeImmutable());
+                            $em->persist($StatutSignal_ancien);
+
+                            // On crée le nouveau statut
+                            $StatutSignal_nouveau = new StatutSignal();
+                            $StatutSignal_nouveau->setLibStatut('en_cours');
+                            $StatutSignal_nouveau->setDateMiseEnPlace(new \DateTimeImmutable());
+                            $StatutSignal_nouveau->setStatutActif(true);
+                            $StatutSignal_nouveau->setSignalLie($signal);
+
+                            $em->persist($StatutSignal_nouveau);
+
+                            // On met à jour le signal avec le nouveau statut
+                            $signal->addStatutSignal($StatutSignal_nouveau);
+                        } else {
+                            $this->addFlash('error', 'Aucun statut actif trouvé pour ce signal. Veuillez vérifier les statuts du signal avant de créer un RDD.');
+                            return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
+                                'signalId' => $signalId,
+                                'autresRDDs' => $autresRDDs,
+                                'form' => $form->createView(),
+                            ]);
+                        }
+
                         $em->persist($RDD);
                         $em->persist($signal);
                         $em->flush();
@@ -111,15 +158,19 @@ final class GestionRelevesDeDecisionController extends AbstractController
 
                 } else {
                     // Formulaire invalide
-                    dump('03 - formulaire invalide');
+                    if ($this->kernel->getEnvironment() === 'dev') {
+                        dump('creation RDD - 03 - formulaire invalide');
+                        $this->logger->info('creation RDD - 03 - formulaire invalide');
+                    }
                 }
             }
         }
 
-        return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
+        return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
             'signalId' => $signalId,
             'autresRDDs' => $autresRDDs,
             'form' => $form->createView(),
+            'TypeModifCreation' => 'creation',
         ]);
     }
 
@@ -140,16 +191,140 @@ final class GestionRelevesDeDecisionController extends AbstractController
             throw $this->createNotFoundException('Le signal avec l\'id ' . $signalId . ' n\'existe pas.');
         }
 
+        $RDD = $em->getRepository(ReleveDeDecision::class)->find($rddId);
+
+        if (!$RDD) {
+            throw $this->createNotFoundException('Le relevé de décision avec l\'id ' . $rddId . ' n\'existe pas.');
+        }
+        
+
+        $lstMesures = $RDD->getMesuresRDDs();
+
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 100);
 
-        // On regarde les autres RDD de ce signal et on récupère le numéro max
+        // on ajoute l'entité réunion liée à ce RDD pour qu'elle puisse être sélectionnée dans le formulaire
+        // if ( $RDD->getReunionSignal()) {
+        //     $date_reunion[] = $RDD->getReunionSignal();
+        // }
+
+        $reunionActuelle = $RDD->getReunionSignal();
+        // On vérifie si une réunion est déjà liée à notre RDD
+        if ($reunionActuelle) {
+            // On parcourt la liste pour vérifier si elle y est déjà
+            $dejaDansLaListe = false;
+            foreach ($date_reunion as $reunion) {
+                // On compare les IDs pour être absolument certain
+                if ($reunion->getId() === $reunionActuelle->getId()) {
+                    $dejaDansLaListe = true;
+                    break;
+                }
+            }
+
+            // Si elle n'a pas été trouvée dans la liste, on l'ajoute
+            if (!$dejaDansLaListe) {
+                $date_reunion[] = $reunionActuelle;
+            }
+        }
+
+        $RDD->setUpdatedAt(new \DateTimeImmutable());
+        $RDD->setUserModif($userName);
+
+        $form = $this->createForm(RDDDetailType::class, $RDD, [
+            'reunions' => $date_reunion,
+        ]);
+
+        $autresRDDs = $em->getRepository(ReleveDeDecision::class)->findBy(['SignalLie' => $signal], ['NumeroRDD' => 'ASC']);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->get('annulation')->isClicked()) {
+
+                // Annulation
+                if ($this->kernel->getEnvironment() === 'dev') {
+                    dump('modif RDD - 01 - bouton annulation');
+                    $this->logger->info('modif RDD - 01 - bouton annulation');
+                }
+
+                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+            }
+            if ($form->get('validation')->isClicked()) {
+                if (!$form->get('reunionSignal')->getData()) {
+                    $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Ce champ est obligatoire.'));
+                    // affichage d'un message flash
+                    $this->addFlash('error', 'Veuillez sélectionner une date de réunion avant de valider le formulaire.');
+                }
+                if ($form->isValid()) {
+
+                    if ($this->kernel->getEnvironment() === 'dev') {
+                        dump('modif RDD - 02 - bouton validation');
+                        $this->logger->info('modif RDD - 02 - bouton validation');
+                    }
+
+                    // avant de faire le persist, on vérifie que la date de la réunion selectionnée n'est pas déjà liée à un autre RDD de ce signal
+                    $reunionSelectionnee = $form->get('reunionSignal')->getData();
+                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBy([
+                        'SignalLie' => $signal,
+                        'reunionSignal' => $reunionSelectionnee,
+                    ]);
+                    if ($rddExistante) {
+                        $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD de ce signal.'));
+                        // affichage d'un message flash
+                        $this->addFlash('error', 'Cette date de réunion (' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ') existe déjà pour un autre RDD de ce signal. Veuillez en choisir une autre date.');
+                        return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
+                            'signalId' => $signalId,
+                            'autresRDDs' => $autresRDDs,
+                            'form' => $form->createView(),
+                        ]);
+                    } else {
+
+                        $em->persist($RDD);
+                        // $em->persist($signal);
+                        $em->flush();
+
+                        $this->addFlash('success', 'Le relevé de décision pour la date ' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ' a bien été créé');
+                    }
+
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+
+                } else {
+
+                    // Formulaire invalide
+                    if ($this->kernel->getEnvironment() === 'dev') {
+                        dump('modif RDD - 03 - formulaire invalide');
+                        $this->logger->info('modif RDD - 03 - formulaire invalide');
+                    }
+                }
+            }
+            if ($form->get('ajout_mesure')->isClicked()) {
+                // Ajout d'une mesure
+
+                dump('04 - bouton ajout d\'une mesure');
+                return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signalId, 'rddId' => $rddId]);
+            }
+        }
 
 
 
 
-        return $this->render('gestion_releves_de_decision/RDD.html.twig', [
+
+
+        return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
             'signalId' => $signalId,
-            'date_reunion' => $date_reunion,
+            'autresRDDs' => $autresRDDs,
+            // 'date_reunion' => $date_reunion,
+            // 'rdd' => $RDD,
+            'form' => $form->createView(),
+            'TypeModifCreation' => 'modification',
+            'lstMesures' => $lstMesures,
         ]);
     }
 }

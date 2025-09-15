@@ -10,21 +10,39 @@
 // @import "~bootstrap-icons/font/bootstrap-icons.css";
 
 
-// --- Nouvelle méthode avec @use ---
-// On importe le module `sass:color` pour utiliser ses fonctions
-@use "sass:color";
+// // --- Nouvelle méthode avec @use ---
+// // On importe le module `sass:color` pour utiliser ses fonctions
+// @use "sass:color";
 
-// // On charge Bootstrap et on configure ses variables avec `with`
-// @use "~bootstrap/scss/bootstrap" with (
-//     $primary: color.adjust(#428bca, $lightness: -20%)
-// );
+// // Import Bootstrap first
+// @use "bootstrap/scss/bootstrap" as *;
+// @use '~tom-select/dist/scss/tom-select.bootstrap5';
 
-// Import Bootstrap first
-@use "bootstrap/scss/bootstrap" as *;
+// // Then override variables
+// $primary: color.adjust(#428bca, $lightness: -20%);
 
-// Then override variables
-$primary: color.adjust(#428bca, $lightness: -20%);
+// // Pour les fichiers CSS purs (comme la police d'icônes), @import reste la bonne méthode.
+// // @use est fait pour les modules Sass (.scss).
+// @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-// Pour les fichiers CSS purs (comme la police d'icônes), @import reste la bonne méthode.
-// @use est fait pour les modules Sass (.scss).
+// 1. Importez les fonctions et variables de Bootstrap avec @import.
+// C'est l'étape CRUCIALE qui rend les variables disponibles globalement
+// pour les autres fichiers qui seront importés ensuite.
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+// 2. Importez tom-select (qui n'est pas un module) avec @import.
+// Il va maintenant trouver les variables globales de Bootstrap.
+@import '~tom-select/dist/scss/tom-select.bootstrap5.scss';
+
+// 3. Importez le reste de Bootstrap.
+@import "~bootstrap/scss/bootstrap";
+
+// 4. Importez les icônes.
 @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+// 5. Vos styles personnalisés.
+body {
+    background-color: #f8f9fa;
+}

@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modification d'une mesure
+{% endblock %}
+
+{% block body %}
+
+	{# Affichage des messages flash #}
+	{% for type, messages in app.flashes %}
+		{% for message in messages %}
+			{% if type == 'error' %}
+				<div class="alert alert-danger">{{ message }}</div>
+			{% elseif type == 'success' %}
+				<div class="alert alert-success">{{ message }}</div>
+			{% elseif type == 'warning' %}
+				<div class="alert alert-warning">{{ message }}</div>
+			{% else %}
+				<div class="alert alert-info">{{ message }}</div>
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
+	<div class="container-md mt-4">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    {% if TypeModifCreation == 'modification' %}
+                        <h5 class="mb-0">Modification une mesure</h5>
+                    {% elseif TypeModifCreation == 'creation' %}
+                        <h5 class="mb-0">Création d'une mesure</h5>
+                    {% else %}
+                        <h5 class="mb-0">Création / Modification d'une mesure</h5>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+					{{ form_start(form) }}
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form_label(form.LibMesure, 'Libellé de la mesure') }}
+                            {{ form_widget(form.LibMesure) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form_label(form.DetailCommentaire, 'Détails/commentaires') }}
+                            {{ form_widget(form.DetailCommentaire) }}
+                        </div>
+                    </div>
+
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form_label(form.DateCloturePrev, 'Date de clôture prévisionnelle') }}
+                            {{ form_widget(form.DateCloturePrev) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.DateClotureEffective, 'Date de clôture effective') }}
+                            {{ form_widget(form.DateClotureEffective) }}
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.validation) }}
+                        </div>
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.annulation) }}
+                        </div>
+                    </div>
+					{{ form_end(form) }}
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

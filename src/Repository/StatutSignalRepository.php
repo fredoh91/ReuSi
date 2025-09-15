@@ -2,42 +2,34 @@
 
 namespace App\Repository;
 
-use App\Entity\Signal;
+use App\Entity\StatutSignal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Signal>
+ * @extends ServiceEntityRepository<StatutSignal>
  */
-class SignalRepository extends ServiceEntityRepository
+class StatutSignalRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Signal::class);
+        parent::__construct($registry, StatutSignal::class);
     }
 
-
-
-
-
-
-    /**
-     * @return Signal[] Returns an array of Signal objects
-     */
-    public function findByTypeSignal($TypeSignal): array
+    public function findOneBySomeIdAndActif($signalId): ?StatutSignal
     {
         return $this->createQueryBuilder('s')
-            ->andWhere('s.TypeSignal = :TypeSignal')
-            ->setParameter('TypeSignal', $TypeSignal)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('s.SignalLie = :signalId')
+            ->andWhere('s.StatutActif = :actif')
+            ->setParameter('signalId', $signalId)
+            ->setParameter('actif', true)
             ->getQuery()
-            ->getResult()
+            ->getOneOrNullResult()
         ;
     }
 
     //    /**
-    //     * @return Signal[] Returns an array of Signal objects
+    //     * @return StatutSignal[] Returns an array of StatutSignal objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -51,7 +43,7 @@ class SignalRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Signal
+    //    public function findOneBySomeField($value): ?StatutSignal
     //    {
     //        return $this->createQueryBuilder('s')
     //            ->andWhere('s.exampleField = :val')

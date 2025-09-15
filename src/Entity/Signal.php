@@ -13,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Signal
 {
 
-    public const STATUS_DRAFT = 'draft';
-    public const STATUS_COMPLETED = 'completed';
+    // public const STATUS_DRAFT = 'draft';
+    // public const STATUS_COMPLETED = 'completed';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -84,15 +84,45 @@ class Signal
     #[ORM\OneToMany(targetEntity: Produits::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $produits;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $StatutCreation = null;
+    // #[ORM\Column(length: 255, nullable: true)]
+    // private ?string $StatutCreation = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $TypeSignal = null;
+
+    /**
+     * @var Collection<int, StatutSignal>
+     */
+    #[ORM\OneToMany(targetEntity: StatutSignal::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $statutSignals;
+
+    /**
+     * @var Collection<int, MesuresRDD>
+     */
+    #[ORM\OneToMany(targetEntity: MesuresRDD::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $mesuresRDDs;
+
+    // #[ORM\Column(length: 255, nullable: true)]
+    // private ?string $TypeSignal = null;
 
     public function __construct()
     {
         $this->ReleveDeDecision = new ArrayCollection();
         $this->reunionSignals = new ArrayCollection();
         $this->produits = new ArrayCollection();
-        $this->StatutCreation = self::STATUS_DRAFT; // Par défaut, un signal est un brouillon
+        // $this->StatutCreation = self::STATUS_DRAFT; // Par défaut, un signal est un brouillon
+        $this->statutSignals = new ArrayCollection();
+
+        // Création automatique du StatutSignal "brouillon"
+        $statutSignal = new StatutSignal();
+        $statutSignal->setLibStatut('brouillon');
+        $statutSignal->setDateMiseEnPlace(new \DateTimeImmutable());
+        $statutSignal->setDateDesactivation(null);
+        $statutSignal->setStatutActif(true);
+        $statutSignal->setSignalLie($this);
+
+        $this->statutSignals->add($statutSignal);
+        $this->mesuresRDDs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -367,14 +397,98 @@ class Signal
         return $this;
     }
 
-    public function getStatutCreation(): ?string
+    // public function getStatutCreation(): ?string
+    // {
+    //     return $this->StatutCreation;
+    // }
+
+    // public function setStatutCreation(?string $StatutCreation): static
+    // {
+    //     $this->StatutCreation = $StatutCreation;
+
+    //     return $this;
+    // }
+
+    // public function getTypeSignal(): ?string
+    // {
+    //     return $this->TypeSignal;
+    // }
+
+    // public function setTypeSignal(?string $TypeSignal): static
+    // {
+    //     $this->TypeSignal = $TypeSignal;
+
+    //     return $this;
+    // }
+
+    public function getTypeSignal(): ?string
     {
-        return $this->StatutCreation;
+        return $this->TypeSignal;
     }
 
-    public function setStatutCreation(?string $StatutCreation): static
+    public function setTypeSignal(string $TypeSignal): static
     {
-        $this->StatutCreation = $StatutCreation;
+        $this->TypeSignal = $TypeSignal;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StatutSignal>
+     */
+    public function getStatutSignals(): Collection
+    {
+        return $this->statutSignals;
+    }
+
+    public function addStatutSignal(StatutSignal $statutSignal): static
+    {
+        if (!$this->statutSignals->contains($statutSignal)) {
+            $this->statutSignals->add($statutSignal);
+            $statutSignal->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStatutSignal(StatutSignal $statutSignal): static
+    {
+        if ($this->statutSignals->removeElement($statutSignal)) {
+            // set the owning side to null (unless already changed)
+            if ($statutSignal->getSignalLie() === $this) {
+                $statutSignal->setSignalLie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MesuresRDD>
+     */
+    public function getMesuresRDDs(): Collection
+    {
+        return $this->mesuresRDDs;
+    }
+
+    public function addMesuresRDD(MesuresRDD $mesuresRDD): static
+    {
+        if (!$this->mesuresRDDs->contains($mesuresRDD)) {
+            $this->mesuresRDDs->add($mesuresRDD);
+            $mesuresRDD->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMesuresRDD(MesuresRDD $mesuresRDD): static
+    {
+        if ($this->mesuresRDDs->removeElement($mesuresRDD)) {
+            // set the owning side to null (unless already changed)
+            if ($mesuresRDD->getSignalLie() === $this) {
+                $mesuresRDD->setSignalLie(null);
+            }
+        }
 
         return $this;
     }
