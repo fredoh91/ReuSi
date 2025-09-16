@@ -22,10 +22,11 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     .addEntry('app', './assets/app.js')
-
     .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
+    .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
+    .addStyleEntry('signal_css', './assets/styles/signal.scss')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

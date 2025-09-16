@@ -43,6 +43,7 @@
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
 // 5. Vos styles personnalisés.
-body {
-    background-color: #f8f9fa;
-}
+// body {
+//     background-color: #f8f9fa; // Ancien fond global, maintenant géré par signal.scss
+// }
+@import "signal";

@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\Signal;
+use App\Entity\ReunionSignal;
 use App\Entity\ReleveDeDecision;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<ReleveDeDecision>
@@ -36,6 +38,50 @@ class ReleveDeDecisionRepository extends ServiceEntityRepository
         $maxNumero = $query->getSingleScalarResult();
 
         return $maxNumero !== null ? $maxNumero + 1 : 1;
+    }
+
+
+    /**
+     * Trouve un RDD par signal et réunion, en excluant potentiellement un ID de RDD.
+     *
+     * @param Signal $signal
+     * @param ReunionSignal $reunion
+     * @param integer|null $excludedRddId L'ID du RDD à exclure de la recherche.
+     * @return ReleveDeDecision|null
+     */
+    public function findOneBySignalAndReunionExcludingRdd(Signal $signal, ReunionSignal $reunion, ?int $excludedRddId): ?ReleveDeDecision
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->andWhere('r.SignalLie = :signal')
+            ->andWhere('r.reunionSignal = :reunion')
+            ->setParameter('signal', $signal)
+            ->setParameter('reunion', $reunion);
+
+        if ($excludedRddId !== null) {
+            $qb->andWhere('r.id != :excludedRddId')
+               ->setParameter('excludedRddId', $excludedRddId);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Trouve le dernier RDD pour un signal donné, basé sur la date de la réunion.
+     *
+     * @param Signal $signal
+     * @return ReleveDeDecision|null
+     */
+    public function findLatestForSignal(Signal $signal): ?ReleveDeDecision
+    {
+        return $this->createQueryBuilder('rdd')
+            ->join('rdd.reunionSignal', 'rs')
+            ->where('rdd.SignalLie = :signal')
+            ->setParameter('signal', $signal)
+            ->orderBy('rs.DateReunion', 'DESC')
+            ->addOrderBy('rdd.id', 'DESC') // En cas de date identique, le plus récent ID prime
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
 

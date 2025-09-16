@@ -104,7 +104,7 @@ final class GestionMesuresController extends AbstractController
                     $em->persist($mesure);
                     $em->flush();
 
-                    $this->addFlash('success', 'La mesure a bien été créée.');
+                    $this->addFlash('success', 'La mesure ' . $mesure->getLibMesure() . ' a bien été créée.');
 
                     return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
 
@@ -236,6 +236,53 @@ final class GestionMesuresController extends AbstractController
             'signal' => $signal,
             'rdd' => $RDD,
             'TypeModifCreation' => 'modification',
+        ]);
+    }
+
+    #[Route('/mesure/{mesureId}/toggle_cloture', name: 'app_toggle_cloture_mesure')]
+    public function toggle_cloture_mesure(
+        int $mesureId,
+        MesuresRDDRepository $mesureRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $mesure = $mesureRepo->find($mesureId);
+
+        if (!$mesure) {
+            throw $this->createNotFoundException('La mesure avec l\'id ' . $mesureId . ' n\'existe pas.');
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+        $userName = $user->getUserName();
+
+        $now = new \DateTimeImmutable();
+        $mesure->setUpdatedAt($now);
+        $mesure->setUserModif($userName);
+
+        if ($mesure->getDesactivateAt()) {
+            // La mesure est clôturée, on la rouvre
+            $mesure->setDesactivateAt(null);
+            $mesure->setDateClotureEffective(null);
+            $this->addFlash('success', 'La mesure '. $mesure->getLibMesure() . ' a été rouverte.');
+        } else {
+            // La mesure est ouverte, on la clôture
+            $mesure->setDesactivateAt($now);
+            $dateReunion = $mesure->getRddLie()->getReunionSignal()->getDateReunion();
+            if ($dateReunion instanceof \DateTime) {
+                $mesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($dateReunion));
+            } else {
+                $mesure->setDateClotureEffective(null);
+            }
+            $this->addFlash('success', 'La mesure '. $mesure->getLibMesure() . ' a été clôturée.');
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('app_modif_RDD', [
+            'signalId' => $mesure->getSignalLie()->getId(),
+            'rddId' => $mesure->getRddLie()->getId(),
         ]);
     }
 }

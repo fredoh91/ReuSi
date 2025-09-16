@@ -1,0 +1,10 @@
+
+@use "_variables" as *;
+
+body.page-signal {
+    background-color: $Fond_signal;
+}
+
+body.page-fait-marquant {
+    background-color: $Fond_fait_marquant;
+}

@@ -60,6 +60,9 @@ final class GestionRelevesDeDecisionController extends AbstractController
         // On recupère aussi les autres RDD de ce signal pour les afficher dans la vue
         $autresRDDs = $em->getRepository(ReleveDeDecision::class)->findBy(['SignalLie' => $signal], ['NumeroRDD' => 'ASC']);
 
+        // On récupère le RDD le plus récent pour le passer à la vue
+        $latestRDD = $em->getRepository(ReleveDeDecision::class)->findLatestForSignal($signal);
+
         $RDD = new ReleveDeDecision();
         $RDD->setSignalLie($signal);
         $RDD->setNumeroRDD($nextNumeroRDD);
@@ -69,7 +72,32 @@ final class GestionRelevesDeDecisionController extends AbstractController
         $RDD->setUserCreate($userName);
         $RDD->setUserModif($userName);
 
-        // $em->persist($RDD);
+        $nouvellesMesures = [];
+
+        // On recupère toutes les anciennes mesures non-cloturées de ce pour les associer a ce nouveau RDD
+        $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
+            'SignalLie' => $signal,
+            'DesactivateAt' => null,
+        ]);
+
+        foreach ($mesuresNonCloturees as $mesure) {
+            // Au lieu de cloner, on crée une nouvelle instance pour éviter les problèmes d'ID avec Doctrine
+            $newMesure = new \App\Entity\MesuresRDD();
+            $newMesure->setLibMesure($mesure->getLibMesure());
+            $newMesure->setDetailCommentaire($mesure->getDetailCommentaire());
+            $newMesure->setDateCloturePrev($mesure->getDateCloturePrev());
+
+            $newMesure->setRddLie($RDD); // Associer la nouvelle mesure au nouveau RDD
+            $newMesure->setSignalLie($signal); // Associer la nouvelle mesure au signal
+
+            $newMesure->setCreatedAt(new \DateTimeImmutable());
+            $newMesure->setUpdatedAt(new \DateTimeImmutable());
+            $newMesure->setUserCreate($userName);
+            $newMesure->setUserModif($userName);
+
+            $nouvellesMesures[] = $newMesure;
+        }
+
 
         $form = $this->createForm(RDDDetailType::class, $RDD, [
             'reunions' => $date_reunion,
@@ -100,11 +128,7 @@ final class GestionRelevesDeDecisionController extends AbstractController
                         $this->logger->info('creation RDD - 02 - bouton validation');
                     }
                     // avant de faire le persist, on vérifie que la date de la réunion selectionnée n'est pas déjà liée à un autre RDD de ce signal
-                    $reunionSelectionnee = $form->get('reunionSignal')->getData();
-                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBy([
-                        'SignalLie' => $signal,
-                        'reunionSignal' => $reunionSelectionnee,
-                    ]);
+                    $reunionSelectionnee = $form->get('reunionSignal')->getData();                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBySignalAndReunionExcludingRdd($signal, $reunionSelectionnee, null);
                     if ($rddExistante) {
                         $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD de ce signal.'));
                         // affichage d'un message flash
@@ -147,6 +171,19 @@ final class GestionRelevesDeDecisionController extends AbstractController
                             ]);
                         }
 
+                        // On persiste les nouvelles mesures ici, uniquement en cas de validation ...
+                        foreach ($nouvellesMesures as $newMesure) {
+                            $em->persist($newMesure);
+                        }
+                        // ... et on clorure les anciennes mesures
+                        foreach ($mesuresNonCloturees as $ancienneMesure) {
+                            $ancienneMesure->setDesactivateAt(new \DateTimeImmutable());
+                            $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunionSelectionnee->getDateReunion()));
+                            $ancienneMesure->setUpdatedAt(new \DateTimeImmutable());
+                            $ancienneMesure->setUserModif($userName);
+                            $em->persist($ancienneMesure);
+                        }
+
                         $em->persist($RDD);
                         $em->persist($signal);
                         $em->flush();
@@ -168,9 +205,13 @@ final class GestionRelevesDeDecisionController extends AbstractController
 
         return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
             'signalId' => $signalId,
+            'signal' => $signal,
             'autresRDDs' => $autresRDDs,
             'form' => $form->createView(),
             'TypeModifCreation' => 'creation',
+            'lstMesures' => $nouvellesMesures, // On peut les passer à la vue pour un aperçu
+            'isLatestRdd' => true, // Un RDD en création est considéré comme le plus récent pour l'UI
+            'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
         ]);
     }
 
@@ -197,6 +238,10 @@ final class GestionRelevesDeDecisionController extends AbstractController
             throw $this->createNotFoundException('Le relevé de décision avec l\'id ' . $rddId . ' n\'existe pas.');
         }
         
+        // Déterminer si le RDD actuel est le plus récent pour ce signal
+        $latestRDD = $em->getRepository(ReleveDeDecision::class)->findLatestForSignal($signal);
+        $isLatestRdd = ($latestRDD && $latestRDD->getId() === $RDD->getId());
+
 
         $lstMesures = $RDD->getMesuresRDDs();
 
@@ -270,16 +315,12 @@ final class GestionRelevesDeDecisionController extends AbstractController
                     }
 
                     // avant de faire le persist, on vérifie que la date de la réunion selectionnée n'est pas déjà liée à un autre RDD de ce signal
-                    $reunionSelectionnee = $form->get('reunionSignal')->getData();
-                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBy([
-                        'SignalLie' => $signal,
-                        'reunionSignal' => $reunionSelectionnee,
-                    ]);
+                    $reunionSelectionnee = $form->get('reunionSignal')->getData();                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBySignalAndReunionExcludingRdd($signal, $reunionSelectionnee, $rddId);
                     if ($rddExistante) {
                         $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD de ce signal.'));
                         // affichage d'un message flash
                         $this->addFlash('error', 'Cette date de réunion (' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ') existe déjà pour un autre RDD de ce signal. Veuillez en choisir une autre date.');
-                        return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
+                        return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
                             'signalId' => $signalId,
                             'autresRDDs' => $autresRDDs,
                             'form' => $form->createView(),
@@ -290,7 +331,7 @@ final class GestionRelevesDeDecisionController extends AbstractController
                         // $em->persist($signal);
                         $em->flush();
 
-                        $this->addFlash('success', 'Le relevé de décision pour la date ' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ' a bien été créé');
+                        $this->addFlash('success', 'Le relevé de décision pour la date ' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ' a bien été modifié');
                     }
 
                     return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
@@ -307,7 +348,10 @@ final class GestionRelevesDeDecisionController extends AbstractController
             if ($form->get('ajout_mesure')->isClicked()) {
                 // Ajout d'une mesure
 
-                dump('04 - bouton ajout d\'une mesure');
+                if ($this->kernel->getEnvironment() === 'dev') {
+                    dump('modif RDD - 04 - bouton ajout d\'une mesure');
+                    $this->logger->info('modif RDD - 04 - bouton ajout d\'une mesure');
+                }
                 return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signalId, 'rddId' => $rddId]);
             }
         }
@@ -319,12 +363,15 @@ final class GestionRelevesDeDecisionController extends AbstractController
 
         return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
             'signalId' => $signalId,
+            'signal' => $signal,
             'autresRDDs' => $autresRDDs,
             // 'date_reunion' => $date_reunion,
             // 'rdd' => $RDD,
             'form' => $form->createView(),
             'TypeModifCreation' => 'modification',
             'lstMesures' => $lstMesures,
+            'isLatestRdd' => $isLatestRdd,
+            'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
         ]);
     }
 }

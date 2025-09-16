@@ -1,0 +1,20 @@
+
+@use "_variables" as *;
+
+.btn-action-mesure {
+    width: 95px;
+}
+
+.rdd-actif {
+    background-color: $Rdd_actif_bg; // Pour la card
+    --bs-table-accent-bg: #{$Rdd_actif_bg}; // Couleur de base pour la ligne (lignes paires)
+    --bs-table-striped-bg: #{darken($Rdd_actif_bg, 5%)}; // Couleur pour les lignes impaires (striping)
+    --bs-table-hover-bg: #{darken($Rdd_actif_bg, 10%)}; // Couleur pour le survol
+}
+
+.rdd-inactif {
+    background-color: $Rdd_inactif_bg; // Pour la card
+    --bs-table-accent-bg: #{$Rdd_inactif_bg}; // Couleur de base pour la ligne (lignes paires)
+    --bs-table-striped-bg: #{darken($Rdd_inactif_bg, 5%)}; // Couleur pour les lignes impaires (striping)
+    --bs-table-hover-bg: #{darken($Rdd_inactif_bg, 10%)}; // Couleur pour le survol
+}
