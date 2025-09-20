@@ -41,5 +41,11 @@ $Tab_lst_susar_bckgrd_slidy_col: #E5E5E2;
 $Rdd_inactif_bg: #CACACA;
 $Rdd_actif_bg: #B9FF9D;
 
-$Fond_signal: #F8B878;
-$Fond_fait_marquant: #78B8F8;
+// $Fond_signal: #F8B878;
+// $Fond_fait_marquant: #78B8F8;
+$Fond_signal: #D9BE93;
+$Fond_fait_marquant: #93D1D9;
+
+// Couleurs pour le striping des tableaux
+$signal-table-striped-bg: #f5f0e8; // Un beige très clair, dérivé de $Fond_signal
+$fait-marquant-table-striped-bg: #e8f5f7; // Un bleu très clair, dérivé de $Fond_fait_marquant

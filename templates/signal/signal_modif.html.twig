@@ -29,7 +29,14 @@
 		{% endfor %}
 	{% endfor %}
 
-<div class="display-4 text-center mt-3 mb-3">Modification du signal</div>
+
+    {% if signal.TypeSignal == 'signal' %}
+        <div class="display-4 text-center mt-3 mb-3">Modification du signal</div>
+    {% elseif signal.TypeSignal == 'fait_marquant' %}
+        <div class="display-4 text-center mt-3 mb-3">Modification du fait marquant</div>
+    {% endif %}
+
+
 <div class="container-md">
     {{ form_start(form) }}
 
@@ -39,7 +46,12 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h5 class="card-title mb-0">
-                        <i class="bi"></i> Signal
+                        <i class="bi"></i>
+                            {% if signal.TypeSignal == 'signal' %}
+                                Signal
+                            {% elseif signal.TypeSignal == 'fait_marquant' %}
+                                Fait marquant
+                            {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">

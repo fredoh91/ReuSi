@@ -27,6 +27,7 @@ Encore
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
     .addStyleEntry('signal_css', './assets/styles/signal.scss')
+    .addStyleEntry('tables_css', './assets/styles/tables.scss')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

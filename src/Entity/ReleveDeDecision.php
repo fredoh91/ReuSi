@@ -55,6 +55,9 @@ class ReleveDeDecision
     #[ORM\OneToMany(targetEntity: MesuresRDD::class, mappedBy: 'RddLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $mesuresRDDs;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $DatePresentationReunion = null;
+
     public function __construct()
     {
         $this->mesuresRDDs = new ArrayCollection();
@@ -223,6 +226,18 @@ class ReleveDeDecision
                 $mesuresRDD->setRddLie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDatePresentationReunion(): ?\DateTimeImmutable
+    {
+        return $this->DatePresentationReunion;
+    }
+
+    public function setDatePresentationReunion(?\DateTimeImmutable $DatePresentationReunion): static
+    {
+        $this->DatePresentationReunion = $DatePresentationReunion;
 
         return $this;
     }

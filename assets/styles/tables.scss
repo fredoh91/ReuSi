@@ -1,0 +1,14 @@
+// assets/styles/tables.scss
+@use "variables" as *;
+
+// Styles pour la table des signaux
+.page-signal .table-striped {
+    --bs-table-striped-bg: #{$signal-table-striped-bg};
+    --bs-table-hover-bg: #{darken($signal-table-striped-bg, 5%)};
+}
+
+// Styles pour la table des faits marquants
+.page-fait-marquant .table-striped {
+    --bs-table-striped-bg: #{$fait-marquant-table-striped-bg};
+    --bs-table-hover-bg: #{darken($fait-marquant-table-striped-bg, 5%)};
+}
