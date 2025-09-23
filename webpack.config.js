@@ -28,6 +28,7 @@ Encore
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
     .addStyleEntry('signal_css', './assets/styles/signal.scss')
     .addStyleEntry('tables_css', './assets/styles/tables.scss')
+    .addStyleEntry('reunion_signal_liste_css', './assets/styles/reunion_signal_liste.scss')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')
@@ -67,8 +68,14 @@ Encore
     })
 
     // enables Sass/SCSS support
-    .enableSassLoader()
-
+    // .enableSassLoader()
+    .enableSassLoader((options) => {
+        // Les options pour le compilateur Sass doivent être dans la clé "sassOptions".
+        options.sassOptions = {
+            // On demande à Sass d'ignorer l'avertissement de dépréciation pour les fonctions globales comme `mix()`.
+            silenceDeprecations: ['global-built-ins']
+        };
+    }, { resolveUrlLoader: false })
     // uncomment if you use TypeScript
     //.enableTypeScriptLoader()
 

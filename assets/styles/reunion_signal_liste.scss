@@ -1,0 +1,18 @@
+@use "sass:color";
+@use "variables" as *;
+
+// Styles pour la table de la liste des réunions.
+// On personnalise les couleurs de base de la table pour un thème complet.
+.page-reunion-signal .table {
+    // Couleur de fond pour les lignes paires (la base de la table).
+    // C'est la couleur que vous décriviez comme "blanc cassé".
+    // On la remplace par une version très claire de la couleur de base.
+    // J'ai réduit les ajustements de luminosité et de saturation pour rapprocher les couleurs.
+    // (lightness: 18% -> 8%, saturation: -25% -> -15%)
+    --bs-table-bg: #{color.adjust($reunion-signal-table-striped-bg, $lightness: 8%, $saturation: -15%)};
+    // Couleur pour les lignes impaires (pour l'effet "strié").
+    --bs-table-striped-bg: #{$reunion-signal-table-striped-bg};
+    
+    // Couleur au survol d'une ligne.
+    --bs-table-hover-bg: #{color.adjust($reunion-signal-table-striped-bg, $lightness: -7%)};
+}

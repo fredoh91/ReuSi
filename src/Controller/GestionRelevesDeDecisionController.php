@@ -133,10 +133,15 @@ final class GestionRelevesDeDecisionController extends AbstractController
                         $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD de ce signal.'));
                         // affichage d'un message flash
                         $this->addFlash('error', 'Cette date de réunion (' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ') existe déjà pour un autre RDD de ce signal. Veuillez en choisir une autre date.');
-                        return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
+                        return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
                             'signalId' => $signalId,
+                            'signal' => $signal,
                             'autresRDDs' => $autresRDDs,
                             'form' => $form->createView(),
+                            'TypeModifCreation' => 'creation',
+                            'lstMesures' => $nouvellesMesures ? $nouvellesMesures : [], // On peut les passer à la vue pour un aperçu
+                            'isLatestRdd' => true, // Un RDD en création est considéré comme le plus récent pour l'UI
+                            'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
                         ]);
                     } else {
                         
@@ -163,12 +168,31 @@ final class GestionRelevesDeDecisionController extends AbstractController
                             // On met à jour le signal avec le nouveau statut
                             $signal->addStatutSignal($StatutSignal_nouveau);
                         } else {
-                            $this->addFlash('error', 'Aucun statut actif trouvé pour ce signal. Veuillez vérifier les statuts du signal avant de créer un RDD.');
-                            return $this->render('gestion_releves_de_decision/RDD_detail.html.twig', [
-                                'signalId' => $signalId,
-                                'autresRDDs' => $autresRDDs,
-                                'form' => $form->createView(),
-                            ]);
+
+                            //$this->addFlash('error', 'Aucun statut actif trouvé pour ce signal. Veuillez vérifier les statuts du signal avant de créer un RDD.');
+
+                            // il n'y a pas d'autre RDD avec statut actif, on crée le premier
+                            $StatutSignal_nouveau = new StatutSignal();
+                            $StatutSignal_nouveau->setLibStatut('en_cours');
+                            $StatutSignal_nouveau->setDateMiseEnPlace(new \DateTimeImmutable());
+                            $StatutSignal_nouveau->setStatutActif(true);
+                            $StatutSignal_nouveau->setSignalLie($signal);
+
+                            $em->persist($StatutSignal_nouveau);
+
+                            // On met à jour le signal avec le nouveau statut
+                            $signal->addStatutSignal($StatutSignal_nouveau);
+
+                            // return $this->render('gestion_releves_de_decision/RDD_modif.html.twig', [
+                            //     'signalId' => $signalId,
+                            //     'signal' => $signal,
+                            //     'autresRDDs' => $autresRDDs,
+                            //     'form' => $form->createView(),
+                            //     'TypeModifCreation' => 'creation',
+                            //     'lstMesures' => $nouvellesMesures ? $nouvellesMesures : [], // On peut les passer à la vue pour un aperçu
+                            //     'isLatestRdd' => true, // Un RDD en création est considéré comme le plus récent pour l'UI
+                            //     'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
+                            // ]);
                         }
 
                         // On persiste les nouvelles mesures ici, uniquement en cas de validation ...
@@ -315,7 +339,8 @@ final class GestionRelevesDeDecisionController extends AbstractController
                     }
 
                     // avant de faire le persist, on vérifie que la date de la réunion selectionnée n'est pas déjà liée à un autre RDD de ce signal
-                    $reunionSelectionnee = $form->get('reunionSignal')->getData();                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBySignalAndReunionExcludingRdd($signal, $reunionSelectionnee, $rddId);
+                    $reunionSelectionnee = $form->get('reunionSignal')->getData();
+                    $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBySignalAndReunionExcludingRdd($signal, $reunionSelectionnee, $rddId);
                     if ($rddExistante) {
                         $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD de ce signal.'));
                         // affichage d'un message flash

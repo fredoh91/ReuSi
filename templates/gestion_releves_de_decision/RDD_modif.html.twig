@@ -107,7 +107,15 @@
                     {% if lstMesures is not empty %}
                         <div class="card shadow-sm mt-4" style="background-color: #ced4da;">
                             <div class="card-header bg-secondary text-white">
-                                <h5 class="mb-0">Mesures associées au RDD</h5>
+                                <h5 class="mb-0">
+                                    {% if TypeModifCreation == 'creation' %}
+                                        Mesures associées au RDD (ajout et modif apres validation de ce RDD)
+                                    {% elseif isLatestRdd %}
+                                        Mesures associées au RDD
+                                    {% else %}
+                                        Mesures associées au RDD (non-modifiables car il ne s'agit pas du dernier RDD)
+                                    {% endif %}
+                                </h5>
                             </div>
                             <div class="card-body">
                                 <table class="table table-striped table-hover mb-0">
@@ -174,12 +182,12 @@
 
                     <div class="row mt-4">
                         <div class="col-12 d-flex justify-content-center">
-                            {% if TypeModifCreation == 'modification' %}
-                                {% if isLatestRdd %}
-                                    {{ form_widget(form.ajout_mesure) }}
-                                {% else %}
-                                    {{ form_widget(form.ajout_mesure, {'attr': {'disabled': true, 'title': 'L\'ajout de mesure n\'est possible que sur le dernier RDD.'}}) }}
-                                {% endif %}
+                            {% if TypeModifCreation == 'creation' %}
+                                {{ form_widget(form.ajout_mesure, {'attr': {'disabled': true, 'title': 'Vous devez valider la création du RDD avant de pouvoir ajouter une mesure.'}}) }}
+                            {% elseif isLatestRdd %}
+                                {{ form_widget(form.ajout_mesure) }}
+                            {% else %}
+                                {{ form_widget(form.ajout_mesure, {'attr': {'disabled': true, 'title': 'L\'ajout de mesure n\'est possible que sur le dernier RDD.'}}) }}
                             {% endif %}
                         </div>
                     </div>

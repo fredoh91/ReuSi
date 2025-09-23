@@ -66,6 +66,62 @@ class ReunionSignalRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Récupère toutes les réunions avec les RDDs, Signaux et Produits associés pour optimiser l'affichage.
+     * @return ReunionSignal[]
+     */
+    public function findAllWithDetails(): array
+    {
+        return $this->createQueryBuilder('rs')
+            ->select('DISTINCT rs', 'rdd', 's', 'p')
+            ->leftJoin('rs.ReleveDeDecision', 'rdd')
+            ->leftJoin('rdd.SignalLie', 's')
+            ->leftJoin('s.produits', 'p')
+            ->orderBy('rs.DateReunion', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Trouve les ReunionSignal en fonction de plusieurs critères de recherche.
+     *
+     * @param array|null $criteria
+     * @return ReunionSignal[]
+     */
+    public function findByCriteriaWithDetails(?array $criteria): array
+    {
+        $qb = $this->createQueryBuilder('rs');
+
+        $qb->select('DISTINCT rs', 'rdd', 's', 'p')
+            ->leftJoin('rs.ReleveDeDecision', 'rdd')
+            ->leftJoin('rdd.SignalLie', 's')
+            ->leftJoin('s.produits', 'p');
+
+        if (!empty($criteria['dateDebut'])) {
+            $qb->andWhere('rs.DateReunion >= :dateDebut')
+               ->setParameter('dateDebut', $criteria['dateDebut']);
+        }
+
+        if (!empty($criteria['dateFin'])) {
+            $qb->andWhere('rs.DateReunion <= :dateFin')
+               ->setParameter('dateFin', $criteria['dateFin']);
+        }
+
+        if (!empty($criteria['recherche'])) {
+            $searchTerm = '%' . $criteria['recherche'] . '%';
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->like('s.Titre', ':searchTerm'),
+                $qb->expr()->like('s.DescriptionSignal', ':searchTerm'),
+                $qb->expr()->like('rdd.DescriptionRDD', ':searchTerm'),
+                $qb->expr()->like('p.Denomination', ':searchTerm'),
+                $qb->expr()->like('p.DCI', ':searchTerm')
+            ))->setParameter('searchTerm', $searchTerm);
+        }
+
+        $qb->orderBy('rs.DateReunion', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 
 
     //    /**
