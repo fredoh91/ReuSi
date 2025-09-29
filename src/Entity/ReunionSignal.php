@@ -46,10 +46,17 @@ class ReunionSignal
     #[ORM\ManyToMany(targetEntity: Signal::class, inversedBy: 'reunionSignals')]
     private Collection $SignalLie;
 
+    /**
+     * @var Collection<int, Suivi>
+     */
+    #[ORM\OneToMany(targetEntity: Suivi::class, mappedBy: 'reunionSignal')]
+    private Collection $suivis;
+
     public function __construct()
     {
         $this->ReleveDeDecision = new ArrayCollection();
         $this->SignalLie = new ArrayCollection();
+        $this->suivis = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -179,6 +186,36 @@ class ReunionSignal
     public function removeSignalLie(Signal $signalLie): static
     {
         $this->SignalLie->removeElement($signalLie);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suivi>
+     */
+    public function getSuivis(): Collection
+    {
+        return $this->suivis;
+    }
+
+    public function addSuivi(Suivi $suivi): static
+    {
+        if (!$this->suivis->contains($suivi)) {
+            $this->suivis->add($suivi);
+            $suivi->setReunionSignal($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuivi(Suivi $suivi): static
+    {
+        if ($this->suivis->removeElement($suivi)) {
+            // set the owning side to null (unless already changed)
+            if ($suivi->getReunionSignal() === $this) {
+                $suivi->setReunionSignal(null);
+            }
+        }
 
         return $this;
     }

@@ -18,6 +18,10 @@ export default class extends Controller {
             {value: 'EMM', text: 'EMM'},
             {value: 'CASAR', text: 'CASAR'},
             {value: 'suivi nat', text: 'suivi nat'},
+            {value: 'DMM', text: 'DMM'},
+            {value: 'DIRCom', text: 'DIRCom'},
+            {value: 'DQ', text: 'DQ'},
+            {value: 'RS', text: 'RS'},
         ];
 
         new TomSelect(this.element, {

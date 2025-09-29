@@ -102,6 +102,18 @@ class Signal
     #[ORM\OneToMany(targetEntity: MesuresRDD::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $mesuresRDDs;
 
+    /**
+     * @var Collection<int, Suivi>
+     */
+    #[ORM\OneToMany(targetEntity: Suivi::class, mappedBy: 'SignalLie')]
+    private Collection $suivis;
+
+    /**
+     * @var Collection<int, DirectionPoleConcerne>
+     */
+    #[ORM\ManyToMany(targetEntity: DirectionPoleConcerne::class, mappedBy: 'SignalLie')]
+    private Collection $directionPoleConcernes;
+
     // #[ORM\Column(length: 255, nullable: true)]
     // private ?string $TypeSignal = null;
 
@@ -123,6 +135,8 @@ class Signal
 
         $this->statutSignals->add($statutSignal);
         $this->mesuresRDDs = new ArrayCollection();
+        $this->suivis = new ArrayCollection();
+        $this->directionPoleConcernes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -488,6 +502,63 @@ class Signal
             if ($mesuresRDD->getSignalLie() === $this) {
                 $mesuresRDD->setSignalLie(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suivi>
+     */
+    public function getSuivis(): Collection
+    {
+        return $this->suivis;
+    }
+
+    public function addSuivi(Suivi $suivi): static
+    {
+        if (!$this->suivis->contains($suivi)) {
+            $this->suivis->add($suivi);
+            $suivi->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuivi(Suivi $suivi): static
+    {
+        if ($this->suivis->removeElement($suivi)) {
+            // set the owning side to null (unless already changed)
+            if ($suivi->getSignalLie() === $this) {
+                $suivi->setSignalLie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DirectionPoleConcerne>
+     */
+    public function getDirectionPoleConcernes(): Collection
+    {
+        return $this->directionPoleConcernes;
+    }
+
+    public function addDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): static
+    {
+        if (!$this->directionPoleConcernes->contains($directionPoleConcerne)) {
+            $this->directionPoleConcernes->add($directionPoleConcerne);
+            $directionPoleConcerne->addSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): static
+    {
+        if ($this->directionPoleConcernes->removeElement($directionPoleConcerne)) {
+            $directionPoleConcerne->removeSignalLie($this);
         }
 
         return $this;

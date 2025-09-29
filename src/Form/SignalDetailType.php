@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\DirectionPoleConcerne;
 use App\Entity\Signal;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -9,6 +10,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Doctrine\ORM\EntityRepository;
 
 class SignalDetailType extends AbstractType
 {
@@ -22,6 +25,17 @@ class SignalDetailType extends AbstractType
             //     'widget' => 'single_text',
             // ])
             ->add('Contexte')
+            // ->add('SourceSignal')
+            ->add('SourceSignal', TextType::class, [
+                'required' => false,
+                'label' => 'Source du signal',
+                'attr' => [
+                    // On lie notre futur contrôleur Stimulus
+                    'data-controller' => 'autocomplete',
+                ],
+            ])            
+            ->add('RefSignal')
+            ->add('IdentifiantSource')
             ->add('NiveauRisqueInitial', ChoiceType::class, [
                 'choices' => [
                     'SHR' => 'SHR',
@@ -52,18 +66,31 @@ class SignalDetailType extends AbstractType
                 ],
                 'label' => 'Niveau de risque final',
             ])
-            ->add('AnaRisqueComment')
-            // ->add('SourceSignal')
-            ->add('SourceSignal', TextType::class, [
+            ->add('directionPoleConcernes', EntityType::class, [
+                'class' => DirectionPoleConcerne::class,
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('d')
+                        ->where('d.Inactif = :inactif')
+                        ->setParameter('inactif', false)
+                        ->orderBy('d.OrdreTri', 'ASC');
+                },
+                'choice_label' => function ($directionPoleConcerne) {
+                    $poleCourt = $directionPoleConcerne->getPoleCourt();
+                    // Si PoleCourt est vide ou ne contient que des espaces, on affiche la Direction.
+                    if (empty(trim((string) $poleCourt))) {
+                        return $directionPoleConcerne->getDirection();
+                    }
+                    return $poleCourt;
+                },
+                'multiple' => true,
+                'expanded' => true,
+                'label' => 'Directions / Pôles concernés',
                 'required' => false,
-                'label' => 'Source du signal',
-                'attr' => [
-                    // On lie notre futur contrôleur Stimulus
-                    'data-controller' => 'autocomplete',
-                ],
-            ])            
-            ->add('RefSignal')
-            ->add('IdentifiantSource')
+                'group_by' => function($choice, $key, $value) {
+                    return $choice->getDirection();
+                },
+            ])
+            ->add('AnaRisqueComment')
             // ->add('UserCreate')
             // ->add('UserModif')
             // ->add('CreatedAt', null, [
