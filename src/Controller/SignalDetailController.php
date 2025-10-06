@@ -2,16 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\Suivi;
 use App\Entity\Signal;
 use Psr\Log\LoggerInterface;
 use App\Entity\ReunionSignal;
 use App\Form\SignalDetailType;
-use App\Entity\ReleveDeDecision;
 // use App\Form\SignalDetailBtnProduitType;
+use App\Entity\ReleveDeDecision;
 use App\Form\SignalRDDDetailType;
+use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Form\Model\SignalReleveReunionDTO;
 use App\Form\SignalDetailBtnProduitRDDType;
+use App\Form\Model\SignalAvecSuiviInitialDTO;
+use App\Form\SignalDetailBtnProduitSuiviType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -51,7 +54,27 @@ final class SignalDetailController extends AbstractController
         $signal->setUserModif($userName);
         $signal->setTypeSignal($typeSignal);
 
+        $suivi = new Suivi();
+        $suivi->setCreatedAt(new \DateTimeImmutable());
+        $suivi->setUpdatedAt(new \DateTimeImmutable());
+        $suivi->setUserCreate($userName);
+        $suivi->setUserModif($userName);
+        $suivi->setNumeroSuivi(0);
+        $suivi->setSignalLie($signal);
+
+        $rdd = new ReleveDeDecision();
+        $rdd->setCreatedAt(new \DateTimeImmutable());
+        $rdd->setUpdatedAt(new \DateTimeImmutable());
+        $rdd->setUserCreate($userName);
+        $rdd->setUserModif($userName);
+        $rdd->setNumeroRDD(1);
+        $rdd->setSignalLie($signal);
+
+        $suivi->setRddLie($rdd);
+
         $em->persist($signal);
+        $em->persist($suivi);
+        $em->persist($rdd);
         $em->flush();
 
         return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
@@ -77,6 +100,37 @@ final class SignalDetailController extends AbstractController
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
 
+        // On cherche le suivi initial (numeroSuivi = 0)
+        $suiviInitial = $em->getRepository(Suivi::class)->findInitialForSignal($signal);
+        if (!$suiviInitial) {
+            // Normalement, la méthode `new` garantit qu'il existe.
+            // En cas d'incohérence de données, on le crée à la volée pour rendre l'application plus robuste.
+            $this->logger->warning(sprintf('Suivi initial manquant pour le signal ID %d. Création à la volée.', $signal->getId()));
+
+            $suiviInitial = new Suivi();
+            $suiviInitial->setSignalLie($signal);
+            $suiviInitial->setNumeroSuivi(0);
+            $suiviInitial->setUserCreate($userName);
+            $suiviInitial->setUserModif($userName);
+            $suiviInitial->setCreatedAt(new \DateTimeImmutable());
+            $suiviInitial->setUpdatedAt(new \DateTimeImmutable());
+
+            // On tente de retrouver le premier RDD (NumeroRDD = 1) pour recréer les liens
+            $firstRdd = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 1]);
+            if ($firstRdd) {
+                $suiviInitial->setRddLie($firstRdd);
+                // Si le RDD est lié à une réunion, on lie aussi le suivi
+                if ($firstRdd->getReunionSignal()) {
+                    $suiviInitial->setReunionSignal($firstRdd->getReunionSignal());
+                }
+                $this->logger->info(sprintf('Le suivi initial recréé a été lié au RDD ID %d.', $firstRdd->getId()));
+            }
+
+            $em->persist($suiviInitial);
+            $em->flush();
+            $this->addFlash('warning', 'Le suivi initial manquant a été automatiquement recréé.');
+        }
+
         // $signal = new Signal();
         // $signal->setCreatedAt(new \DateTimeImmutable());
         $signal->setUpdatedAt(new \DateTimeImmutable());
@@ -85,28 +139,38 @@ final class SignalDetailController extends AbstractController
 
         $lstProduits = $signal->getProduits();
 
+        $lstSuivi = $em->getRepository(Suivi::class)->findForSignalExcludingInitial($signal);
+
+        $latestSuivi = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
+        
         $lstRDD = $signal->getReleveDeDecision();
 
         // On récupère le RDD le plus récent pour le passer à la vue
         $latestRDD = $em->getRepository(ReleveDeDecision::class)->findLatestForSignal($signal);
 
-        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelled(100);
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelled(200);
 
         $routeSource = $request->query->get('routeSource', null);
         // dd($date_reunion);
         $allowedRoutesSource = ['app_signal_liste', 'app_fait_marquant_liste'];
 
+        // On crée notre DTO et on le remplit
+        $dto = new SignalAvecSuiviInitialDTO();
+        $dto->signal = $signal;
+        $dto->suiviInitial = $suiviInitial;
 
-        $form = $this->createForm(SignalDetailBtnProduitRDDType::class, $signal, [
-            // 'date_reunion' => $date_reunion,
+        // On crée le formulaire composite en lui passant le DTO
+        // Et on lui dit d'utiliser `SignalDetailBtnProduitRDDType` pour la partie "signal"
+        $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
+            'signal_form_type' => SignalDetailBtnProduitSuiviType::class,
+            'reunions' => $date_reunion,
         ]);
-
 
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($form->get('annulation')->isClicked()) {
+            if ($form->get('signal')->get('annulation')->isClicked()) {
                 // Annulation
 
                 if ($this->kernel->getEnvironment() === 'dev') {
@@ -120,7 +184,8 @@ final class SignalDetailController extends AbstractController
                 }
                 return $this->redirectToRoute('app_signal_liste');
             }
-            if ($form->get('validation')->isClicked()) {
+            if ($form->get('signal')->get('validation')->isClicked()) {
+                // Le formulaire est lié au DTO, donc on vérifie la validité sur le DTO
                 if ($form->isValid()) {
                     // Traitement de la validation
 
@@ -128,7 +193,12 @@ final class SignalDetailController extends AbstractController
                         dump('modif signal - 02 - bouton validation');
                         $this->logger->info('modif signal - 02 - bouton validation');
                     }
-                    $em->persist($signal);
+
+                    // Symfony a mis à jour le DTO, on peut persister les entités qu'il contient
+                    $em->persist($dto->signal);
+                    $em->persist($dto->suiviInitial);
+
+                    // $em->persist($signal);
                     $em->flush();
 
                     $this->addFlash('success', 'Le signal ' . $signalId . ' a bien été modifié');
@@ -149,14 +219,17 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('ajout_produit')->isClicked()) {
+            // Les boutons sont maintenant dans le sous-formulaire 'signal'
+            if ($form->get('signal')->get('ajout_produit')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de produit
                     if ($this->kernel->getEnvironment() === 'dev') {
                         dump('modif signal - 04 - bouton ajout produit');
                         $this->logger->info('modif signal - 04 - bouton ajout produit');
                     }
-                    // On persist et flush pour créer le signal "brouillon" et obtenir un ID
+                    // On persist et flush pour que le signal soit à jour avant la redirection
+                    $em->persist($dto->signal);
+                    $em->persist($dto->suiviInitial);
                     $em->persist($signal);
                     $em->flush();
 
@@ -171,7 +244,7 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('ajout_produit_saisie_manu')->isClicked()) {
+            if ($form->get('signal')->get('ajout_produit_saisie_manu')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de produit
                     
@@ -179,8 +252,9 @@ final class SignalDetailController extends AbstractController
                         dump('modif signal - 06 - bouton ajout produit manuellement');
                         $this->logger->info('modif signal - 06 - bouton ajout produit manuellement');
                     }
-                    // On persist et flush pour créer le signal "brouillon" et obtenir un ID
-                    $em->persist($signal);
+                    // On persist et flush pour que le signal soit à jour avant la redirection
+                    $em->persist($dto->signal);
+                    $em->persist($dto->suiviInitial);
                     $em->flush();
 
                     // Redirection vers la route pour creations des produits dans un formulaire vide
@@ -194,24 +268,48 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('ajout_RDD')->isClicked()) {
+            // if ($form->get('signal')->get('ajout_RDD')->isClicked()) {
+            //     if ($form->isValid()) {
+            //         // Traitement de l'ajout de RDD
+            //         if ($this->kernel->getEnvironment() === 'dev') {
+            //             dump('modif signal - 08 - bouton ajout RDD');
+            //             $this->logger->info('modif signal - 08 - bouton ajout RDD');
+            //         }
+            //         // On persist et flush pour que le signal soit à jour avant la redirection
+            //         $em->persist($dto->signal);
+            //         $em->persist($dto->suiviInitial);
+            //         $em->flush();
+
+            //         // Redirection vers la route pour creations des produits
+            //         return $this->redirectToRoute('app_creation_RDD', ['signalId' => $signal->getId()]);
+            //     } else {
+            //         // Formulaire invalide
+            //         if ($this->kernel->getEnvironment() === 'dev') {
+            //             dump('modif signal - 09 - formulaire invalide');
+            //             $this->logger->info('modif signal - 09 - formulaire invalide');
+            //         }
+            //     }
+            // }
+            
+            if ($form->get('signal')->get('ajout_suivi')->isClicked()) {
                 if ($form->isValid()) {
-                    // Traitement de l'ajout de RDD
+                    // Traitement de l'ajout de suivi
                     if ($this->kernel->getEnvironment() === 'dev') {
-                        dump('modif signal - 08 - bouton ajout RDD');
-                        $this->logger->info('modif signal - 08 - bouton ajout RDD');
+                        dump('modif signal - 10 - bouton ajout suivi');
+                        $this->logger->info('modif signal - 10 - bouton ajout suivi');
                     }
-                    // On persist et flush pour créer le signal "brouillon" et obtenir un ID
-                    $em->persist($signal);
+                    // On persist et flush pour que le signal soit à jour avant la redirection
+                    $em->persist($dto->signal);
+                    $em->persist($dto->suiviInitial);
                     $em->flush();
 
                     // Redirection vers la route pour creations des produits
-                    return $this->redirectToRoute('app_creation_RDD', ['signalId' => $signal->getId()]);
+                    return $this->redirectToRoute('app_creation_suivi', ['signalId' => $signal->getId()]);
                 } else {
                     // Formulaire invalide
                     if ($this->kernel->getEnvironment() === 'dev') {
-                        dump('modif signal - 09 - formulaire invalide');
-                        $this->logger->info('modif signal - 09 - formulaire invalide');
+                        dump('modif signal - 11 - formulaire invalide');
+                        $this->logger->info('modif signal - 11 - formulaire invalide');
                     }
                 }
             }
@@ -222,6 +320,8 @@ final class SignalDetailController extends AbstractController
             'lstProduits' => $lstProduits,
             'lstRDD' => $lstRDD,
             'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
+            'lstSuivi' => $lstSuivi,
+            'latestSuiviId' => $latestSuivi ? $latestSuivi->getId() : null,
         ]);
     }
 

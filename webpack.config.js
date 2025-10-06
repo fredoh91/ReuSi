@@ -26,6 +26,7 @@ Encore
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
+    .addStyleEntry('suivi_css', './assets/styles/suivi.scss')
     .addStyleEntry('signal_css', './assets/styles/signal.scss')
     .addStyleEntry('tables_css', './assets/styles/tables.scss')
     .addStyleEntry('reunion_signal_liste_css', './assets/styles/reunion_signal_liste.scss')

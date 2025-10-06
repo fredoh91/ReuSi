@@ -33,6 +33,7 @@
                     <th>Créé le</th>
                     <th>Modifié le</th>
                     <th>Statut signal</th>
+                    <th>Suivi</th>
                     <th>Relevé de décision</th>
                 </tr>
             </thead>
@@ -77,13 +78,40 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if signal.getSuivis() is not empty %}
+                                {% for suivi in signal.getSuivis() %}
+                                    {% if suivi.DescriptionSuivi is not empty %}
+                                        <ul>
+                                            <li>
+
+                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a> - 
+                                                {{ suivi.reunionSignal and suivi.reunionSignal.DateReunion ? suivi.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
+                                                {# {{ suivi.DescriptionSuivi }} #}
+                                                {{ suivi.DescriptionSuivi|slice(0, 300) }}{% if suivi.DescriptionSuivi|length > 300 %}...{% endif %}
+                                            </li>
+                                        </ul>
+                                    {% else %}
+                                        <ul>
+                                            <li>
+                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a> -
+                                                {{ suivi.reunionSignal and suivi.reunionSignal.DateReunion ? suivi.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
+                                                Pas de description
+                                            </li>
+                                        </ul>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Pas de suivi
+                            {% endif %}
+                        </td>
+                        <td>
                             {% if signal.getReleveDeDecision() is not empty %}
                                 {% for rdd in signal.getReleveDeDecision() %}
                                     {% if rdd.DescriptionRDD is not empty %}
                                         <ul>
                                             <li>
-                                                {{ rdd.NumeroRDD }} - 
-                                                {{ rdd.getReunionSignal().DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') }} - 
+                                                <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
+                                                {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
                                                 {# {{ rdd.DescriptionRDD }} #}
                                                 {{ rdd.DescriptionRDD|slice(0, 300) }}{% if rdd.DescriptionRDD|length > 300 %}...{% endif %}
                                             </li>
@@ -91,8 +119,8 @@
                                     {% else %}
                                         <ul>
                                             <li>
-                                                {{ rdd.NumeroRDD }} - 
-                                                {{ rdd.getReunionSignal().DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') }} - 
+                                                <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
+                                                {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
                                                 Pas de description
                                             </li>
                                         </ul>

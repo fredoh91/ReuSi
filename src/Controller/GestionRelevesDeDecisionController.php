@@ -54,7 +54,6 @@ final class GestionRelevesDeDecisionController extends AbstractController
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 100, 'DESC');
 
         // On regarde les autres RDD de ce signal et on récupère le numéro max
-
         $nextNumeroRDD = $em->getRepository(ReleveDeDecision::class)->donneNextNumeroRDD($signalId);
 
         // On recupère aussi les autres RDD de ce signal pour les afficher dans la vue

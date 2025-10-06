@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion du Suivi{% endblock %}
+
+{% block body %}
+
+
+
+{{ encore_entry_link_tags('suivi_css') }}
+
+{# Affichage des messages flash #}
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ type }}">{{ message }}</div>
+    {% endfor %}
+{% endfor %}
+
+    <div class="container-md mt-4">
+
+
+
+        <div class="row justify-content-center text-center mb-3">
+            <div class="col-12">
+                <h4>{{ signal.Titre }}</h4>
+                <p class="text-muted fst-italic">
+                    {{ signal.DescriptionSignal|slice(0, 500) }}{% if signal.DescriptionSignal|length > 500 %}...{% endif %}
+                </p>
+                <p>
+                    <strong>Produits :</strong>
+                    {% for prod in signal.Produits %}
+                        {{ prod.Denomination }} / {{ prod.DCI }}{% if not loop.last %}; {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Création d'un nouveau suivi pour le signal : {{ signal.Titre }}</h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                
+                {# Le champ NumeroSuivi est géré par le contrôleur, on peut l'afficher en désactivé si besoin #}
+                {# {{ form_row(form.NumeroSuivi) }} #}
+                
+                {# {{ form_row(form.reunionSignal) }} #}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_label(form.NumeroSuivi, 'Numéro de Suivi') }}
+                        {{ form_widget(form.NumeroSuivi) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.reunionSignal, 'Date de la réunion') }}
+                        {{ form_widget(form.reunionSignal) }}
+                    </div>
+                </div>
+
+                {# {{ form_row(form.DescriptionSuivi) }} #}
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        {{ form_label(form.DescriptionSuivi, 'Description') }}
+                        {{ form_widget(form.DescriptionSuivi) }}
+                    </div>
+                </div>
+
+
+                <div class="row mb-3">
+                    <div class="col-4">
+                        {{ form_label(form.PiloteDS, 'Pilote DS') }}
+                        {{ form_widget(form.PiloteDS) }}
+                    </div>
+                    <div class="col-4">
+                        {{ form_label(form.EmetteurSuivi, 'Emetteur') }}
+                        {{ form_widget(form.EmetteurSuivi) }}
+                    </div>
+                </div>
+
+
+                <div class="row mt-4">
+                    <div class="col-6 d-flex justify-content-center">
+                        {{ form_widget(form.validation) }}
+                    </div>
+                    <div class="col-6 d-flex justify-content-center">
+                        {{ form_widget(form.annulation) }}
+                    </div>
+                </div>
+
+
+                {# Affichage des mesures qui seront dupliquées #}
+                {% if lstMesures is not empty %}
+                    <div class="alert alert-info mt-3">
+                        <p class="fw-bold">Les mesures actives suivantes seront reportées sur ce nouveau suivi :</p>
+                        <ul>
+                        {% for mesure in lstMesures %}
+                            <li>{{ mesure.LibMesure }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {# <div class="d-flex justify-content-center mt-4">
+                    {{ form_widget(form.validation) }}
+                    {{ form_widget(form.annulation, {'attr': {'class': 'btn btn-secondary ms-2'}}) }}
+                </div> #}
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
