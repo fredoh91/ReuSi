@@ -1,0 +1,23 @@
+@use "sass:color";
+@use "variables" as *;
+
+// Styles pour la page de modification/création de signal
+
+.page-signal,
+.page-fait-marquant {
+    // Compacte les cases à cocher dans le fieldset "Directions / Pôles concernés"
+    // en réduisant leur marge inférieure.
+    .form-check {
+        margin-bottom: 0.25rem; // Valeur par défaut de Bootstrap est 0.5rem (mb-2)
+    }
+
+    // Supprime la marge du bas pour les champs empilés dans le fieldset de la source
+    .d-flex.flex-column .mb-3 {
+        margin-bottom: 0 !important;
+    }
+
+    // Applique le fond "blanc cassé" au fieldset des directions/pôles
+    .dir-pole-fieldset {
+        background-color: $Fond_dir_pole_concerne;
+    }
+}

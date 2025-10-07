@@ -268,29 +268,6 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            // if ($form->get('signal')->get('ajout_RDD')->isClicked()) {
-            //     if ($form->isValid()) {
-            //         // Traitement de l'ajout de RDD
-            //         if ($this->kernel->getEnvironment() === 'dev') {
-            //             dump('modif signal - 08 - bouton ajout RDD');
-            //             $this->logger->info('modif signal - 08 - bouton ajout RDD');
-            //         }
-            //         // On persist et flush pour que le signal soit à jour avant la redirection
-            //         $em->persist($dto->signal);
-            //         $em->persist($dto->suiviInitial);
-            //         $em->flush();
-
-            //         // Redirection vers la route pour creations des produits
-            //         return $this->redirectToRoute('app_creation_RDD', ['signalId' => $signal->getId()]);
-            //     } else {
-            //         // Formulaire invalide
-            //         if ($this->kernel->getEnvironment() === 'dev') {
-            //             dump('modif signal - 09 - formulaire invalide');
-            //             $this->logger->info('modif signal - 09 - formulaire invalide');
-            //         }
-            //     }
-            // }
-            
             if ($form->get('signal')->get('ajout_suivi')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de suivi

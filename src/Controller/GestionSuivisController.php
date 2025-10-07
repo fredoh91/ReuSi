@@ -38,10 +38,73 @@ final class GestionSuivisController extends AbstractController
             throw $this->createNotFoundException('Le suivi avec l\'id ' . $suiviId . ' n\'existe pas.');
         }
 
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
+        
+        // On recupère aussi les autres Suivis de ce signal pour les afficher dans la vue
+        $autresSuivis = $em->getRepository(Suivi::class)->findBy(['SignalLie' => $signal], ['NumeroSuivi' => 'ASC']);
+
+        // On récupère le suivi le plus récent pour le passer à la vue
+        $latestSuivi = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
+        $isLatestSuivi = ($latestSuivi && $latestSuivi->getId() === $suivi->getId());
+
+        // On récupère les mesures associées au RDD lié à ce suivi
+        if ($suivi->getRddLie()) {
+            $lstMesures = $suivi->getRddLie()->getMesuresRDDs();
+        } else {
+            // Si aucun RDD n'est lié, on peut initialiser une collection vide ou gérer le cas différemment
+            $lstMesures = [];
+
+            // Si on n'a pas de RDD lié, on en crée un nouveau
+            // On regarde les autres RDD de ce signal et on récupère le numéro max
+            $nextNumeroRDD = $em->getRepository(ReleveDeDecision::class)->donneNextNumeroRDD($signalId);
+
+            $RDD = new ReleveDeDecision();
+            $RDD->setSignalLie($signal);
+            $RDD->setNumeroRDD($nextNumeroRDD);
+
+            $RDD->setCreatedAt(new \DateTimeImmutable());
+            $RDD->setUpdatedAt(new \DateTimeImmutable());
+            $RDD->setUserCreate($userName);
+            $RDD->setUserModif($userName);
+
+            $suivi->setRddLie($RDD);
+
+            $em->persist($RDD);
+            $em->persist($suivi);
+            $em->flush();
+
+        }
+
+
+
+        // Création et gestion du formulaire
+        $form = $this->createForm(SuiviDetailType::class, $suivi, [
+            'reunions' => $date_reunion,
+        ]);
+
+        // return $this->render('gestion_suivis/suivi_modif.html.twig', [
+        //     'signalId' => $signalId,
+        //     'signal' => $signal,
+        //     'suivi' => $suivi,
+        // ]);
+
         return $this->render('gestion_suivis/suivi_modif.html.twig', [
             'signalId' => $signalId,
             'signal' => $signal,
-            'suivi' => $suivi,
+            'autresSuivis' => $autresSuivis,
+            'form' => $form->createView(),
+            'typeModifCreation' => 'modification',
+            'lstMesures' => $lstMesures, // On peut les passer à la vue pour un aperçu
+            'isLatest' => $isLatestSuivi, // Un Suivi en création est considéré comme le plus récent pour l'UI
+            'latestSuiviId' => $latestSuivi ? $latestSuivi->getId() : null,
         ]);
     }
 
@@ -71,7 +134,7 @@ final class GestionSuivisController extends AbstractController
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
 
-        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 100, 'DESC');
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
 
         // On regarde les autres Suivis de ce signal et on récupère le numéro max
         $nextNumeroSuivi = $em->getRepository(Suivi::class)->donneNextNumeroSuivi($signalId);

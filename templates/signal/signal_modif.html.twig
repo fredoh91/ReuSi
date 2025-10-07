@@ -14,6 +14,7 @@
 {% block body %}
 
 {{ encore_entry_link_tags('rdd_css') }}
+{{ encore_entry_link_tags('signal_form_css') }}
 	{# Affichage des messages flash #}
 	{% for type, messages in app.flashes %}
 		{% for message in messages %}
@@ -76,40 +77,12 @@
                         <div class="col-4">{{ form_widget(form.signal.Contexte) }}</div>
                     </div>
 
-                    {# Source du signal #}
-                    <div class="row">
-                        <div class="col-2">{{ form_label(form.signal.SourceSignal, 'Source du signal') }}</div>
-                        <div class="col-2">{{ form_label(form.signal.RefSignal, 'Référence du signal') }}</div>
-                        <div class="col-2">{{ form_label(form.signal.IdentifiantSource, 'Identifiant source') }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2">{{ form_widget(form.signal.SourceSignal) }}</div>
-                        <div class="col-2">{{ form_widget(form.signal.RefSignal) }}</div>
-                        <div class="col-2">{{ form_widget(form.signal.IdentifiantSource) }}</div>
-                    </div>
 
-                    {# Données portées par le suivi initial : Émetteur, Pilote, date de la réunion #}
-                    <div class="row">
-                        <div class="col-2">{{ form_label(form.suiviInitial.EmetteurSuivi, 'Émetteur du signal') }}</div>
-                        <div class="col-2">{{ form_label(form.suiviInitial.PiloteDS, 'Pilote du signal') }}</div>
-                        <div class="col-2">{{ form_label(form.suiviInitial.reunionSignal, 'Date réunion') }}</div>
-                        <div class="col-6">{{ form_label(form.suiviInitial.DescriptionSuivi, 'Description du suivi') }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2">{{ form_widget(form.suiviInitial.EmetteurSuivi) }}</div>
-                        <div class="col-2">{{ form_widget(form.suiviInitial.PiloteDS) }}</div>
-                        <div class="col-2">{{ form_widget(form.suiviInitial.reunionSignal) }}</div>
-                        <div class="col-6">{{ form_widget(form.suiviInitial.DescriptionSuivi) }}</div>
-                    </div>
-
-
-
-
-
-                    {# Direction / Pôle concernés #}
+                    <!-- Nouvelle ligne pour contenir les deux blocs côte à côte -->
                     <div class="row mt-3">
-                        <div class="col-12">
-                            <fieldset class="mb-3 border p-3 rounded">
+                        <!-- Bloc Directions / Pôles -->
+                        <div class="col-md-9">
+                            <fieldset class="mb-3 border p-3 rounded dir-pole-fieldset">
                                 <legend class="text-center h5 mb-3">
                                     {{ form.signal.directionPoleConcernes.vars.label }}
                                 </legend>
@@ -121,7 +94,7 @@
                                             <div class="row">
                                                 {# Pour chaque groupe, on boucle sur les cases à cocher #}
                                                 {% for choice in choices %}
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-2">
                                                         {{ form_widget(form.signal.directionPoleConcernes[choice.value]) }}
                                                     </div>
                                                 {% endfor %}
@@ -131,6 +104,40 @@
                                 </div>
                             </fieldset>
                         </div>
+                        <!-- Nouveau bloc pour Source, Référence, Identifiant -->
+                        <div class="col-md-3">
+                            <div class="d-flex flex-column justify-content-around h-100">
+                                {# Source du signal #}
+                                <div class="mb-3">
+                                    {{ form_label(form.signal.SourceSignal, 'Source du signal') }}
+                                    {{ form_widget(form.signal.SourceSignal) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(form.signal.RefSignal, 'Référence du signal') }}
+                                    {{ form_widget(form.signal.RefSignal) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(form.signal.IdentifiantSource, 'Identifiant source') }}
+                                    {{ form_widget(form.signal.IdentifiantSource) }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    {# Données portées par le suivi initial : Émetteur, Pilote, date de la réunion #}
+                    <div class="row">
+                        <div class="col-2">{{ form_label(form.suiviInitial.EmetteurSuivi, 'Émetteur') }}</div>
+                        <div class="col-2">{{ form_label(form.suiviInitial.PiloteDS, 'Pilote') }}</div>
+                        <div class="col-2">{{ form_label(form.suiviInitial.reunionSignal, 'Date réunion') }}</div>
+                        <div class="col-6">{{ form_label(form.suiviInitial.DescriptionSuivi, 'Description du suivi') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">{{ form_widget(form.suiviInitial.EmetteurSuivi) }}</div>
+                        <div class="col-2">{{ form_widget(form.suiviInitial.PiloteDS) }}</div>
+                        <div class="col-2">{{ form_widget(form.suiviInitial.reunionSignal) }}</div>
+                        <div class="col-6">{{ form_widget(form.suiviInitial.DescriptionSuivi) }}</div>
                     </div>
 
                     {# Niveaux de risque #}

@@ -110,7 +110,6 @@ class SuiviDetailType extends AbstractType
             // ->add('UpdatedAt', null, [
             //     'widget' => 'single_text',
             // ])
-            ->add('EmetteurSuivi')
             ->add('validation', SubmitType::class, [
                 'label' => 'Valider',
                 'attr' => ['class' => 'btn btn-primary'],
