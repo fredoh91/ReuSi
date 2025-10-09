@@ -41,6 +41,14 @@ class SignalDetailBtnProduitSuiviType extends SignalDetailType
             //     'label' => 'Ajout produit(s) manuellement',
             //     'row_attr' => ['id' => 'ajout_produit_saisie_manu'],
             // ])
+            ->add('ajout_mesure', SubmitType::class, [
+                'attr' => [
+                    'class' => 'btn btn-success px-4',
+                    'formnovalidate' => true,
+                ],
+                'label' => 'Ajout d\'une mesure',
+                'row_attr' => ['id' => 'ajout_mesure'],
+            ])
         ;
     }
 

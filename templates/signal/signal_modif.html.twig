@@ -128,10 +128,10 @@
 
                     {# Données portées par le suivi initial : Émetteur, Pilote, date de la réunion #}
                     <div class="row">
-                        <div class="col-2">{{ form_label(form.suiviInitial.EmetteurSuivi, 'Émetteur') }}</div>
-                        <div class="col-2">{{ form_label(form.suiviInitial.PiloteDS, 'Pilote') }}</div>
+                        <div class="col-2">{{ form_label(form.suiviInitial.EmetteurSuivi, 'Émetteur initial') }}</div>
+                        <div class="col-2">{{ form_label(form.suiviInitial.PiloteDS, 'Pilote initial') }}</div>
                         <div class="col-2">{{ form_label(form.suiviInitial.reunionSignal, 'Date réunion') }}</div>
-                        <div class="col-6">{{ form_label(form.suiviInitial.DescriptionSuivi, 'Description du suivi') }}</div>
+                        <div class="col-6">{{ form_label(form.suiviInitial.DescriptionSuivi, 'Description initiale') }}</div>
                     </div>
                     <div class="row">
                         <div class="col-2">{{ form_widget(form.suiviInitial.EmetteurSuivi) }}</div>
@@ -150,6 +150,99 @@
                         <div class="col-2">{{ form_widget(form.signal.NiveauRisqueInitial) }}</div>
                         <div class="col-2">{{ form_widget(form.signal.NiveauRisqueFinal) }}</div>
                         <div class="col-8">{{ form_widget(form.signal.AnaRisqueComment) }}</div>
+                    </div>
+
+                    <!-- Sous-card pour le Relevé de Décision Initial -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-light">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-card-checklist"></i> Relevé de Décision Initial (N°1)
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-9">{{ form_row(form.rddInitial.DescriptionRDD) }}</div>
+                                <div class="col-md-3 d-flex flex-column justify-content-around">
+                                    {{ form_row(form.rddInitial.PassageCTP) }}
+                                    {{ form_row(form.rddInitial.PassageRSS) }}
+                                </div>
+                            </div>
+
+                            {% if mesuresInitiales is not empty %}
+                                <hr>
+                                <h6 class="card-subtitle mb-2 text-muted">Mesures associées</h6>
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Libellé de la mesure</th>
+                                            <th>Détails/Commentaires</th>
+                                            <th>Date clôture prév.</th>
+                                            <th>Date clôture eff.</th>
+                                            <th style="width: 100px;">Modif.</th>
+                                            <th style="width: 100px;">Clôture</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mesure in mesuresInitiales %}
+                                            <tr class="{{ mesure.DesactivateAt ? 'text-muted' : '' }}">
+                                                <td>{{ mesure.LibMesure }}</td>
+                                                <td>{{ mesure.DateCloturePrev ? mesure.DateCloturePrev|date('d/m/Y') : '' }}</td>
+                                                <td>{{ mesure.DetailCommentaire }}</td>
+                                                <td>{{ mesure.DateClotureEffective ? mesure.DateClotureEffective|date('d/m/Y') : '' }}</td>
+                                                <td>
+                                                    {% if isLatestRdd and mesure.id %}
+                                                        <a href="{{ path('app_modif_mesure', {'signalId': signal.id, 'rddId': form.rddInitial.vars.data.id, 'mesureId': mesure.id}) }}" class="btn btn-sm btn-primary" style="width: 95px;" title="Modifier la mesure">
+                                                            <i class="bi bi-pencil-square"></i> Modif.
+                                                        </a>
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-secondary" style="width: 95px;" disabled title="{{ not isLatestRdd ? 'Modification impossible sur un ancien RDD' : 'Disponible après validation' }}">
+                                                            <i class="bi bi-pencil-square"></i> Modif.
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if isLatestRdd and mesure.id %}
+                                                        {% if mesure.DesactivateAt is null %}
+                                                            {# La mesure est ouverte, on affiche le bouton pour la clore #}
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
+                                                                <i class="bi bi-check-square"></i> Clore
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
+                                                                <i class="bi bi-arrow-counterclockwise"></i> Rouvrir
+                                                            </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% set disabled_title = not isLatestRdd ? 'Action impossible sur un ancien RDD' : 'Disponible après validation' %}
+                                                        <button class="btn btn-sm btn-secondary" style="width: 95px;" disabled title="{{ disabled_title }}">
+                                                            <i class="bi {{ mesure.DesactivateAt is null ? 'bi-check-square' : 'bi-arrow-counterclockwise' }}"></i> {{ mesure.DesactivateAt is null ? 'Clore' : 'Rouvrir' }}
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-light mt-3" role="alert">
+                                    Aucune mesure n'est associée à ce relevé de décision initial.
+                                </div>
+                            {% endif %}
+
+
+
+                            <div class="row mt-4">
+                                <div class="col-12 d-flex justify-content-center">
+                                    {% if isLatestRdd %}
+                                        {{ form_widget(form.signal.ajout_mesure) }}
+                                    {% else %}
+                                        {{ form_widget(form.signal.ajout_mesure, {'attr': {'disabled': true, 'title': 'L\'ajout de mesure n\'est possible que sur le dernier RDD.'}}) }}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+
+                        </div>
                     </div>
 
                 </div>
@@ -257,10 +350,11 @@
                                     {% endif %}
                                     <tr class="{{ row_class }}">
                                         <td>
-                                            {# <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'suiviId': suivi.id}) }}"> #}
-                                                {{ suivi.NumeroSuivi }}
+                                            <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a>
+                                            {# <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}"> #}
+                                                {# {{ suivi.NumeroSuivi }} #}
                                             {# </a> #}
-                                        </td>       {#  app_modif_RDD #}
+                                        </td>       {#  app_modif_suivi #}
                                         <td>{{ suivi.reunionSignal and suivi.reunionSignal.dateReunion ? suivi.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
                                         <td>{{ suivi.DescriptionSuivi }}</td>
                                     </tr>
@@ -284,59 +378,6 @@
         </div>
 
 
-
-        <!-- Card relevé de décision -->
-        <div class="col-12">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-card-checklist"></i> Historique des relevés de décision
-                    </h5>
-                </div>
-                <div class="card-body">
-
-                    {% if lstRDD is not empty %}
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Numéro RDD</th>
-                                    <th>Date réunion</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for rdd in lstRDD %}
-                                    {% set row_class = 'rdd-inactif' %}
-                                    {% if latestRddId is defined and rdd.id == latestRddId %}
-                                        {% set row_class = 'rdd-actif' %}
-                                    {% endif %}
-                                    <tr class="{{ row_class }}">
-                                        <td>
-                                            <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">
-                                                {{ rdd.NumeroRDD }}
-                                            </a>
-                                        </td>       {#  app_modif_RDD #}
-                                        <td>{{ rdd.reunionSignal and rdd.reunionSignal.dateReunion ? rdd.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
-                                        <td>{{ rdd.DescriptionRDD }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Aucun relevé de décision associé.</p>
-                    {% endif %}
-
-                    {# Boutons relevé de décision #}
-
-                    {# <div class="row">
-                        <div class="col-12 d-flex justify-content-center">
-                            {{ form_widget(form.signal.ajout_RDD) }}
-                        </div>
-                    </div> #}
-
-                </div>
-            </div>
-        </div>
     </div>
 
     {# Boutons de validation globaux #}

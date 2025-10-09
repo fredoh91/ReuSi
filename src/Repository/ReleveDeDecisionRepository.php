@@ -74,7 +74,7 @@ class ReleveDeDecisionRepository extends ServiceEntityRepository
     public function findLatestForSignal(Signal $signal): ?ReleveDeDecision
     {
         return $this->createQueryBuilder('rdd')
-            ->join('rdd.reunionSignal', 'rs')
+            ->leftJoin('rdd.reunionSignal', 'rs') // Utiliser leftJoin pour inclure les RDD sans réunion
             ->where('rdd.SignalLie = :signal')
             ->setParameter('signal', $signal)
             ->orderBy('rs.DateReunion', 'DESC')

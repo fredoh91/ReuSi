@@ -83,7 +83,8 @@ final class GestionMesuresController extends AbstractController
                     $this->logger->info('creation mesure - 01 - bouton annulation');
                 }
 
-                return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
             }
             if ($form->get('validation')->isClicked()) {
 
@@ -106,7 +107,8 @@ final class GestionMesuresController extends AbstractController
 
                     $this->addFlash('success', 'La mesure ' . $mesure->getLibMesure() . ' a bien été créée.');
 
-                    return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                    // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
 
                 } else {
                     // Formulaire invalide
@@ -195,7 +197,8 @@ final class GestionMesuresController extends AbstractController
                     $this->logger->info('creation mesure - 01 - bouton annulation');
                 }
 
-                return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
             }
             if ($form->get('validation')->isClicked()) {
 
@@ -218,7 +221,8 @@ final class GestionMesuresController extends AbstractController
 
                     $this->addFlash('success', 'La mesure a bien été modifiée.');
 
-                    return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                    // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
 
                 } else {
                     // Formulaire invalide
@@ -269,20 +273,21 @@ final class GestionMesuresController extends AbstractController
         } else {
             // La mesure est ouverte, on la clôture
             $mesure->setDesactivateAt($now);
-            $dateReunion = $mesure->getRddLie()->getReunionSignal()->getDateReunion();
-            if ($dateReunion instanceof \DateTime) {
-                $mesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($dateReunion));
+            $reunionSignal = $mesure->getRddLie()->getReunionSignal();
+            if ($reunionSignal && $reunionSignal->getDateReunion() instanceof \DateTime) {
+                // Si une réunion est liée, on utilise sa date
+                $mesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunionSignal->getDateReunion()));
             } else {
-                $mesure->setDateClotureEffective(null);
+                // Sinon, on utilise la date du jour
+                $mesure->setDateClotureEffective($now);
             }
             $this->addFlash('success', 'La mesure '. $mesure->getLibMesure() . ' a été clôturée.');
         }
 
         $em->flush();
 
-        return $this->redirectToRoute('app_modif_RDD', [
+        return $this->redirectToRoute('app_signal_modif', [
             'signalId' => $mesure->getSignalLie()->getId(),
-            'rddId' => $mesure->getRddLie()->getId(),
         ]);
     }
 }

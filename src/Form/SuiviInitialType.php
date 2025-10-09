@@ -30,18 +30,18 @@ class SuiviInitialType extends AbstractType
         $builder
             ->add('DescriptionSuivi', TextareaType::class, [
                 'label' => 'Description du suivi',
+                'label_attr' => ['class' => 'form-label fw-bold'],
+                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
                 ],
-                'label_attr' => ['class' => 'form-label'],
-                'required' => false,
             ])
             ->add('PiloteDS', TextType::class, [ // Sera un ChoiceType plus tard
                 'label' => 'Pilote DS',
-                'attr' => ['class' => 'form-control'],
-                'label_attr' => ['class' => 'form-label'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
                 'required' => false,
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('reunionSignal', EntityType::class, [
                 'class' => ReunionSignal::class,
@@ -50,9 +50,9 @@ class SuiviInitialType extends AbstractType
                     return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
                 },
                 'placeholder' => '-- Sélectionner une réunion --',
-                'attr' => ['class' => 'form-select'],
-                'label_attr' => ['class' => 'form-label'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
                 'required' => false,
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('EmetteurSuivi', ChoiceType::class, [
                 'choices' => [
@@ -68,7 +68,7 @@ class SuiviInitialType extends AbstractType
                 ],
                 'label' => 'Émetteur du suivi',
                 'attr' => ['class' => 'form-select'],
-                'label_attr' => ['class' => 'form-label'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
                 'required' => false,
             ]);
     }

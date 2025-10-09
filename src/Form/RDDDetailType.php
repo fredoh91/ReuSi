@@ -12,6 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class RDDDetailType extends AbstractType
 {
@@ -36,14 +37,6 @@ class RDDDetailType extends AbstractType
                     'class' => 'form-control',
                 ],
                 'label_attr' => ['class' => 'form-label fw-bold'],
-            ])
-            ->add('DescriptionRDD', TextType::class, [
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 3,
-                ],
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => false,
             ])
             ->add('reunionSignal', EntityType::class, [
                 'class' => ReunionSignal::class,
@@ -71,35 +64,7 @@ class RDDDetailType extends AbstractType
             //         'disabled' => false,
             //     ],
             //     'label' => 'Niveau de risque initial',
-            // ])            
-            ->add('PassageCTP', ChoiceType::class, [
-                'choices' => [
-                    'Oui' => 'oui',
-                    'Non' => 'non',
-                ],
-                'attr' => [
-                    'class' => 'form-select',
-                    'readonly' => true,
-                    'disabled' => false,
-                ],
-                'label' => 'Passage en CTP',
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => false,
-            ])
-            ->add('PassageRSS', ChoiceType::class, [
-                'choices' => [
-                    'Oui' => 'oui',
-                    'Non' => 'non',
-                ],
-                'attr' => [
-                    'class' => 'form-select',
-                    'readonly' => true,
-                    'disabled' => false,
-                ],
-                'label' => 'Passage en RSS',
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => false,
-            ])
+            // ])
             ->add('EmetteurSuivi', ChoiceType::class, [
                 'choices' => [
                     'PGS' => 'PGS',
@@ -113,9 +78,7 @@ class RDDDetailType extends AbstractType
                     'Dir. SURV' => 'DIR_SURV',
                 ],
                 'attr' => [
-                    'class' => 'form-select',
-                    'readonly' => true,
-                    'disabled' => false,
+                    'class' => 'form-select'
                 ],
                 'label' => 'Emetteur du RDD',
                 'label_attr' => ['class' => 'form-label fw-bold'],
@@ -153,6 +116,11 @@ class RDDDetailType extends AbstractType
                 'row_attr' => ['id' => 'ajout_mesure'],
             ])
         ;
+    }
+
+    public function getParent(): string
+    {
+        return RddPourSuiviType::class;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

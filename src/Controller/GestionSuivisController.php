@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Suivi;
+use App\Form\SuiviAvecRddType;
 use App\Entity\StatutSignal;
 use App\Form\SuiviDetailType;
+use App\Form\Model\SuiviAvecRddDTO;
 use App\Entity\ReleveDeDecision;
 use App\Repository\SignalRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,6 +50,34 @@ final class GestionSuivisController extends AbstractController
 
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
         
+        // On récupère la réunion actuellement liée au suivi
+        $reunionActuelle = $suivi->getReunionSignal();
+        
+        // Si une réunion est déjà liée, on s'assure qu'elle est dans la liste des choix
+        if ($reunionActuelle) {
+            $dejaDansLaListe = false;
+            foreach ($date_reunion as $reunion) {
+                if ($reunion->getId() === $reunionActuelle->getId()) {
+                    $dejaDansLaListe = true;
+                    break;
+                }
+            }
+
+            // Si elle n'est pas dans la liste, on l'ajoute
+            if (!$dejaDansLaListe) {
+                $date_reunion[] = $reunionActuelle;
+            }
+
+            // On trie le tableau par date de réunion (la plus récente en premier)
+            // pour assurer un affichage cohérent et permettre la sélection par défaut.
+            usort($date_reunion, function ($a, $b) {
+                if (!$a->getDateReunion() || !$b->getDateReunion()) {
+                    return 0;
+                }
+                return $b->getDateReunion() <=> $a->getDateReunion();
+            });
+        }
+
         // On recupère aussi les autres Suivis de ce signal pour les afficher dans la vue
         $autresSuivis = $em->getRepository(Suivi::class)->findBy(['SignalLie' => $signal], ['NumeroSuivi' => 'ASC']);
 
@@ -76,19 +106,48 @@ final class GestionSuivisController extends AbstractController
             $RDD->setUserModif($userName);
 
             $suivi->setRddLie($RDD);
-
-            $em->persist($RDD);
-            $em->persist($suivi);
-            $em->flush();
-
         }
 
+        // --- NOUVELLE LOGIQUE DTO ---
+        // 1. Créer le DTO et le peupler avec nos entités
+        $dto = new SuiviAvecRddDTO();
+        $dto->suivi = $suivi;
+        $dto->rddLie = $suivi->getRddLie();
 
 
         // Création et gestion du formulaire
-        $form = $this->createForm(SuiviDetailType::class, $suivi, [
+        // On lie le formulaire au DTO, pas directement aux entités
+        $form = $this->createForm(SuiviAvecRddType::class, $dto, [
             'reunions' => $date_reunion,
         ]);
+
+        $form->handleRequest($request); 
+
+        if ($form->isSubmitted()) {
+            // Les boutons sont maintenant dans le sous-formulaire 'suivi'
+            if ($form->get('suivi')->get('annulation')->isClicked()) {
+                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+            }
+
+            if ($form->get('suivi')->get('ajout_mesure')->isClicked()) {
+                // On sauvegarde les données avant de rediriger
+                $em->persist($dto->suivi);
+                $em->persist($dto->rddLie);
+                $em->flush();
+                return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signalId, 'rddId' => $dto->rddLie->getId()]);
+            }
+
+            if ($form->get('suivi')->get('validation')->isClicked()) {
+                // Logique de validation et de persistance à implémenter ici
+                // ...
+            }
+        }
+
+        // On trie les autres suivis par ordre décroissant pour l'affichage
+        usort($autresSuivis, function ($a, $b) {
+            return $b->getNumeroSuivi() <=> $a->getNumeroSuivi();
+        });
+
 
         // return $this->render('gestion_suivis/suivi_modif.html.twig', [
         //     'signalId' => $signalId,
@@ -101,6 +160,7 @@ final class GestionSuivisController extends AbstractController
             'signal' => $signal,
             'autresSuivis' => $autresSuivis,
             'form' => $form->createView(),
+            'rdd' => $dto->rddLie, // On passe le RDD depuis le DTO
             'typeModifCreation' => 'modification',
             'lstMesures' => $lstMesures, // On peut les passer à la vue pour un aperçu
             'isLatest' => $isLatestSuivi, // Un Suivi en création est considéré comme le plus récent pour l'UI

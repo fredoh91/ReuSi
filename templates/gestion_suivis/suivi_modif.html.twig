@@ -15,6 +15,7 @@
     {% endfor %}
 {% endfor %}
 
+
     <div class="container-md mt-4">
 
 
@@ -36,8 +37,14 @@
 
 
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Création d'un nouveau suivi pour le signal : {{ signal.Titre }}</h5>
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    {% if typeModifCreation == 'creation' %}
+                        Création d'un nouveau suivi pour le signal : {{ signal.Titre }}
+                    {% else %}
+                        Modification du Suivi N°{{ form.vars.data.suivi.NumeroSuivi }} pour le signal : {{ signal.Titre }}
+                    {% endif %}
+                </h5>
             </div>
             <div class="card-body">
                 {{ form_start(form) }}
@@ -48,12 +55,12 @@
                 {# {{ form_row(form.reunionSignal) }} #}
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        {{ form_label(form.NumeroSuivi, 'Numéro de Suivi') }}
-                        {{ form_widget(form.NumeroSuivi) }}
+                        {{ form_label(form.suivi.NumeroSuivi, 'Numéro de Suivi') }}
+                        {{ form_widget(form.suivi.NumeroSuivi) }}
                     </div>
                     <div class="col-md-6">
-                        {{ form_label(form.reunionSignal, 'Date de la réunion') }}
-                        {{ form_widget(form.reunionSignal) }}
+                        {{ form_label(form.suivi.reunionSignal, 'Date de la réunion') }}
+                        {{ form_widget(form.suivi.reunionSignal) }}
                     </div>
                 </div>
 
@@ -61,36 +68,127 @@
 
                 <div class="row mb-3">
                     <div class="col-12">
-                        {{ form_label(form.DescriptionSuivi, 'Description') }}
-                        {{ form_widget(form.DescriptionSuivi) }}
+                        {{ form_label(form.suivi.DescriptionSuivi, 'Description') }}
+                        {{ form_widget(form.suivi.DescriptionSuivi) }}
                     </div>
                 </div>
 
 
                 <div class="row mb-3">
                     <div class="col-4">
-                        {{ form_label(form.PiloteDS, 'Pilote DS') }}
-                        {{ form_widget(form.PiloteDS) }}
+                        {{ form_label(form.suivi.PiloteDS, 'Pilote DS') }}
+                        {{ form_widget(form.suivi.PiloteDS) }}
                     </div>
                     <div class="col-4">
-                        {{ form_label(form.EmetteurSuivi, 'Émetteur du suivi') }}
-                        {{ form_widget(form.EmetteurSuivi) }}
+                        {{ form_label(form.suivi.EmetteurSuivi, 'Émetteur du suivi') }}
+                        {{ form_widget(form.suivi.EmetteurSuivi) }}
                     </div>
                 </div>
+
+                {# --- Sous-card pour le Relevé de Décision lié --- #}
+                {% if rdd %}
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-light">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-card-checklist"></i> Relevé de Décision associé (N°{{ rdd.NumeroRDD }})
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-9">{{ form_row(form.rddLie.DescriptionRDD) }}</div>
+                                <div class="col-md-3 d-flex flex-column justify-content-around">
+                                    {{ form_row(form.rddLie.PassageCTP) }}
+                                    {{ form_row(form.rddLie.PassageRSS) }}
+                                </div>
+                            </div>
+
+                            {% if lstMesures is not empty %}
+                                <hr>
+                                <h6 class="card-subtitle mb-2 text-muted">Mesures associées</h6>
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Libellé de la mesure</th>
+                                            <th>Détails/Commentaires</th>
+                                            <th>Date clôture prév.</th>
+                                            <th>Date clôture eff.</th>
+                                            <th style="width: 100px;">Modif.</th>
+                                            <th style="width: 100px;">Clôture</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mesure in lstMesures %}
+                                            <tr class="{{ mesure.DesactivateAt ? 'text-muted' : '' }}">
+                                                <td>{{ mesure.LibMesure }}</td>
+                                                <td>{{ mesure.DetailCommentaire }}</td>
+                                                <td>{{ mesure.DateCloturePrev ? mesure.DateCloturePrev|date('d/m/Y') : '' }}</td>
+                                                <td>{{ mesure.DateClotureEffective ? mesure.DateClotureEffective|date('d/m/Y') : '' }}</td>
+                                                <td>
+                                                    {% if isLatest and mesure.id %}
+                                                        <a href="{{ path('app_modif_mesure', {'signalId': signal.id, 'rddId': rdd.id, 'mesureId': mesure.id}) }}" class="btn btn-sm btn-primary" style="width: 95px;" title="Modifier la mesure">
+                                                            <i class="bi bi-pencil-square"></i> Modif.
+                                                        </a>
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-secondary" style="width: 95px;" disabled title="{{ not isLatest ? 'Modification impossible sur un ancien suivi' : 'Disponible après validation' }}">
+                                                            <i class="bi bi-pencil-square"></i> Modif.
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if isLatest and mesure.id %}
+                                                        {% if mesure.DesactivateAt is null %}
+                                                            {# La mesure est ouverte, on affiche le bouton pour la clore #}
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
+                                                                <i class="bi bi-check-square"></i> Clore
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
+                                                                <i class="bi bi-arrow-counterclockwise"></i> Rouvrir
+                                                            </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% set disabled_title = not isLatest ? 'Action impossible sur un ancien suivi' : 'Disponible après validation' %}
+                                                        <button class="btn btn-sm btn-secondary" style="width: 95px;" disabled title="{{ disabled_title }}">
+                                                            <i class="bi {{ mesure.DesactivateAt is null ? 'bi-check-square' : 'bi-arrow-counterclockwise' }}"></i> {{ mesure.DesactivateAt is null ? 'Clore' : 'Rouvrir' }}
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-light mt-3" role="alert">
+                                    Aucune mesure n'est associée à ce relevé de décision.
+                                </div>
+                            {% endif %}
+
+                            <div class="row mt-4">
+                                <div class="col-12 d-flex justify-content-center">
+                                    {% if isLatest %}
+                                        {{ form_widget(form.suivi.ajout_mesure) }}
+                                    {% else %}
+                                        {{ form_widget(form.suivi.ajout_mesure, {'attr': {'disabled': true, 'title': 'L\'ajout de mesure n\'est possible que sur le dernier suivi.'}}) }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
 
 
                 <div class="row mt-4">
                     <div class="col-6 d-flex justify-content-center">
-                        {{ form_widget(form.validation) }}
+                        {{ form_widget(form.suivi.validation) }}
                     </div>
                     <div class="col-6 d-flex justify-content-center">
-                        {{ form_widget(form.annulation) }}
+                        {{ form_widget(form.suivi.annulation) }}
                     </div>
                 </div>
 
 
-                {# Affichage des mesures qui seront dupliquées #}
-                {% if lstMesures is not empty %}
+                {# Affichage des mesures qui seront dupliquées (uniquement en création) #}
+                {% if typeModifCreation == 'creation' and lstMesures is not empty %}
                     <div class="alert alert-info mt-3">
                         <p class="fw-bold">Les mesures actives suivantes seront reportées sur ce nouveau suivi :</p>
                         <ul>
@@ -101,12 +199,32 @@
                     </div>
                 {% endif %}
 
-                {# <div class="d-flex justify-content-center mt-4">
-                    {{ form_widget(form.validation) }}
-                    {{ form_widget(form.annulation, {'attr': {'class': 'btn btn-secondary ms-2'}}) }}
-                </div> #}
-
                 {{ form_end(form) }}
+            </div>
+        </div>
+
+        {# --- Card pour l'historique des autres suivis --- #}
+        <div class="card shadow-sm mt-4 mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-card-list"></i> Historique des autres suivis
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set autresSuivisFiltres = autresSuivis|filter(s => s.NumeroSuivi > 0 and s.id != form.vars.data.suivi.id) %}
+                {% if autresSuivisFiltres is not empty %}
+                    <ul class="list-group">
+                        {% for autreSuivi in autresSuivisFiltres %}
+                            <li class="list-group-item">
+                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': autreSuivi.id}) }}">Suivi N°{{ autreSuivi.NumeroSuivi }}</a>
+                                du {{ autreSuivi.reunionSignal and autreSuivi.reunionSignal.dateReunion ? autreSuivi.reunionSignal.dateReunion|date('d/m/Y') : 'N/A' }}
+                                <p class="mb-0 text-muted small">{{ autreSuivi.DescriptionSuivi|slice(0, 150) }}...</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Aucun autre suivi pour ce signal.</p>
+                {% endif %}
             </div>
         </div>
     </div>

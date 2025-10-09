@@ -131,6 +131,20 @@ final class SignalDetailController extends AbstractController
             $this->addFlash('warning', 'Le suivi initial manquant a été automatiquement recréé.');
         }
 
+        // On cherche le RDD initial (NumeroRDD = 1)
+        $rddInitial = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 1]);
+        if (!$rddInitial && $suiviInitial->getRddLie()) {
+            // Cas où le RDD est lié au suivi mais pas directement au signal avec le bon numéro
+            $rddInitial = $suiviInitial->getRddLie();
+        }
+
+        // On récupère les mesures associées au RDD initial s'il existe
+        $mesuresInitiales = [];
+        if ($rddInitial) {
+            $mesuresInitiales = $rddInitial->getMesuresRDDs();
+        }
+
+
         // $signal = new Signal();
         // $signal->setCreatedAt(new \DateTimeImmutable());
         $signal->setUpdatedAt(new \DateTimeImmutable());
@@ -148,7 +162,36 @@ final class SignalDetailController extends AbstractController
         // On récupère le RDD le plus récent pour le passer à la vue
         $latestRDD = $em->getRepository(ReleveDeDecision::class)->findLatestForSignal($signal);
 
-        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelled(200);
+        // On vérifie si le RDD initial est bien le RDD le plus récent.
+        // On s'assure que les deux objets existent avant de comparer leurs IDs pour éviter les erreurs.
+        $isLatestRdd = false;
+        if ($rddInitial && $latestRDD && $rddInitial->getId() === $latestRDD->getId()) {
+            $isLatestRdd = true;
+        }
+
+        // On récupère les réunions disponibles (non annulées et non liées à un autre RDD de ce signal)
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
+
+        // On récupère la réunion actuellement liée au suivi initial
+        $reunionInitiale = $suiviInitial->getReunionSignal();
+
+        // Si une réunion est déjà liée, on s'assure qu'elle est dans la liste des choix
+        if ($reunionInitiale) {
+            $dejaDansLaListe = false;
+            foreach ($date_reunion as $reunion) {
+                if ($reunion->getId() === $reunionInitiale->getId()) {
+                    $dejaDansLaListe = true;
+                    break;
+                }
+            }
+            // Si elle n'est pas dans la liste, on l'ajoute
+            if (!$dejaDansLaListe) {
+                // On l'ajoute au début pour qu'elle apparaisse en premier si le tri n'est pas refait
+                array_unshift($date_reunion, $reunionInitiale);
+            }
+        }
+
+
 
         $routeSource = $request->query->get('routeSource', null);
         // dd($date_reunion);
@@ -158,6 +201,7 @@ final class SignalDetailController extends AbstractController
         $dto = new SignalAvecSuiviInitialDTO();
         $dto->signal = $signal;
         $dto->suiviInitial = $suiviInitial;
+        $dto->rddInitial = $rddInitial;
 
         // On crée le formulaire composite en lui passant le DTO
         // Et on lui dit d'utiliser `SignalDetailBtnProduitRDDType` pour la partie "signal"
@@ -194,9 +238,18 @@ final class SignalDetailController extends AbstractController
                         $this->logger->info('modif signal - 02 - bouton validation');
                     }
 
+                    // On s'assure que le RDD initial a la même réunion que le suivi initial
+                    if ($dto->suiviInitial && $dto->rddInitial) {
+                        $reunion = $dto->suiviInitial->getReunionSignal();
+                        $dto->rddInitial->setReunionSignal($reunion);
+                    }
+
                     // Symfony a mis à jour le DTO, on peut persister les entités qu'il contient
                     $em->persist($dto->signal);
                     $em->persist($dto->suiviInitial);
+                    if ($dto->rddInitial) {
+                        $em->persist($dto->rddInitial);
+                    }
 
                     // $em->persist($signal);
                     $em->flush();
@@ -230,7 +283,9 @@ final class SignalDetailController extends AbstractController
                     // On persist et flush pour que le signal soit à jour avant la redirection
                     $em->persist($dto->signal);
                     $em->persist($dto->suiviInitial);
-                    $em->persist($signal);
+                    if ($dto->rddInitial) {
+                        $em->persist($dto->rddInitial);
+                    }
                     $em->flush();
 
                     // Redirection vers la route pour creations des produits
@@ -255,6 +310,9 @@ final class SignalDetailController extends AbstractController
                     // On persist et flush pour que le signal soit à jour avant la redirection
                     $em->persist($dto->signal);
                     $em->persist($dto->suiviInitial);
+                    if ($dto->rddInitial) {
+                        $em->persist($dto->rddInitial);
+                    }
                     $em->flush();
 
                     // Redirection vers la route pour creations des produits dans un formulaire vide
@@ -278,6 +336,9 @@ final class SignalDetailController extends AbstractController
                     // On persist et flush pour que le signal soit à jour avant la redirection
                     $em->persist($dto->signal);
                     $em->persist($dto->suiviInitial);
+                    if ($dto->rddInitial) {
+                        $em->persist($dto->rddInitial);
+                    }
                     $em->flush();
 
                     // Redirection vers la route pour creations des produits
@@ -290,6 +351,27 @@ final class SignalDetailController extends AbstractController
                     }
                 }
             }
+
+            if ($form->get('signal')->get('ajout_mesure')->isClicked()) {
+                // On ne valide pas le formulaire, on redirige directement
+                // Mais on s'assure que le RDD initial existe avant de rediriger
+                if ($dto->rddInitial) {
+                    if ($this->kernel->getEnvironment() === 'dev') {
+                        dump('modif signal - 12 - bouton ajout mesure');
+                        $this->logger->info('modif signal - 12 - bouton ajout mesure');
+                    }
+                    // On persist et flush pour que le signal soit à jour avant la redirection
+                    $em->persist($dto->signal);
+                    $em->persist($dto->suiviInitial);
+                    $em->persist($dto->rddInitial);
+                    $em->flush();
+
+                    // Redirection vers la route pour la création d'une mesure, en liant au RDD initial
+                    return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signal->getId(), 'rddId' => $dto->rddInitial->getId()]);
+                } else {
+                    $this->addFlash('warning', 'Impossible d\'ajouter une mesure car le relevé de décision initial n\'a pas été trouvé.');
+                }
+            }
         }
         return $this->render('signal/signal_modif.html.twig', [
             'form' => $form->createView(),
@@ -297,8 +379,10 @@ final class SignalDetailController extends AbstractController
             'lstProduits' => $lstProduits,
             'lstRDD' => $lstRDD,
             'latestRddId' => $latestRDD ? $latestRDD->getId() : null,
+            'isLatestRdd' => $isLatestRdd,
             'lstSuivi' => $lstSuivi,
             'latestSuiviId' => $latestSuivi ? $latestSuivi->getId() : null,
+            'mesuresInitiales' => $mesuresInitiales,
         ]);
     }
 

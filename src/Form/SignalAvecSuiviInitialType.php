@@ -21,6 +21,11 @@ class SignalAvecSuiviInitialType extends AbstractType
             'label' => 'Suivi Initial',
             'reunions' => $options['reunions'],
         ]);
+
+        // On imbrique le formulaire pour le RDD initial
+        $builder->add('rddInitial', ReleveDeDecisionInitialType::class, [
+            'label' => false,
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -32,5 +37,9 @@ class SignalAvecSuiviInitialType extends AbstractType
             'signal_form_type' => SignalDetailType::class,
             'reunions' => [],
         ]);
+
+        // On s'assure que l'option 'signal_form_type' est bien une classe de formulaire
+        $resolver->setAllowedTypes('signal_form_type', 'string');
+        $resolver->setAllowedTypes('reunions', 'array');
     }
 }
