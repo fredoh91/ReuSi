@@ -15,8 +15,15 @@ class SuiviAvecRddType extends AbstractType
             ->add('suivi', SuiviDetailType::class, [
                 'label' => false,
                 'reunions' => $options['reunions'],
+                'required_fields' => [
+                    'DescriptionSuivi' => false,
+                    'PiloteDS' => false,
+                    'EmetteurSuivi' => false,
+                    'reunionSignal' => false
+                ]
             ])
-            ->add('rddLie', RddPourSuiviType::class, [
+            // ->add('rddLie', RddPourSuiviType::class, [
+            ->add('rddLie', ReleveDeDecisionType::class, [
                 'label' => false,
             ]);
     }

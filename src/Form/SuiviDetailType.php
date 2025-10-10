@@ -2,15 +2,12 @@
 
 namespace App\Form;
 
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-class SuiviDetailType extends AbstractType
+class SuiviDetailType extends SuiviType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -23,6 +20,7 @@ class SuiviDetailType extends AbstractType
                     'class' => 'form-control',
                 ],
                 'label_attr' => ['class' => 'form-label fw-bold'],
+                'disabled' => $options['disabled_fields']['NumeroSuivi'] ?? false,
             ])
             // ->add('UserCreate')
             // ->add('UserModif')
@@ -34,27 +32,46 @@ class SuiviDetailType extends AbstractType
             // ])
             ->add('validation', SubmitType::class, [
                 'label' => 'Valider',
-                'attr' => ['class' => 'btn btn-primary'],
+                'attr' => ['class' => 'btn btn-primary m-2'],
             ])
             ->add('annulation', SubmitType::class, [
                 'label' => 'Annuler',
-                'attr' => ['class' => 'btn btn-secondary'],
+                'attr' => [
+                    'class' => 'btn btn-secondary m-2',
+                    'formnovalidate' => 'formnovalidate',
+                ],
             ])
             ->add('ajout_mesure', SubmitType::class, [
                 'label' => 'Ajouter une mesure',
-                'attr' => ['class' => 'btn btn-info'],
+                'attr' => ['class' => 'btn btn-info m-2'],
             ]);
     }
 
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        parent::configureOptions($resolver);
+        
+        // Options par défaut pour SuiviDetailType
+        $resolver->setDefaults([
+            'required_fields' => [
+                'DescriptionSuivi' => true,
+                'PiloteDS' => true,
+                'reunionSignal' => false,
+                'EmetteurSuivi' => true,
+                'NumeroSuivi' => false,
+            ],
+            'disabled_fields' => [
+                'DescriptionSuivi' => false,
+                'PiloteDS' => false,
+                'reunionSignal' => false,
+                'EmetteurSuivi' => false,
+                'NumeroSuivi' => true,
+            ],
+        ]);
+    }
+    
     public function getParent(): string
     {
-        return SuiviInitialType::class;
+        return SuiviType::class;
     }
-
-    // La méthode configureOptions n'est plus nécessaire ici, 
-    // car les options 'data_class' et 'reunions' sont déjà définies dans le parent.
-    // public function configureOptions(OptionsResolver $resolver): void
-    // {
-    //     // ...
-    // }
 }

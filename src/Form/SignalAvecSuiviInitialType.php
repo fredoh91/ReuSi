@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Form\SignalDetailType;
 use App\Form\SignalRddDetailType;
+use App\Form\SuiviInitialDetailType;
 use App\Form\Model\SignalAvecSuiviInitialDTO;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -21,13 +22,16 @@ class SignalAvecSuiviInitialType extends AbstractType
                 'add_suivi_button' => true,
                 'add_mesure_button' => true,
             ])
-            ->add('suiviInitial', SuiviInitialType::class, [
+            ->add('suiviInitial', SuiviInitialDetailType::class, [
                 'label' => 'Suivi Initial (N°0)',
                 'reunions' => $options['reunions'],
+                'required' => false,
             ])
             ->add('rddInitial', SignalRddDetailType::class, [
                 'label' => 'Relevé de Décision Initial (N°1)',
                 'is_initial' => true, // Option pour masquer certains champs si nécessaire
+                'required' => false,
+                'reunions' => $options['reunions'],
             ])
         ;
     }

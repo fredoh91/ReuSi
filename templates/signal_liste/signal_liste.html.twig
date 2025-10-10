@@ -83,7 +83,7 @@
                                     {% if suivi.DescriptionSuivi is not empty %}
                                         <ul>
                                             <li>
-                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a> - 
+                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id, 'routeSource': 'app_signal_liste'}) }}">{{ suivi.NumeroSuivi }}</a> - 
                                                 {{ suivi.reunionSignal and suivi.reunionSignal.DateReunion ? suivi.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
                                                 {# {{ suivi.DescriptionSuivi }} #}
                                                 {{ suivi.DescriptionSuivi|slice(0, 300) }}{% if suivi.DescriptionSuivi|length > 300 %}...{% endif %}
@@ -92,7 +92,7 @@
                                     {% else %}
                                         <ul>
                                             <li>
-                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a> -
+                                                <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id, 'routeSource': 'app_signal_liste'}) }}">{{ suivi.NumeroSuivi }}</a> -
                                                 {{ suivi.reunionSignal and suivi.reunionSignal.DateReunion ? suivi.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
                                                 Pas de description
                                             </li>

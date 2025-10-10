@@ -3,28 +3,31 @@
 namespace App\Controller;
 
 use App\Entity\Suivi;
-use App\Form\SuiviAvecRddType;
 use App\Entity\StatutSignal;
 use App\Form\SuiviDetailType;
-use App\Form\Model\SuiviAvecRddDTO;
+use App\Form\SuiviAvecRddType;
 use App\Entity\ReleveDeDecision;
+use App\Form\Model\SuiviAvecRddDTO;
 use App\Repository\SignalRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use App\Entity\ReunionSignal; // Ajout du use
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class GestionSuivisController extends AbstractController
 {
+
     #[Route('/signal/{signalId}/modif_suivi/{suiviId}', name: 'app_modif_suivi')]
     public function modif_suivi(
         int $signalId,
         int $suiviId,
         SignalRepository $signalRepo,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RouterInterface $router
     ): Response
     {
 
@@ -124,9 +127,23 @@ final class GestionSuivisController extends AbstractController
         $form->handleRequest($request); 
 
         if ($form->isSubmitted()) {
+
+            $redirectRoute = $request->query->get('routeSource');
+            $redirectParams = $request->query->all('params');
+            $allowedRedirects = ['app_signal_liste','app_signal_modif','app_fait_marquant_liste'];
             // Les boutons sont maintenant dans le sous-formulaire 'suivi'
             if ($form->get('suivi')->get('annulation')->isClicked()) {
-                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
+                    $route = $router->getRouteCollection()->get($redirectRoute);
+                    if ($route) {
+                        $routeRequirements = $route->getRequirements();
+                        $missingParams = array_diff(array_keys($routeRequirements), array_keys($redirectParams));
+                        if (empty($missingParams)) {
+                            return $this->redirectToRoute($redirectRoute, $redirectParams);
+                        }
+                    }
+                }
             }
 
             if ($form->get('suivi')->get('ajout_mesure')->isClicked()) {
@@ -138,8 +155,20 @@ final class GestionSuivisController extends AbstractController
             }
 
             if ($form->get('suivi')->get('validation')->isClicked()) {
-                // Logique de validation et de persistance à implémenter ici
-                // ...
+                $em->persist($dto->suivi);
+                $em->persist($dto->rddLie);
+                $em->flush();
+                // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
+                    $route = $router->getRouteCollection()->get($redirectRoute);
+                    if ($route) {
+                        $routeRequirements = $route->getRequirements();
+                        $missingParams = array_diff(array_keys($routeRequirements), array_keys($redirectParams));
+                        if (empty($missingParams)) {
+                            return $this->redirectToRoute($redirectRoute, $redirectParams);
+                        }
+                    }
+                }
             }
         }
 

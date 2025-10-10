@@ -2,13 +2,15 @@
 
 namespace App\Controller;
 
-use App\Form\RddDetailType;
 use App\Entity\StatutSignal;
 use Psr\Log\LoggerInterface;
 use App\Entity\ReunionSignal;
 use App\Entity\ReleveDeDecision;
+use App\Form\ReleveDeDecisionType;
 use App\Repository\SignalRepository;
+use App\Form\ReleveDeDecisionModifType;
 use Doctrine\ORM\EntityManagerInterface;
+// use App\Form\ReleveDeDecisionPourSuiviType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -98,8 +100,9 @@ final class GestionRelevesDeDecisionController extends AbstractController
         }
 
 
-        $form = $this->createForm(RddDetailType::class, $RDD, [
+        $form = $this->createForm(ReleveDeDecisionType::class, $RDD, [
             'reunions' => $date_reunion,
+            'show_numero_rdd' => true, // Afficher le numéro RDD
         ]);
         $form->handleRequest($request);
         // $em->flush();
@@ -301,18 +304,16 @@ final class GestionRelevesDeDecisionController extends AbstractController
                 $date_reunion[] = $reunionActuelle;
             }
         }
-
         $RDD->setUpdatedAt(new \DateTimeImmutable());
         $RDD->setUserModif($userName);
 
-        $form = $this->createForm(RddDetailType::class, $RDD, [
+        // On crée le formulaire avec ReleveDeDecisionType
+        $form = $this->createForm(ReleveDeDecisionModifType::class, $RDD, [
             'reunions' => $date_reunion,
+            'show_numero_rdd' => true, // Afficher le numéro RDD
         ]);
 
         $autresRDDs = $em->getRepository(ReleveDeDecision::class)->findBy(['SignalLie' => $signal], ['NumeroRDD' => 'ASC']);
-
-        $form->handleRequest($request);
-
         if ($form->isSubmitted()) {
             if ($form->get('annulation')->isClicked()) {
 

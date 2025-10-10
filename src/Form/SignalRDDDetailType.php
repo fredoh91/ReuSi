@@ -36,7 +36,7 @@ class SignalRddDetailType extends AbstractType
 
     public function getParent(): string
     {
-        // Ce formulaire étend RddDseetailType pour en réutiliser les champs.
-        return RddDetailType::class;
+        // Ce formulaire étend maintenant ReleveDeDecisionType qui contient les champs de RddDetailType
+        return ReleveDeDecisionType::class;
     }
 }
