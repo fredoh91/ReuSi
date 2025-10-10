@@ -16,19 +16,11 @@
 {{ encore_entry_link_tags('rdd_css') }}
 {{ encore_entry_link_tags('signal_form_css') }}
 	{# Affichage des messages flash #}
-	{% for type, messages in app.flashes %}
-		{% for message in messages %}
-			{% if type == 'error' %}
-				<div class="alert alert-danger">{{ message }}</div>
-			{% elseif type == 'success' %}
-				<div class="alert alert-success">{{ message }}</div>
-			{% elseif type == 'warning' %}
-				<div class="alert alert-warning">{{ message }}</div>
-			{% else %}
-				<div class="alert alert-info">{{ message }}</div>
-			{% endif %}
-		{% endfor %}
-	{% endfor %}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
 
 
     {% if signal.TypeSignal == 'signal' %}
@@ -40,6 +32,7 @@
 
 <div class="container-md">
     {{ form_start(form) }}
+    {{ form_row(form.rddInitial.reunionSignal, { 'row_attr': {'class': 'd-none'} }) }}
 
     <div class="row g-3">
         <!-- Card Signal -->
@@ -48,18 +41,18 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="card-title mb-0">
                         <i class="bi"></i>
-                            {% if signal.TypeSignal == 'signal' %}
-                                Signal
-                            {% elseif signal.TypeSignal == 'fait_marquant' %}
-                                Fait marquant
-                            {% endif %}
+                        {% if signal.TypeSignal == 'signal' %}
+                            Signal
+                        {% elseif signal.TypeSignal == 'fait_marquant' %}
+                            Fait marquant
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
 
                     {# Titre #}
                     <div class="row">
-                        <div class="col-12">{{ form_label(form.signal.Titre, 'Titre') }}</div>
+                        <div class="col-12">{{ form_label(form.signal.Titre) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-12">{{ form_widget(form.signal.Titre) }}</div>
@@ -67,9 +60,9 @@
 
                     {# Description, Indication et contexte #}
                     <div class="row">
-                        <div class="col-4">{{ form_label(form.signal.Indication, 'Indication') }}</div>
-                        <div class="col-4">{{ form_label(form.signal.DescriptionSignal, 'Description du signal') }}</div>
-                        <div class="col-4">{{ form_label(form.signal.Contexte, 'Contexte') }}</div>
+                        <div class="col-4">{{ form_label(form.signal.Indication) }}</div>
+                        <div class="col-4">{{ form_label(form.signal.DescriptionSignal) }}</div>
+                        <div class="col-4">{{ form_label(form.signal.Contexte) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-4">{{ form_widget(form.signal.Indication) }}</div>
@@ -83,7 +76,7 @@
                         <!-- Bloc Directions / Pôles -->
                         <div class="col-md-9">
                             <fieldset class="mb-3 border p-3 rounded dir-pole-fieldset">
-                                <legend class="text-center h5 mb-3">
+                                <legend class="text-center h5 mb-3 fw-bold">
                                     {{ form.signal.directionPoleConcernes.vars.label }}
                                 </legend>
                                 <div id="{{ form.signal.directionPoleConcernes.vars.id }}">
@@ -109,15 +102,15 @@
                             <div class="d-flex flex-column justify-content-around h-100">
                                 {# Source du signal #}
                                 <div class="mb-3">
-                                    {{ form_label(form.signal.SourceSignal, 'Source du signal') }}
+                                    {{ form_label(form.signal.SourceSignal) }}
                                     {{ form_widget(form.signal.SourceSignal) }}
                                 </div>
                                 <div class="mb-3">
-                                    {{ form_label(form.signal.RefSignal, 'Référence du signal') }}
+                                    {{ form_label(form.signal.RefSignal) }}
                                     {{ form_widget(form.signal.RefSignal) }}
                                 </div>
                                 <div class="mb-3">
-                                    {{ form_label(form.signal.IdentifiantSource, 'Identifiant source') }}
+                                    {{ form_label(form.signal.IdentifiantSource) }}
                                     {{ form_widget(form.signal.IdentifiantSource) }}
                                 </div>
                             </div>
@@ -142,9 +135,9 @@
 
                     {# Niveaux de risque #}
                     <div class="row">
-                        <div class="col-2">{{ form_label(form.signal.NiveauRisqueInitial, 'Niveau de risque initial') }}</div>
-                        <div class="col-2">{{ form_label(form.signal.NiveauRisqueFinal, 'Niveau de risque final') }}</div>
-                        <div class="col-8">{{ form_label(form.signal.AnaRisqueComment, "Commentaire de l'analyse de risque") }}</div>
+                        <div class="col-2">{{ form_label(form.signal.NiveauRisqueInitial) }}</div>
+                        <div class="col-2">{{ form_label(form.signal.NiveauRisqueFinal) }}</div>
+                        <div class="col-8">{{ form_label(form.signal.AnaRisqueComment) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-2">{{ form_widget(form.signal.NiveauRisqueInitial) }}</div>
@@ -203,12 +196,19 @@
                                                 <td>
                                                     {% if isLatestRdd and mesure.id %}
                                                         {% if mesure.DesactivateAt is null %}
-                                                            {# La mesure est ouverte, on affiche le bouton pour la clore #}
-                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {
+                                                                'mesureId': mesure.id,
+                                                                'redirect': 'app_signal_modif',
+                                                                'params': {'signalId': signal.id}
+                                                            }) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
                                                                 <i class="bi bi-check-square"></i> Clore
                                                             </a>
                                                         {% else %}
-                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {
+                                                                'mesureId': mesure.id,
+                                                                'redirect': 'app_signal_modif',
+                                                                'params': {'signalId': signal.id}
+                                                            }) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
                                                                 <i class="bi bi-arrow-counterclockwise"></i> Rouvrir
                                                             </a>
                                                         {% endif %}
@@ -229,22 +229,26 @@
                                 </div>
                             {% endif %}
 
-
-
-                            <div class="row mt-4">
+                            <div class="row mt-3">
                                 <div class="col-12 d-flex justify-content-center">
-                                    {% if isLatestRdd %}
-                                        {{ form_widget(form.signal.ajout_mesure) }}
-                                    {% else %}
-                                        {{ form_widget(form.signal.ajout_mesure, {'attr': {'disabled': true, 'title': 'L\'ajout de mesure n\'est possible que sur le dernier RDD.'}}) }}
-                                    {% endif %}
+                                    {% set button_disabled = not (isLatestRdd and form.rddInitial.vars.data.id) %}
+                                    {{ form_widget(form.signal.ajout_mesure, {
+                                        'attr': {
+                                            'disabled': button_disabled,
+                                            'title': button_disabled ? 'Vous ne pouvez ajouter une mesure que sur le dernier relevé de décision.' : 'Ajouter une nouvelle mesure'
+                                        }
+                                    }) }}
                                 </div>
-                            </div>
-
-
-                        </div>
                     </div>
 
+                    <div class="row mt-4">
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.signal.validation) }}
+                        </div>
+                        <div class="col-6 d-flex justify-content-center">
+                            {{ form_widget(form.signal.annulation) }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -351,7 +355,7 @@
                                     <tr class="{{ row_class }}">
                                         <td>
                                             <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">{{ suivi.NumeroSuivi }}</a>
-                                            {# <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}"> #}
+                                            {# <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id}) }}">
                                                 {# {{ suivi.NumeroSuivi }} #}
                                             {# </a> #}
                                         </td>       {#  app_modif_suivi #}
@@ -380,13 +384,7 @@
 
     </div>
 
-    {# Boutons de validation globaux #}
-    <div class="card shadow-sm mt-4">
-        <div class="card-body d-flex justify-content-center flex-wrap">
-            {{ form_widget(form.signal.validation, {'attr': {'class': 'btn btn-primary m-2 px-5'}}) }}
-            {{ form_widget(form.signal.annulation, {'attr': {'class': 'btn btn-secondary m-2 px-5'}}) }}
-        </div>
-    </div>
+
 
     {{ form_end(form) }}
 </div>

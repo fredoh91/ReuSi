@@ -46,8 +46,8 @@ class ReleveDeDecision
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $PassageRSS = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $EmetteurSuivi = null;
+    // #[ORM\Column(length: 255, nullable: true)]
+    // private ?string $EmetteurSuivi = null;
 
     /**
      * @var Collection<int, MesuresRDD>
@@ -191,17 +191,17 @@ class ReleveDeDecision
         return $this;
     }
 
-    public function getEmetteurSuivi(): ?string
-    {
-        return $this->EmetteurSuivi;
-    }
+    // public function getEmetteurSuivi(): ?string
+    // {
+    //     return $this->EmetteurSuivi;
+    // }
 
-    public function setEmetteurSuivi(?string $EmetteurSuivi): static
-    {
-        $this->EmetteurSuivi = $EmetteurSuivi;
+    // public function setEmetteurSuivi(?string $EmetteurSuivi): static
+    // {
+    //     $this->EmetteurSuivi = $EmetteurSuivi;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * @return Collection<int, MesuresRDD>

@@ -1,5 +1,13 @@
 {% extends 'base.html.twig' %}
 
+{% block body_class %}
+    {% if signal.TypeSignal == 'signal' %}
+        page-signal
+    {% elseif signal.TypeSignal == 'fait_marquant' %}
+        page-fait-marquant
+    {% endif %}
+{% endblock %}
+
 {% block title %}Gestion du Suivi{% endblock %}
 
 {% block body %}
@@ -7,6 +15,7 @@
 
 
 {{ encore_entry_link_tags('suivi_css') }}
+{# {{ encore_entry_link_tags('signal_form_css') }} #}
 
 {# Affichage des messages flash #}
 {% for type, messages in app.flashes %}
@@ -15,10 +24,7 @@
     {% endfor %}
 {% endfor %}
 
-
     <div class="container-md mt-4">
-
-
 
         <div class="row justify-content-center text-center mb-3">
             <div class="col-12">
@@ -34,7 +40,6 @@
                 </p>
             </div>
         </div>
-
 
         <div class="card shadow-sm">
             <div class="card-header bg-warning text-dark">
@@ -137,12 +142,19 @@
                                                 <td>
                                                     {% if isLatest and mesure.id %}
                                                         {% if mesure.DesactivateAt is null %}
-                                                            {# La mesure est ouverte, on affiche le bouton pour la clore #}
-                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {
+                                                                'mesureId': mesure.id,
+                                                                'redirect': 'app_modif_suivi',
+                                                                'params': {'signalId': signal.id, 'suiviId': form.vars.data.suivi.id}
+                                                            }) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
                                                                 <i class="bi bi-check-square"></i> Clore
                                                             </a>
                                                         {% else %}
-                                                            <a href="{{ path('app_toggle_cloture_mesure', {'mesureId': mesure.id}) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
+                                                            <a href="{{ path('app_toggle_cloture_mesure', {
+                                                                'mesureId': mesure.id,
+                                                                'redirect': 'app_modif_suivi',
+                                                                'params': {'signalId': signal.id, 'suiviId': form.vars.data.suivi.id}
+                                                            }) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
                                                                 <i class="bi bi-arrow-counterclockwise"></i> Rouvrir
                                                             </a>
                                                         {% endif %}

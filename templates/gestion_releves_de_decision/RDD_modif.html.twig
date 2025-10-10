@@ -1,5 +1,13 @@
 {% extends 'base.html.twig' %}
 
+{% block body_class %}
+    {% if signal.TypeSignal == 'signal' %}
+        page-signal
+    {% elseif signal.TypeSignal == 'fait_marquant' %}
+        page-fait-marquant
+    {% endif %}
+{% endblock %}
+
 {% block title %}Relevé de Décision{% endblock %}
 
 {% block body %}

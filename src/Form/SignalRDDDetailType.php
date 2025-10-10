@@ -2,85 +2,41 @@
 
 namespace App\Form;
 
-use App\Entity\Signal;
-use App\Form\RDDDetailType;
-use App\Entity\ReunionSignal;
-use App\Form\SignalDetailType;
-use App\Entity\ReleveDeDecision;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-class SignalRDDDetailType extends AbstractType
+class SignalRddDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            // ->add('NumeroRDD')
-            // ->add('DescriptionRDD')
-            // ->add('UserCreate')
-            // ->add('UserModif')
-            // ->add('CreatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('UpdatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('SignalLie', EntityType::class, [
-            //     'class' => Signal::class,
-            //     'choice_label' => 'id',
-            // ])
-            // ->add('reunionSignal', EntityType::class, [
-            //     'class' => ReunionSignal::class,
-            //     'choice_label' => 'id',
-            // ])
-            ->add('signal', SignalDetailType::class, [
-                'label' => false, // Pas de label pour le sous-formulaire
-            ])
-            ->add('releve', RDDDetailType::class, [
-                'label' => false, // Pas de label pour le sous-formulaire
-            ])
-            ->add('reunionSignal', EntityType::class, [
-                'class' => ReunionSignal::class,
-                'choices' => $options['date_reunion'] ?? [],
-                'choice_label' => function ($reunion) {
-                    return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
-                },
-                'placeholder' => '-- Choisir une réunion --',
-                'required' => false,
-                'label' => 'Date de la réunion',
-            ])
-            ->add('validation', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-primary m-2'],
-                'label' => 'Validation',
-                'row_attr' => ['id' => 'validation'],
-            ])
-            ->add('ajout_produit', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-primary m-2'],
-                'label' => 'Ajout produit(s)',
-                'row_attr' => ['id' => 'ajout_produit'],
-            ])
-            ->add('ajout_produit_saisie_manu', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-primary m-2'],
-                'label' => 'Ajout produit(s) manuellement',
-                'row_attr' => ['id' => 'ajout_produit_saisie_manu'],
-            ])
-            ->add('reset', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-primary m-2'],
-                'label' => 'Annulation',
-                'row_attr' => ['id' => 'reset'],
-            ])
-        ;
+        // On utilise un écouteur d'événements pour modifier le formulaire
+        // avant que les données ne soient définies.
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options) {
+            $form = $event->getForm();
+
+            // Si c'est le RDD initial, on ne veut pas afficher le champ NumeroRDD.
+            if ($options['is_initial']) {
+                // On retire le champ du formulaire parent s'il existe.
+                if ($form->has('NumeroRDD')) {
+                    $form->remove('NumeroRDD');
+                }
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            // 'data_class' => ReleveDeDecision::class,
-            'data_class' => \App\Form\Model\SignalReleveReunionDTO::class,
-            'date_reunion' => [],
-        ]);
+        // On déclare notre nouvelle option 'is_initial' avec une valeur par défaut.
+        $resolver->setDefault('is_initial', false);
+        $resolver->setAllowedTypes('is_initial', 'bool');
+    }
+
+    public function getParent(): string
+    {
+        // Ce formulaire étend RddDseetailType pour en réutiliser les champs.
+        return RddDetailType::class;
     }
 }

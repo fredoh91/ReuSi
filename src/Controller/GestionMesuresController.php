@@ -9,6 +9,7 @@ use App\Repository\SignalRepository;
 use App\Repository\MesuresRDDRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\RouterInterface;
 use App\Repository\ReleveDeDecisionRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -246,8 +247,10 @@ final class GestionMesuresController extends AbstractController
     #[Route('/mesure/{mesureId}/toggle_cloture', name: 'app_toggle_cloture_mesure')]
     public function toggle_cloture_mesure(
         int $mesureId,
+        Request $request,
         MesuresRDDRepository $mesureRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RouterInterface $router
     ): Response {
         $mesure = $mesureRepo->find($mesureId);
 
@@ -286,6 +289,22 @@ final class GestionMesuresController extends AbstractController
 
         $em->flush();
 
+        // Logique de redirection dynamique
+        $redirectRoute = $request->query->get('redirect');
+        $redirectParams = $request->query->all('params');
+
+        // Vérifier si la route de redirection est valide pour éviter les redirections ouvertes
+        $allowedRedirects = ['app_signal_modif', 'app_modif_suivi'];
+        if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
+            // Assurer que les paramètres nécessaires sont présents
+            $routeParameters = $router->getRouteCollection()->get($redirectRoute)->getRequirements();
+            $missingParams = array_diff(array_keys($routeParameters), array_keys($redirectParams));
+            if (empty($missingParams)) {
+                return $this->redirectToRoute($redirectRoute, $redirectParams);
+            }
+        }
+
+        // Redirection par défaut si les paramètres ne sont pas bons
         return $this->redirectToRoute('app_signal_modif', [
             'signalId' => $mesure->getSignalLie()->getId(),
         ]);

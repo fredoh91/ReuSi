@@ -9,7 +9,7 @@ use App\Entity\ReunionSignal;
 use App\Form\SignalDetailType;
 // use App\Form\SignalDetailBtnProduitType;
 use App\Entity\ReleveDeDecision;
-use App\Form\SignalRDDDetailType;
+use App\Form\SignalRddDetailType;
 use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\SignalDetailBtnProduitRDDType;
@@ -206,7 +206,6 @@ final class SignalDetailController extends AbstractController
         // On crée le formulaire composite en lui passant le DTO
         // Et on lui dit d'utiliser `SignalDetailBtnProduitRDDType` pour la partie "signal"
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
-            'signal_form_type' => SignalDetailBtnProduitSuiviType::class,
             'reunions' => $date_reunion,
         ]);
 
@@ -214,7 +213,11 @@ final class SignalDetailController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($form->get('signal')->get('annulation')->isClicked()) {
+            // Les boutons sont maintenant dans un sous-formulaire 'signal' qui est lui-même
+            // dans le sous-formulaire 'signal' du formulaire principal.
+            // La structure est $form->signal->signal->bouton
+            $signalForm = $form->get('signal');
+            if ($signalForm->get('annulation')->isClicked()) {
                 // Annulation
 
                 if ($this->kernel->getEnvironment() === 'dev') {
@@ -228,7 +231,7 @@ final class SignalDetailController extends AbstractController
                 }
                 return $this->redirectToRoute('app_signal_liste');
             }
-            if ($form->get('signal')->get('validation')->isClicked()) {
+            if ($signalForm->get('validation')->isClicked()) {
                 // Le formulaire est lié au DTO, donc on vérifie la validité sur le DTO
                 if ($form->isValid()) {
                     // Traitement de la validation
@@ -273,7 +276,7 @@ final class SignalDetailController extends AbstractController
             }
 
             // Les boutons sont maintenant dans le sous-formulaire 'signal'
-            if ($form->get('signal')->get('ajout_produit')->isClicked()) {
+            if ($signalForm->has('ajout_produit') && $signalForm->get('ajout_produit')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de produit
                     if ($this->kernel->getEnvironment() === 'dev') {
@@ -299,7 +302,7 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('signal')->get('ajout_produit_saisie_manu')->isClicked()) {
+            if ($signalForm->has('ajout_produit_saisie_manu') && $signalForm->get('ajout_produit_saisie_manu')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de produit
                     
@@ -326,7 +329,7 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('signal')->get('ajout_suivi')->isClicked()) {
+            if ($signalForm->has('ajout_suivi') && $signalForm->get('ajout_suivi')->isClicked()) {
                 if ($form->isValid()) {
                     // Traitement de l'ajout de suivi
                     if ($this->kernel->getEnvironment() === 'dev') {
@@ -352,7 +355,7 @@ final class SignalDetailController extends AbstractController
                 }
             }
 
-            if ($form->get('signal')->get('ajout_mesure')->isClicked()) {
+            if ($signalForm->has('ajout_mesure') && $signalForm->get('ajout_mesure')->isClicked()) {
                 // On ne valide pas le formulaire, on redirige directement
                 // Mais on s'assure que le RDD initial existe avant de rediriger
                 if ($dto->rddInitial) {

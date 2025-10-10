@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Form\RDDDetailType;
+use App\Form\RddDetailType;
 use App\Entity\StatutSignal;
 use Psr\Log\LoggerInterface;
 use App\Entity\ReunionSignal;
@@ -98,7 +98,7 @@ final class GestionRelevesDeDecisionController extends AbstractController
         }
 
 
-        $form = $this->createForm(RDDDetailType::class, $RDD, [
+        $form = $this->createForm(RddDetailType::class, $RDD, [
             'reunions' => $date_reunion,
         ]);
         $form->handleRequest($request);
@@ -305,7 +305,7 @@ final class GestionRelevesDeDecisionController extends AbstractController
         $RDD->setUpdatedAt(new \DateTimeImmutable());
         $RDD->setUserModif($userName);
 
-        $form = $this->createForm(RDDDetailType::class, $RDD, [
+        $form = $this->createForm(RddDetailType::class, $RDD, [
             'reunions' => $date_reunion,
         ]);
 

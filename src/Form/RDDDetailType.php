@@ -14,7 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
-class RDDDetailType extends AbstractType
+class RddDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -65,25 +65,25 @@ class RDDDetailType extends AbstractType
             //     ],
             //     'label' => 'Niveau de risque initial',
             // ])
-            ->add('EmetteurSuivi', ChoiceType::class, [
-                'choices' => [
-                    'PGS' => 'PGS',
-                    'PP' => 'PP',
-                    'PS' => 'PS',
-                    'RGA' => 'RGA',
-                    'EC' => 'EC',
-                    'Addicto' => 'ADDICTO',
-                    'EM' => 'EM',
-                    'UNC' => 'UNC',
-                    'Dir. SURV' => 'DIR_SURV',
-                ],
-                'attr' => [
-                    'class' => 'form-select'
-                ],
-                'label' => 'Emetteur du RDD',
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => false,
-            ])
+            // ->add('EmetteurSuivi', ChoiceType::class, [
+            //     'choices' => [
+            //         'PGS' => 'PGS',
+            //         'PP' => 'PP',
+            //         'PS' => 'PS',
+            //         'RGA' => 'RGA',
+            //         'EC' => 'EC',
+            //         'Addicto' => 'ADDICTO',
+            //         'EM' => 'EM',
+            //         'UNC' => 'UNC',
+            //         'Dir. SURV' => 'DIR_SURV',
+            //     ],
+            //     'attr' => [
+            //         'class' => 'form-select'
+            //     ],
+            //     'label' => 'Emetteur du RDD',
+            //     'label_attr' => ['class' => 'form-label fw-bold'],
+            //     'required' => false,
+            // ])
             // ->add('EmetteurSuivi', TextType::class, [
             //     'attr' => [
             //         'class' => 'form-control',
@@ -94,27 +94,27 @@ class RDDDetailType extends AbstractType
 
 
 
-            ->add('validation', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-success px-4'],
-                'label' => 'Validation',
-                'row_attr' => ['id' => 'validation'],
-            ])
-            ->add('annulation', SubmitType::class, [
-                'attr' => [
-                    'class' => 'btn btn-secondary px-4',
-                    'formnovalidate' => true,
-                ],
-                'label' => 'Annulation',
-                'row_attr' => ['id' => 'annulation'],
-            ])
-            ->add('ajout_mesure', SubmitType::class, [
-                'attr' => [
-                    'class' => 'btn btn-success px-4',
-                    'formnovalidate' => true,
-                ],
-                'label' => 'Ajout d\'une mesure',
-                'row_attr' => ['id' => 'ajout_mesure'],
-            ])
+            // ->add('validation', SubmitType::class, [
+            //     'attr' => ['class' => 'btn btn-success px-4'],
+            //     'label' => 'Validation',
+            //     'row_attr' => ['id' => 'validation'],
+            // ])
+            // ->add('annulation', SubmitType::class, [
+            //     'attr' => [
+            //         'class' => 'btn btn-secondary px-4',
+            //         'formnovalidate' => true,
+            //     ],
+            //     'label' => 'Annulation',
+            //     'row_attr' => ['id' => 'annulation'],
+            // ])
+            // ->add('ajout_mesure', SubmitType::class, [
+            //     'attr' => [
+            //         'class' => 'btn btn-success px-4',
+            //         'formnovalidate' => true,
+            //     ],
+            //     'label' => 'Ajout d\'une mesure',
+            //     'row_attr' => ['id' => 'ajout_mesure'],
+            // ])
         ;
     }
 
