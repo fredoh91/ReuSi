@@ -111,7 +111,8 @@ class Signal
     /**
      * @var Collection<int, DirectionPoleConcerne>
      */
-    #[ORM\ManyToMany(targetEntity: DirectionPoleConcerne::class, mappedBy: 'SignalLie')]
+    #[ORM\ManyToMany(targetEntity: DirectionPoleConcerne::class, inversedBy: 'signaux')]
+    #[ORM\JoinTable(name: 'direction_pole_concerne_signal')]
     private Collection $directionPoleConcernes;
 
     // #[ORM\Column(length: 255, nullable: true)]
@@ -545,20 +546,20 @@ class Signal
         return $this->directionPoleConcernes;
     }
 
-    public function addDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): static
+    public function addDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): self
     {
         if (!$this->directionPoleConcernes->contains($directionPoleConcerne)) {
-            $this->directionPoleConcernes->add($directionPoleConcerne);
-            $directionPoleConcerne->addSignalLie($this);
+            $this->directionPoleConcernes[] = $directionPoleConcerne;
+            $directionPoleConcerne->addSignal($this);
         }
 
         return $this;
     }
 
-    public function removeDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): static
+    public function removeDirectionPoleConcerne(DirectionPoleConcerne $directionPoleConcerne): self
     {
         if ($this->directionPoleConcernes->removeElement($directionPoleConcerne)) {
-            $directionPoleConcerne->removeSignalLie($this);
+            $directionPoleConcerne->removeSignal($this);
         }
 
         return $this;

@@ -37,12 +37,12 @@ class DirectionPoleConcerne
     /**
      * @var Collection<int, Signal>
      */
-    #[ORM\ManyToMany(targetEntity: Signal::class, inversedBy: 'directionPoleConcernes')]
-    private Collection $SignalLie;
+    #[ORM\ManyToMany(targetEntity: Signal::class, mappedBy: 'directionPoleConcernes')]
+    private Collection $signaux;
 
     public function __construct()
     {
-        $this->SignalLie = new ArrayCollection();
+        $this->signaux = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -125,23 +125,26 @@ class DirectionPoleConcerne
     /**
      * @return Collection<int, Signal>
      */
-    public function getSignalLie(): Collection
+    public function getSignaux(): Collection
     {
-        return $this->SignalLie;
+        return $this->signaux;
     }
 
-    public function addSignalLie(Signal $signalLie): static
+    public function addSignal(Signal $signal): self
     {
-        if (!$this->SignalLie->contains($signalLie)) {
-            $this->SignalLie->add($signalLie);
+        if (!$this->signaux->contains($signal)) {
+            $this->signaux[] = $signal;
+            $signal->addDirectionPoleConcerne($this);
         }
 
         return $this;
     }
 
-    public function removeSignalLie(Signal $signalLie): static
+    public function removeSignal(Signal $signal): self
     {
-        $this->SignalLie->removeElement($signalLie);
+        if ($this->signaux->removeElement($signal)) {
+            $signal->removeDirectionPoleConcerne($this);
+        }
 
         return $this;
     }

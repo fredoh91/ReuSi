@@ -199,6 +199,7 @@ final class SignalDetailController extends AbstractController
         $dto->suiviInitial = $suiviInitial;
         $dto->rddInitial = $rddInitial;
 
+
         // On crée le formulaire composite en lui passant le DTO
         // Et on lui dit d'utiliser `SignalDetailBtnProduitRDDType` pour la partie "signal"
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [

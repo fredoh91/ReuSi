@@ -1,28 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block body_class %}page-signal{% endblock %}
+{% block body_class %}
+    {% if typeSignal == 'signal' %}
+        page-signal
+    {% elseif typeSignal == 'fait_marquant' %}
+        page-fait-marquant
+    {% endif %}
+{% endblock %}
 
-{% block title %}Liste des signaux{% endblock %}
+{% block title %}
+    {% if typeSignal == 'signal' %}
+        Liste des signaux
+    {% elseif typeSignal == 'fait_marquant' %}
+        Liste des faits marquants
+    {% endif %}
+{% endblock %}
 
 {% block body %}
+
 
 {{ encore_entry_link_tags('tables_css') }}
 
 <div class="container-fluid m-20">
-    {# Affichage des messages flash #}
+
+	{# Affichage des messages flash #}
     {% for type, messages in app.flashes %}
         {% for message in messages %}
-            {% if type == 'error' %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% elseif type == 'success' %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% elseif type == 'warning' %}
-                <div class="alert alert-warning">{{ message }}</div>
-            {% else %}
-                <div class="alert alert-info">{{ message }}</div>
-            {% endif %}
+            <div class="alert alert-{{ type }}">{{ message }}</div>
         {% endfor %}
     {% endfor %}
+    
     {% if signals is not empty %}
         <table class="table table-striped table-hover">
             <thead>
@@ -109,7 +116,11 @@
                                     {% if rdd.DescriptionRDD is not empty %}
                                         <ul>
                                             <li>
-                                                <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
+                                                {% if is_granted('ROLE_SUPER_ADMIN') %}
+                                                    <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
+                                                {% else %}
+                                                    {{ rdd.NumeroRDD }} -
+                                                {% endif %}
                                                 {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
                                                 {# {{ rdd.DescriptionRDD }} #}
                                                 {{ rdd.DescriptionRDD|slice(0, 300) }}{% if rdd.DescriptionRDD|length > 300 %}...{% endif %}
@@ -135,7 +146,12 @@
         </table>
     {% else %}
         <div class="alert alert-danger mt-3">
-            Aucun signal trouvé.
+            
+            {% if typeSignal == 'signal' %}
+                Aucun signal trouvé.
+            {% elseif typeSignal == 'fait_marquant' %}
+                Aucun fait marquant trouvé.
+            {% endif %}
         </div>
     {% endif %}
 </div>

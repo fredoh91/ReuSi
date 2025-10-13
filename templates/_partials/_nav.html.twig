@@ -14,7 +14,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               {# <li><a class="dropdown-item" href="{{ path ('app_affiche_susar_eu') }}">test : liste des SUSARs (master_id)</a></li> #}
-              <li><a class="dropdown-item" href="{{ path ('app_signal_liste') }}">Liste des signaux</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_signal_liste', {'typeSignal': 'signal'}) }}">Liste des signaux</a></li>
               <li><a class="dropdown-item" href="{{ path ('app_signal_new') }}">Nouveau signal</a></li>
             </ul>
           </li>
@@ -29,7 +29,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               {# <li><a class="dropdown-item" href="{{ path ('app_affiche_susar_eu') }}">test : liste des SUSARs (master_id)</a></li> #}
-              <li><a class="dropdown-item" href="{{ path ('app_fait_marquant_liste') }}">Liste des faits marquants</a></li>
+              <li><a class="dropdown-item" href="{{ path ('app_fait_marquant_liste', {'typeSignal': 'fait_marquant'}) }}">Liste des faits marquants</a></li>
               <li><a class="dropdown-item" href="{{ path ('app_fait_marquant_new') }}">Nouveau fait marquant</a></li>
             </ul>
           </li>

@@ -20,13 +20,18 @@ final class SignalListeController extends AbstractController
     {
         $signals = $em->getRepository(Signal::class)->findByTypeSignal($typeSignal);
 
-        $template = match ($typeSignal) {
-            'signal' => 'signal_liste/signal_liste.html.twig',
-            'fait_marquant' => 'signal_liste/fait_marquant_liste.html.twig',
-        };
+        // $template = match ($typeSignal) {
+        //     'signal' => 'signal_liste/signal_liste.html.twig',
+        //     'fait_marquant' => 'signal_liste/fait_marquant_liste.html.twig',
+        // };
 
-        return $this->render($template, [
+        // return $this->render($template, [
+        //     'signals' => $signals,
+        // ]);
+
+        return $this->render('signal_liste/signal_liste.html.twig', [
             'signals' => $signals,
+            'typeSignal' => $typeSignal,
         ]);
     }
 }

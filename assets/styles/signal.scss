@@ -1,6 +1,7 @@
-
+@use "sass:color";
 @use "_variables" as *;
 
+// Styles de fond pour le body
 body.page-signal {
     background-color: $Fond_signal;
 }
@@ -8,3 +9,29 @@ body.page-signal {
 body.page-fait-marquant {
     background-color: $Fond_fait_marquant;
 }
+
+// Styles pour les cartes de signal avec des couleurs plus claires
+.card.signal-card--signal,
+.card.signal-card--signal > .card-body {
+    // background-color: color.adjust($Fond_signal, $lightness: 25%) !important;
+    background-color: color.adjust($Fond_signal, $lightness: 15%);
+}
+
+.card.signal-card--fait-marquant,
+.card.signal-card--fait-marquant > .card-body {
+    // background-color: color.adjust($Fond_fait_marquant, $lightness: 25%) !important;
+    background-color: color.adjust($Fond_fait_marquant, $lightness: 15%);
+}
+
+// // Pour s'assurer que les couleurs s'appliquent même avec des sélecteurs plus spécifiques
+// html body .card.signal-card--signal,
+// html body .card.signal-card--signal > .card-body {
+//     // background-color: color.adjust($Fond_signal, $lightness: 25%) !important;
+//     background-color: color.adjust($Fond_signal, $lightness: 15%);
+// }
+
+// html body .card.signal-card--fait-marquant,
+// html body .card.signal-card--fait-marquant > .card-body {
+//     // background-color: color.adjust($Fond_fait_marquant, $lightness: 25%) !important;
+//     background-color: color.adjust($Fond_fait_marquant, $lightness: 15%);
+// }

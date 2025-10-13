@@ -21,3 +21,12 @@
         background-color: $Fond_dir_pole_concerne;
     }
 }
+
+
+.suivi_rdd-actif {
+    background-color: $Suivi_rdd_actif_bg; // Pour la card
+}
+
+.suivi_rdd-inactif {
+    background-color: $Suivi_rdd_inactif_bg; // Pour la card
+}

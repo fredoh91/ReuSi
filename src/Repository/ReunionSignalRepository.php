@@ -55,13 +55,37 @@ class ReunionSignalRepository extends ServiceEntityRepository
             ->setParameter('dateLimit', $dateLimit)
             ->setParameter('annulee', 0);
 
-        // Exclure les réunions déjà liées à un RDD du signal
-        $qb->andWhere('r.id NOT IN (
-            SELECT IDENTITY(rdd.reunionSignal)
-            FROM App\Entity\ReleveDeDecision rdd
-            WHERE rdd.SignalLie = :signalId
-        )')
+        $subQuery = $this->getEntityManager()->createQueryBuilder()
+            ->select('IDENTITY(rdd.reunionSignal)')
+            ->from('App\Entity\ReleveDeDecision', 'rdd')
+            ->where('rdd.SignalLie = :signalId')
+            ->andWhere('rdd.reunionSignal IS NOT NULL');
+
+        $qb->andWhere($qb->expr()->orX(
+            $qb->expr()->notIn('r.id', $subQuery->getDQL()),
+            $qb->expr()->not(
+                $qb->expr()->exists(
+                    $this->getEntityManager()->createQueryBuilder()
+                        ->select('1')
+                        ->from('App\Entity\ReleveDeDecision', 'rdd2')
+                        ->where('rdd2.SignalLie = :signalId')
+                        ->getDQL()
+                )
+            )
+        ))
         ->setParameter('signalId', $signalId);
+
+
+        // Exclure les réunions déjà liées à un RDD du signal
+        // $qb->andWhere('r.id NOT IN (
+        //     SELECT IDENTITY(rdd.reunionSignal)
+        //     FROM App\Entity\ReleveDeDecision rdd
+        //     WHERE rdd.SignalLie = :signalId
+        // )')
+        // ->setParameter('signalId', $signalId);
+
+// dump($qb->getQuery()->getSQL());
+
 
         return $qb->getQuery()->getResult();
     }
