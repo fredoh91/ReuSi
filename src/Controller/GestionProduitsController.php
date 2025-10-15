@@ -70,7 +70,7 @@ final class GestionProduitsController extends AbstractController
 
 
     #[Route('/signal/{signalId}/ajout_produit/{codeCIS}', name: 'app_ajout_produit', defaults: ['codeCIS' => null])]
-    public function ajout_produits(int $signalId, ?string $codeCIS = null, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine): Response
+    public function ajout_produits(int $signalId, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine, ?string $codeCIS = null): Response
     {
         $signal = $signalRepo->find($signalId);
 

@@ -191,7 +191,7 @@ final class SignalDetailController extends AbstractController
 
         $routeSource = $request->query->get('routeSource', null);
         // dd($date_reunion);
-        $allowedRoutesSource = ['app_signal_liste', 'app_fait_marquant_liste'];
+        $allowedRoutesSource = ['app_signal_liste', 'app_fait_marquant_liste', 'app_reunion_signal_liste'];
 
         // On crée notre DTO et on le remplit
         $dto = new SignalAvecSuiviInitialDTO();

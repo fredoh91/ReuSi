@@ -117,9 +117,17 @@ class ReunionSignalRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('rs');
 
         $qb->select('DISTINCT rs', 'rdd', 's', 'p')
+            // Jointure avec les RDDs de la réunion
             ->leftJoin('rs.ReleveDeDecision', 'rdd')
+            // Jointure avec les signaux liés aux RDDs
             ->leftJoin('rdd.SignalLie', 's')
-            ->leftJoin('s.produits', 'p');
+            // Jointure avec les produits liés aux signaux
+            ->leftJoin('s.produits', 'p')
+            // Charger les suivis liés à cette réunion
+            ->leftJoin('s.suivis', 'suivis', 'WITH', 'suivis.reunionSignal = rs.id')
+            ->addSelect('suivis')
+            ->leftJoin('suivis.RddLie', 'suivi_rdd')
+            ->addSelect('suivi_rdd');
 
         if (!empty($criteria['dateDebut'])) {
             $qb->andWhere('rs.DateReunion >= :dateDebut')

@@ -1,19 +1,11 @@
 {% extends 'base.html.twig' %}
 
 {% block body_class %}
-    {% if typeSignal == 'signal' %}
-        page-signal
-    {% elseif typeSignal == 'fait_marquant' %}
-        page-fait-marquant
-    {% endif %}
+    {{ typeSignal == 'signal' ? 'page-signal' : 'page-fait-marquant' }}
 {% endblock %}
 
 {% block title %}
-    {% if typeSignal == 'signal' %}
-        Liste des signaux
-    {% elseif typeSignal == 'fait_marquant' %}
-        Liste des faits marquants
-    {% endif %}
+    Liste des {{ typeSignal == 'signal' ? 'signaux' : 'faits marquants' }}
 {% endblock %}
 
 {% block body %}
@@ -48,7 +40,11 @@
                 {% for signal in signals %}
                     <tr>
                         <td>
-                            <a href="{{ path('app_signal_modif', {'signalId': signal.id, 'routeSource': 'app_signal_liste'}) }}">
+                            {% set routeSource = typeSignal == 'signal' ? 'app_signal_liste' : 'app_fait_marquant_liste' %}
+                            <a href="{{ path('app_signal_modif', {
+                                'signalId': signal.id, 
+                                'routeSource': routeSource
+                            }) }}">
                                 {{ signal.id }}
                             </a>
                         </td>
@@ -78,11 +74,8 @@
                                     {% set statutActif = statut %}
                                 {% endif %}
                             {% endfor %}
-                            {% if statutActif %}
-                                {{ statutActif.libStatut }}
-                            {% else %}
-                                ---
-                            {% endif %}
+                            {{ statutActif ? statutActif.libStatut : '---' }}
+                            {# {% endif %} #}
                         </td>
                         <td>
                             {% if signal.getSuivis() is not empty %}
@@ -147,11 +140,7 @@
     {% else %}
         <div class="alert alert-danger mt-3">
             
-            {% if typeSignal == 'signal' %}
-                Aucun signal trouvé.
-            {% elseif typeSignal == 'fait_marquant' %}
-                Aucun fait marquant trouvé.
-            {% endif %}
+            Aucun {{ typeSignal == 'signal' ? 'signal' : 'fait marquant' }} trouvé.
         </div>
     {% endif %}
 </div>

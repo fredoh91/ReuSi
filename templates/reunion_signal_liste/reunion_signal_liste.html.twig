@@ -43,7 +43,11 @@
                 {% for reunionSignal in pagination %}
                     <tr>
                         <td>
-                            {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : '---' }}
+                            {# app_reunion_signal_detail #}
+                            <a href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id}) }}">
+                                {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : '---' }}
+                                {# {{ rdd.NumeroRDD }} #}
+                            </a>
                         </td>
                         <td>
                             {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(pattern="EEEE", timeFormat='none', locale='fr')|capitalize : '---' }}
@@ -56,42 +60,81 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if reunionSignal.releveDeDecision is not empty %}
-                                <ul class="list-unstyled mb-0">
-                                    {% for rdd in reunionSignal.releveDeDecision %}
-                                        {% set signal = rdd.SignalLie %}
+                            {% set hasContent = false %}
+                            
+                            {# Afficher uniquement les suivis directs de la réunion #}
+                            {% for suivi in reunionSignal.suivis|sort((a, b) => a.NumeroSuivi <=> b.NumeroSuivi) %}
+                                {% if suivi.reunionSignal and suivi.reunionSignal.id == reunionSignal.id %}
+                                    {% set signal = suivi.SignalLie %}
+                                    {% set hasContent = true %}
+                                    
+                                    <div class="mb-3 pb-2 border-bottom">
                                         {% if signal %}
-                                            <li class="mb-3 pb-2 border-bottom">
-                                                <p class="mb-0">
-
-                                                    <strong>
-                                                        {% if signal.TypeSignal == 'signal' %} 
-                                                            Signal
-                                                        {% elseif signal.TypeSignal == 'fait_marquant' %}
-                                                            Fait marquant
-                                                        {% else %}
-                                                            Signal
-                                                        {% endif %}
-
-                                                        <a href="{{ path('app_signal_modif', {'signalId': signal.id}) }}">{{ signal.id }}</a> :
-                                                    
-                                                    </strong> {{ signal.titre }}
-                                                </p>
-                                                {% if signal.DescriptionSignal %}
+                                            <p class="mb-0">
+                                                <strong>
+                                                    {{ signal.TypeSignal == 'fait_marquant' ? 'Fait marquant' : 'Signal' }}
+                                                    {# {% set routeSource = signal.TypeSignal == 'signal' ? 'app_signal_liste' : 'app_fait_marquant_liste' %} #}
+                                                    <a href="{{ path('app_signal_modif', {
+                                                                'signalId': signal.id, 
+                                                                'routeSource': 'app_reunion_signal_liste'
+                                                            }) }}">
+                                                        {{ signal.id }}
+                                                    </a>:
+                                                </strong>
+                                                {{ signal.titre|default('') }}
+                                            </p>
+                                            
+                                            {% if signal.DescriptionSignal %}
                                                 <p class="mb-0 text-muted">
                                                     <small><strong>Description:</strong> {{ signal.DescriptionSignal|slice(0, 150) }}{% if signal.DescriptionSignal|length > 150 %}...{% endif %}</small>
                                                 </p>
-                                                {% endif %}
-                                                <p class="mb-0 text-muted">
-                                                    <small><strong>RDD <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a>:</strong> {{ rdd.DescriptionRDD|slice(0, 150) }}{% if rdd.DescriptionRDD|length > 150 %}...{% endif %}</small>
-                                                </p>
-                                            </li>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endfor %}
-                                </ul>
+                                        
+                                        <div class="mt-2 suivi-container">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="w-100">
+                                                    <a href="{{ path('app_modif_suivi', {
+                                                        'signalId': signal ? signal.id : 0, 
+                                                        'suiviId': suivi.id
+                                                    }) }}" class="text-decoration-none">
+                                                        <i class="bi bi-arrow-return-right me-1"></i>Suivi #{{ suivi.NumeroSuivi }}
+                                                    </a>
+                                                    
+                                                    {% if suivi.DescriptionSuivi %}
+                                                        <div class="ms-3 mt-1 text-muted">
+                                                            <small>{{ suivi.DescriptionSuivi|nl2br }}</small>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if suivi.RddLie %}
+                                                        <div class="ms-3 mt-2">
+                                                            <small class="text-muted">
+                                                                <i class="bi bi-journal-text me-1"></i>
+                                                                <strong>RDD 
+                                                                    <a href="{{ path('app_modif_RDD', {
+                                                                        'signalId': signal ? signal.id : 0,
+                                                                        'rddId': suivi.RddLie.id
+                                                                    }) }}">
+                                                                        {{ suivi.RddLie.NumeroRDD }}
+                                                                    </a>:
+                                                                </strong>
+                                                                {{ suivi.RddLie.DescriptionRDD|slice(0, 100) }}{% if suivi.RddLie.DescriptionRDD|length > 100 %}...{% endif %}
+                                                            </small>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                {% if suivi.PiloteDS %}
+                                                    <span class="badge bg-info text-dark ms-2">{{ suivi.PiloteDS }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
                             {% else %}
-                                <span class="text-muted">Aucun signal/RDD pour cette réunion.</span>
-                            {% endif %}
+                                <span class="text-muted">Aucun suivi pour cette réunion.</span>
+                            {% endfor %}
                         </td>
                     </tr>
                 {% endfor %}
