@@ -23,6 +23,7 @@ Encore
      */
     .addEntry('app', './assets/app.js')
     .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
+    .addEntry('reunion_signal_detail_js', './assets/js/reunion_signal_detail.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
@@ -31,6 +32,7 @@ Encore
     .addStyleEntry('signal_form_css', './assets/styles/signal_form.scss')
     .addStyleEntry('tables_css', './assets/styles/tables.scss')
     .addStyleEntry('reunion_signal_liste_css', './assets/styles/reunion_signal_liste.scss')
+    .addStyleEntry('reunion_signal_detail_css', './assets/styles/reunion_signal_detail.scss')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

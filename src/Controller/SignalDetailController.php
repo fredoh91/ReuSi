@@ -190,7 +190,7 @@ final class SignalDetailController extends AbstractController
 
 
         $routeSource = $request->query->get('routeSource', null);
-        // dd($date_reunion);
+        $routeParams = $request->query->all('params');
         $allowedRoutesSource = ['app_signal_liste', 'app_fait_marquant_liste', 'app_reunion_signal_liste'];
 
         // On crée notre DTO et on le remplit
@@ -223,8 +223,25 @@ final class SignalDetailController extends AbstractController
                 }
 
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
-                if ($routeSource && in_array($routeSource, $allowedRoutesSource)) {
-                    return $this->redirectToRoute($routeSource, ['signalId' => $signal->getId()]);
+                if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                    // Logique pour déterminer l'ID de l'onglet
+                    $tabId = '';
+                    if ($dto->signal->getTypeSignal() === 'fait_marquant') {
+                        $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-fm' : 'suivis-fm';
+                    } else {
+                        $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-signaux' : 'suivis-signaux';
+                    }
+
+                    // Construction de l'URL avec l'ancre
+                    $url = $this->generateUrl('app_reunion_signal_detail', [
+                        'reuSiId' => $routeParams['reuSiId'],
+                    ]) . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
+
+                    return $this->redirect($url);
+                }
+
+                if ($routeSource && in_array($routeSource, $allowedRoutesSource) && $routeSource !== 'app_reunion_signal_detail') {
+                    return $this->redirectToRoute($routeSource);
                 }
                 return $this->redirectToRoute('app_signal_liste');
             }
@@ -258,8 +275,25 @@ final class SignalDetailController extends AbstractController
 
 
                     // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
-                    if ($routeSource && in_array($routeSource, $allowedRoutesSource)) {
-                        return $this->redirectToRoute($routeSource, ['signalId' => $signal->getId()]);
+                    if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                        // Logique pour déterminer l'ID de l'onglet
+                        $tabId = '';
+                        if ($dto->signal->getTypeSignal() === 'fait_marquant') {
+                            $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-fm' : 'suivis-fm';
+                        } else {
+                            $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-signaux' : 'suivis-signaux';
+                        }
+
+                        // Construction de l'URL avec l'ancre
+                        $url = $this->generateUrl('app_reunion_signal_detail', [
+                            'reuSiId' => $routeParams['reuSiId'],
+                        ]) . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
+
+                        return $this->redirect($url);
+                    }
+
+                    if ($routeSource && in_array($routeSource, $allowedRoutesSource) && $routeSource !== 'app_reunion_signal_detail') {
+                        return $this->redirectToRoute($routeSource);
                     }
                     return $this->redirectToRoute('app_signal_liste');
                 } else {
