@@ -291,23 +291,38 @@ final class GestionSuivisController extends AbstractController
             $nouvellesMesures[] = $newMesure;
         }
 
+        // --- NOUVELLE LOGIQUE DTO (identique à modif_suivi) ---
+        $dto = new SuiviAvecRddDTO();
+        $dto->suivi = $suivi;
+        $dto->rddLie = $RDD;
+
         // Création et gestion du formulaire
-        $form = $this->createForm(SuiviDetailType::class, $suivi, [
+        // On utilise SuiviAvecRddType et le DTO pour être cohérent avec la modification
+        $form = $this->createForm(SuiviAvecRddType::class, $dto, [
             'reunions' => $date_reunion,
+            // On passe des options spécifiques pour le sous-formulaire RDD
+            'rdd_options' => [
+                'required_fields' => [
+                    'DescriptionRDD' => false,
+                    'PassageCTP' => false,
+                    'PassageRSS' => false,
+                ]
+            ]
         ]);
+
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($form->get('annulation')->isClicked()) {
+            if ($form->get('suivi')->get('annulation')->isClicked()) {
                 return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
             }
 
-            if ($form->get('validation')->isClicked()) {
+            if ($form->get('suivi')->get('validation')->isClicked()) {
                 // Validation spécifique pour la date de réunion
-                $reunionSelectionnee = $form->get('reunionSignal')->getData();
+                $reunionSelectionnee = $form->get('suivi')->get('reunionSignal')->getData();
                 if (!$reunionSelectionnee) {
-                    $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Ce champ est obligatoire.'));
+                    $form->get('suivi')->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Ce champ est obligatoire.'));
                     $this->addFlash('error', 'Veuillez sélectionner une date de réunion avant de valider le formulaire.');
                 }
 
@@ -315,7 +330,7 @@ final class GestionSuivisController extends AbstractController
                     // On vérifie que la réunion n'est pas déjà utilisée par un autre suivi/RDD de ce signal
                     $rddExistante = $em->getRepository(ReleveDeDecision::class)->findOneBySignalAndReunionExcludingRdd($signal, $reunionSelectionnee, null);
                     if ($rddExistante) {
-                        $form->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD/Suivi de ce signal.'));
+                        $form->get('suivi')->get('reunionSignal')->addError(new \Symfony\Component\Form\FormError('Cette réunion est déjà liée à un autre RDD/Suivi de ce signal.'));
                         $this->addFlash('error', 'Cette date de réunion (' . $reunionSelectionnee->getDateReunion()->format('d/m/Y') . ') existe déjà pour un autre suivi de ce signal. Veuillez en choisir une autre.');
                     } else {
                         // --- Début de la logique de persistance ---
@@ -374,6 +389,7 @@ final class GestionSuivisController extends AbstractController
             'signal' => $signal,
             'autresSuivis' => $autresSuivis,
             'form' => $form->createView(),
+            'rdd' => $dto->rddLie, // On passe le RDD depuis le DTO
             'typeModifCreation' => 'creation',
             'lstMesures' => $nouvellesMesures, // On peut les passer à la vue pour un aperçu
             'isLatest' => true, // Un Suivi en création est considéré comme le plus récent pour l'UI
@@ -381,5 +397,32 @@ final class GestionSuivisController extends AbstractController
         ]);
 
 
+    }
+
+    #[Route('/reunion/{reunionId}/add_suivi_signal', name: 'app_reunion_add_suivi_signal', defaults: ['type' => 'signal'])]
+    #[Route('/reunion/{reunionId}/add_suivi_fm', name: 'app_reunion_add_suivi_fm', defaults: ['type' => 'fait_marquant'])]
+    public function addSuiviFromReunion(
+        int $reunionId,
+        string $type,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
+        if (!$reunion) {
+            throw $this->createNotFoundException('Réunion non trouvée.');
+        }
+
+        // TODO: Implémenter la logique de recherche de signal/fait marquant
+        // et de création du suivi.
+
+        // Pour l'instant, on retourne une réponse simple pour que la route existe.
+        $this->addFlash(
+            'info',
+            sprintf('Fonctionnalité "Ajouter un suivi de %s" pour la réunion du %s à implémenter.', $type, $reunion->getDateReunion()->format('d/m/Y'))
+        );
+
+        $routeSource = $request->query->get('routeSource', 'app_home');
+        $params = $request->query->all('params');
+        return $this->redirectToRoute($routeSource, $params);
     }
 }

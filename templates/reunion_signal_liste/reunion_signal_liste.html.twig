@@ -44,7 +44,7 @@
                     <tr>
                         <td>
                             {# app_reunion_signal_detail #}
-                            <a href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id}) }}">
+                            <a href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'nouveaux-signaux'}) }}">
                                 {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : '---' }}
                                 {# {{ rdd.NumeroRDD }} #}
                             </a>

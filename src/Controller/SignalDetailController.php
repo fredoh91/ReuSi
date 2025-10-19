@@ -224,18 +224,22 @@ final class SignalDetailController extends AbstractController
 
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
                 if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                    // On récupère le dernier suivi pour déterminer si c'est un "nouveau" ou un "suivi de"
+                    $latestSuiviForTab = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
+
                     // Logique pour déterminer l'ID de l'onglet
                     $tabId = '';
                     if ($dto->signal->getTypeSignal() === 'fait_marquant') {
-                        $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-fm' : 'suivis-fm';
+                        $tabId = ($latestSuiviForTab && $latestSuiviForTab->getNumeroSuivi() > 0) ? 'suivis-fm' : 'nouveaux-fm';
                     } else {
-                        $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-signaux' : 'suivis-signaux';
+                        $tabId = ($latestSuiviForTab && $latestSuiviForTab->getNumeroSuivi() > 0) ? 'suivis-signaux' : 'nouveaux-signaux';
                     }
 
                     // Construction de l'URL avec l'ancre
                     $url = $this->generateUrl('app_reunion_signal_detail', [
                         'reuSiId' => $routeParams['reuSiId'],
-                    ]) . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
+                        'tab' => $tabId,
+                    ]); // . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
 
                     return $this->redirect($url);
                 }
@@ -276,18 +280,22 @@ final class SignalDetailController extends AbstractController
 
                     // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
                     if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                        // On récupère le dernier suivi pour déterminer si c'est un "nouveau" ou un "suivi de"
+                        $latestSuiviForTab = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
+
                         // Logique pour déterminer l'ID de l'onglet
                         $tabId = '';
                         if ($dto->signal->getTypeSignal() === 'fait_marquant') {
-                            $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-fm' : 'suivis-fm';
+                            $tabId = ($latestSuiviForTab && $latestSuiviForTab->getNumeroSuivi() > 0) ? 'suivis-fm' : 'nouveaux-fm';
                         } else {
-                            $tabId = $dto->suiviInitial->getNumeroSuivi() === 0 ? 'nouveaux-signaux' : 'suivis-signaux';
+                            $tabId = ($latestSuiviForTab && $latestSuiviForTab->getNumeroSuivi() > 0) ? 'suivis-signaux' : 'nouveaux-signaux';
                         }
 
                         // Construction de l'URL avec l'ancre
                         $url = $this->generateUrl('app_reunion_signal_detail', [
                             'reuSiId' => $routeParams['reuSiId'],
-                        ]) . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
+                            'tab' => $tabId,
+                        ]); // . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
 
                         return $this->redirect($url);
                     }

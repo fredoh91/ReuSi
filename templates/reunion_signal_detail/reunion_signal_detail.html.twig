@@ -12,7 +12,6 @@
     {% endfor %}
 
 {{ encore_entry_link_tags('reunion_signal_detail_css') }}
-{{ encore_entry_script_tags('reunion_signal_detail_js') }}
 
 <div class="container-fluid mt-4 page-reunion-signal-detail">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -20,40 +19,59 @@
             <h1 class="mb-0">Réunion du {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'N/A' }}</h1>
             <span class="text-muted">{{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(pattern="EEEE", timeFormat='none', locale='fr')|capitalize : '' }}</span>
         </div>
-        <div>
-            {# TODO: Ajouter les boutons d'action ici #}
-            <a href="#" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Ajouter un suivi</a>
-            <a href="{{ path('app_signal_new') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-plus me-1"></i> Créer un nouveau signal</a>
+        <div class="actions-container" style="min-width: 450px;">
+            <div class="row row-cols-2 g-2">
+                <div class="col d-grid">
+                    <a href="{{ path('app_signal_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-plus me-1"></i> Créer un nouveau signal
+                    </a>
+                </div>
+                <div class="col d-grid">
+                    <a href="{{ path('app_reunion_add_suivi_signal', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Ajouter un suivi de signal
+                    </a>
+                </div>
+                <div class="col d-grid">
+                    <a href="{{ path('app_fait_marquant_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-info">
+                        <i class="bi bi-file-earmark-plus-fill me-1"></i> Créer un nouveau fait marquant
+                    </a>
+                </div>
+                <div class="col d-grid">
+                    <a href="{{ path('app_reunion_add_suivi_fm', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-outline-info">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Ajouter un suivi de fait marquant
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" id="reunionTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="nouveaux-signaux-tab" data-bs-toggle="tab" data-bs-target="#nouveaux-signaux" type="button" role="tab" aria-controls="nouveaux-signaux" aria-selected="true">
+            <a class="nav-link {% if currentTab == 'nouveaux-signaux' %}active{% endif %}" href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'nouveaux-signaux'}) }}">
                 Nouveaux Signaux <span class="badge rounded-pill bg-secondary badge-count">{{ nouveauxSignaux|length }}</span>
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="suivis-signaux-tab" data-bs-toggle="tab" data-bs-target="#suivis-signaux" type="button" role="tab" aria-controls="suivis-signaux" aria-selected="false">
+            <a class="nav-link {% if currentTab == 'suivis-signaux' %}active{% endif %}" href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'suivis-signaux'}) }}">
                 Suivis de Signaux <span class="badge rounded-pill bg-secondary badge-count">{{ suivisSignaux|length }}</span>
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="nouveaux-fm-tab" data-bs-toggle="tab" data-bs-target="#nouveaux-fm" type="button" role="tab" aria-controls="nouveaux-fm" aria-selected="false">
+            <a class="nav-link {% if currentTab == 'nouveaux-fm' %}active{% endif %}" href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'nouveaux-fm'}) }}">
                 Nouveaux Faits Marquants <span class="badge rounded-pill bg-secondary badge-count">{{ nouveauxFaitsMarquants|length }}</span>
-            </button>
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="suivis-fm-tab" data-bs-toggle="tab" data-bs-target="#suivis-fm" type="button" role="tab" aria-controls="suivis-fm" aria-selected="false">
+            <a class="nav-link {% if currentTab == 'suivis-fm' %}active{% endif %}" href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'suivis-fm'}) }}">
                 Suivis de Faits Marquants <span class="badge rounded-pill bg-secondary badge-count">{{ suivisFaitsMarquants|length }}</span>
-            </button>
+            </a>
         </li>
     </ul>
 
     <!-- Tab panes -->
     <div class="tab-content p-3" id="reunionTabContent">
-        <div class="tab-pane fade show active" id="nouveaux-signaux" role="tabpanel" aria-labelledby="nouveaux-signaux-tab">
+        {% if currentTab == 'nouveaux-signaux' %}
             {% if nouveauxSignaux is not empty %}
                 {% for suivi in nouveauxSignaux %}
                     {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
@@ -63,8 +81,7 @@
                     Aucun nouveau signal pour cette réunion.
                 </div>
             {% endif %}
-        </div>
-        <div class="tab-pane fade" id="suivis-signaux" role="tabpanel" aria-labelledby="suivis-signaux-tab">
+        {% elseif currentTab == 'suivis-signaux' %}
             {% if suivisSignaux is not empty %}
                 {% for suivi in suivisSignaux %}
                     {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
@@ -74,8 +91,7 @@
                     Aucun suivi de signal pour cette réunion.
                 </div>
             {% endif %}
-        </div>
-        <div class="tab-pane fade" id="nouveaux-fm" role="tabpanel" aria-labelledby="nouveaux-fm-tab">
+        {% elseif currentTab == 'nouveaux-fm' %}
             {% if nouveauxFaitsMarquants is not empty %}
                 {% for suivi in nouveauxFaitsMarquants %}
                     {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
@@ -85,8 +101,7 @@
                     Aucun nouveau fait marquant pour cette réunion.
                 </div>
             {% endif %}
-        </div>
-        <div class="tab-pane fade" id="suivis-fm" role="tabpanel" aria-labelledby="suivis-fm-tab">
+        {% elseif currentTab == 'suivis-fm' %}
             {% if suivisFaitsMarquants is not empty %}
                 {% for suivi in suivisFaitsMarquants %}
                     {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
@@ -96,7 +111,7 @@
                     Aucun suivi de fait marquant pour cette réunion.
                 </div>
             {% endif %}
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

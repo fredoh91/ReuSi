@@ -25,12 +25,18 @@ class SuiviAvecRddType extends AbstractType
             // ->add('rddLie', RddPourSuiviType::class, [
             ->add('rddLie', ReleveDeDecisionType::class, [
                 'label' => false,
+                // On transmet les options de 'rdd_options' au sous-formulaire
+                'required_fields' => $options['rdd_options']['required_fields'] ?? [],
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => SuiviAvecRddDTO::class]);
+        $resolver->setDefaults([
+            'data_class' => SuiviAvecRddDTO::class,
+            // On définit une nouvelle option 'rdd_options' qui sera un tableau
+            'rdd_options' => [],
+        ]);
         $resolver->setRequired('reunions');
     }
 }

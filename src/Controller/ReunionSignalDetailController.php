@@ -12,11 +12,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class ReunionSignalDetailController extends AbstractController
 {
-    #[Route('/reunion_signal_detail/{reuSiId}', name: 'app_reunion_signal_detail', requirements: ['reuSiId' => '\d+'])]
+    #[Route('/reunion_signal_detail/{reuSiId}/{tab}', 
+        name: 'app_reunion_signal_detail', 
+        requirements: ['reuSiId' => '\d+', 'tab' => 'nouveaux-signaux|suivis-signaux|nouveaux-fm|suivis-fm']
+    )]
     public function reuSi_detail(
         EntityManagerInterface $em,
         Request $request,
-        int $reuSiId
+        int $reuSiId,
+        string $tab
     ): Response
     {        
         $reunionSignal = $em->getRepository(ReunionSignal::class)->find($reuSiId);
@@ -57,6 +61,7 @@ final class ReunionSignalDetailController extends AbstractController
         }
  
         return $this->render('reunion_signal_detail/reunion_signal_detail.html.twig', [
+            'currentTab' => $tab,
             'reunionSignal' => $reunionSignal,
             'nouveauxSignaux' => $nouveauxSignaux,
             'suivisSignaux' => $suivisSignaux,
