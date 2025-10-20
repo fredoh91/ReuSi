@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Signal;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Form\SignalSearchType;
+use App\Repository\SignalRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,22 +17,53 @@ final class SignalListeController extends AbstractController
     #[Route('/fait_marquant_liste', name: 'app_fait_marquant_liste', defaults: ['typeSignal' => 'fait_marquant'])]
     public function liste(
         string $typeSignal,
-        EntityManagerInterface $em
+        SignalRepository $signalRepository,
+        Request $request,
+        PaginatorInterface $paginator
     ): Response
     {
-        $signals = $em->getRepository(Signal::class)->findByTypeSignal($typeSignal);
+        $criteria = [];
+        // On passe null comme data initiale, et on configure la méthode GET
+        $form = $this->createForm(SignalSearchType::class, null, [
+            'method' => 'GET',
+        ]);
+        
+        $form->handleRequest($request);
 
-        // $template = match ($typeSignal) {
-        //     'signal' => 'signal_liste/signal_liste.html.twig',
-        //     'fait_marquant' => 'signal_liste/fait_marquant_liste.html.twig',
-        // };
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Bouton "reset" : redirige vers la même page sans paramètres pour vider le formulaire
+            if ($form->get('reset')->isClicked()) {
+                return $this->redirectToRoute($request->attributes->get('_route'));
+            }
 
-        // return $this->render($template, [
-        //     'signals' => $signals,
-        // ]);
+            // Bouton "annulation" : redirige vers la page d'accueil (à adapter si besoin)
+            if ($form->get('annulation')->isClicked()) {
+                return $this->redirectToRoute('app_home');
+            }
+
+            // Si on arrive ici, c'est que "recherche" a été cliqué. On prend les données.
+            $criteria = $form->getData();
+
+        } else if ($request->query->count() > 0) {
+            // Ce bloc gère le cas où la page est chargée avec des paramètres dans l'URL
+            // (ex: un lien de pagination) sans que le formulaire ait été "soumis".
+            // On remplit le formulaire avec les paramètres de l'URL pour qu'il reste affiché.
+            $criteria = $request->query->all();
+            $form->submit($criteria, false);
+        }
+
+        // On passe les critères (qu'ils viennent du form ou de l'URL) au repository
+        $queryBuilder = $signalRepository->findByTypeSignalWithCriteria($typeSignal, $criteria);
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('signal_liste/signal_liste.html.twig', [
-            'signals' => $signals,
+            'searchForm' => $form->createView(),
+            'pagination' => $pagination,
             'typeSignal' => $typeSignal,
         ]);
     }
