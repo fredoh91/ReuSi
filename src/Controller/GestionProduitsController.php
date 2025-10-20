@@ -54,7 +54,7 @@ final class GestionProduitsController extends AbstractController
                 return $this->redirectToRoute('app_creation_produits', ['signalId' => $signalId]);
             }
             if ($form->get('annulation')->isClicked()) {
-                return $this->redirectToRoute('app_signal_new', ['signalId' => $signalId]);
+                return $this->redirectAfterProductModification($request, $signalId);
             }
         }
 
@@ -165,16 +165,14 @@ final class GestionProduitsController extends AbstractController
                     $em = $doctrine->getManager();
                     $em->persist($produit);
                     $em->flush();
-                    // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
-                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
+                    return $this->redirectAfterProductModification($request, $signalId);
                 }
             }
             // if ($form->get('reset')->isClicked()) {
             //     return $this->redirectToRoute('app_creation_produits', ['signalId' => $signalId]);
             // }
             if ($form->get('annulation')->isClicked()) {
-                // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
-                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
+                return $this->redirectAfterProductModification($request, $signalId);
             }
         }
 
@@ -238,5 +236,19 @@ final class GestionProduitsController extends AbstractController
         }
         $NbMedics = count($medics);
         return [$medics, $NbMedics];
+    }
+
+    private function redirectAfterProductModification(Request $request, int $signalId): Response
+    {
+        $session = $request->getSession();
+        $returnToUrl = $session->get('return_to_after_product_creation');
+
+        if ($returnToUrl) {
+            $session->remove('return_to_after_product_creation');
+            return $this->redirect($returnToUrl);
+        }
+
+        // Fallback redirection
+        return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
     }
 }

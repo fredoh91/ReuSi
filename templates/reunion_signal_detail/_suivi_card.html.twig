@@ -3,7 +3,7 @@
 <div class="card mb-3" id="suivi-{{ suivi.id }}">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
-            <a href="{{ path('app_signal_modif', {'signalId': signal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': suivi.reunionSignal.id }}) }}">
+            <a href="{{ path('app_signal_modif', {'signalId': signal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': suivi.reunionSignal.id, 'tab': currentTab }) }}">
                 {{ signal.TypeSignal == 'fait_marquant' ? 'Fait Marquant' : 'Signal' }} #{{ signal.id }} : {{ signal.Titre }}
             </a>
         </h5>

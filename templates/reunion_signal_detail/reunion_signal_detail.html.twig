@@ -22,22 +22,22 @@
         <div class="actions-container" style="min-width: 450px;">
             <div class="row row-cols-2 g-2">
                 <div class="col d-grid">
-                    <a href="{{ path('app_signal_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-primary">
+                    <a href="{{ path('app_signal_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-primary">
                         <i class="bi bi-file-earmark-plus me-1"></i> Créer un nouveau signal
                     </a>
                 </div>
                 <div class="col d-grid">
-                    <a href="{{ path('app_reunion_add_suivi_signal', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-outline-primary">
+                    <a href="{{ path('app_reunion_add_suivi_signal', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-primary">
                         <i class="bi bi-plus-circle me-1"></i> Ajouter un suivi de signal
                     </a>
                 </div>
                 <div class="col d-grid">
-                    <a href="{{ path('app_fait_marquant_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-info">
+                    <a href="{{ path('app_fait_marquant_new', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-info">
                         <i class="bi bi-file-earmark-plus-fill me-1"></i> Créer un nouveau fait marquant
                     </a>
                 </div>
                 <div class="col d-grid">
-                    <a href="{{ path('app_reunion_add_suivi_fm', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'params': {'reuSiId': reunionSignal.id, 'tab': currentTab}}) }}" class="btn btn-outline-info">
+                    <a href="{{ path('app_reunion_add_suivi_fm', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-info">
                         <i class="bi bi-plus-circle-fill me-1"></i> Ajouter un suivi de fait marquant
                     </a>
                 </div>

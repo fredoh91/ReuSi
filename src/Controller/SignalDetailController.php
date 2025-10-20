@@ -34,6 +34,7 @@ final class SignalDetailController extends AbstractController
     #[Route('/fait_marquant_new', name: 'app_fait_marquant_new', defaults: ['typeSignal' => 'fait_marquant'])]
     public function new(
         EntityManagerInterface $em,
+        Request $request,
         string $typeSignal
     ): Response {
 
@@ -68,12 +69,33 @@ final class SignalDetailController extends AbstractController
 
         $suivi->setRddLie($rdd);
 
+        $reunionId = $request->query->get('reunionId');
+        if ($reunionId) {
+            $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
+            if ($reunion) {
+                $suivi->setReunionSignal($reunion);
+                $rdd->setReunionSignal($reunion);
+            }
+        }
+
         $em->persist($signal);
         $em->persist($suivi);
         $em->persist($rdd);
         $em->flush();
 
-        return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+        // Get all query params from the incoming request
+        $queryParams = $request->query->all();
+        
+        // Add/overwrite signalId for the route path
+        $routeParams = ['signalId' => $signal->getId()];
+        
+        // Remove reunionId as it was only for the 'new' action
+        unset($queryParams['reunionId']);
+
+        // Merge route params and query params for redirection
+        $finalParams = array_merge($routeParams, $queryParams);
+
+        return $this->redirectToRoute('app_signal_modif', $finalParams);
     }
 
     #[Route('/signal_modif/{signalId}', name: 'app_signal_modif', requirements: ['signalId' => '\d+'])]
@@ -190,7 +212,7 @@ final class SignalDetailController extends AbstractController
 
 
         $routeSource = $request->query->get('routeSource', null);
-        $routeParams = $request->query->all('params');
+        $reuSiId = $request->query->get('reuSiId');
         $allowedRoutesSource = ['app_signal_liste', 'app_fait_marquant_liste', 'app_reunion_signal_liste'];
 
         // On crée notre DTO et on le remplit
@@ -223,7 +245,7 @@ final class SignalDetailController extends AbstractController
                 }
 
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
-                if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                if ($routeSource === 'app_reunion_signal_detail' && $reuSiId) {
                     // On récupère le dernier suivi pour déterminer si c'est un "nouveau" ou un "suivi de"
                     $latestSuiviForTab = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
 
@@ -237,7 +259,7 @@ final class SignalDetailController extends AbstractController
 
                     // Construction de l'URL avec l'ancre
                     $url = $this->generateUrl('app_reunion_signal_detail', [
-                        'reuSiId' => $routeParams['reuSiId'],
+                        'reuSiId' => $reuSiId,
                         'tab' => $tabId,
                     ]); // . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
 
@@ -279,7 +301,7 @@ final class SignalDetailController extends AbstractController
 
 
                     // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
-                    if ($routeSource === 'app_reunion_signal_detail' && isset($routeParams['reuSiId'])) {
+                    if ($routeSource === 'app_reunion_signal_detail' && $reuSiId) {
                         // On récupère le dernier suivi pour déterminer si c'est un "nouveau" ou un "suivi de"
                         $latestSuiviForTab = $em->getRepository(Suivi::class)->findLatestForSignal($signal);
 
@@ -293,7 +315,7 @@ final class SignalDetailController extends AbstractController
 
                         // Construction de l'URL avec l'ancre
                         $url = $this->generateUrl('app_reunion_signal_detail', [
-                            'reuSiId' => $routeParams['reuSiId'],
+                            'reuSiId' => $reuSiId,
                             'tab' => $tabId,
                         ]); // . '#' . $tabId . ':suivi-' . $dto->suiviInitial->getId();
 
@@ -330,6 +352,9 @@ final class SignalDetailController extends AbstractController
                     }
                     $em->flush();
 
+                    // On sauvegarde l'URL actuelle dans la session.
+                    $request->getSession()->set('return_to_after_product_creation', $request->getUri());
+
                     // Redirection vers la route pour creations des produits
                     return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);
                 } else {
@@ -356,6 +381,9 @@ final class SignalDetailController extends AbstractController
                         $em->persist($dto->rddInitial);
                     }
                     $em->flush();
+
+                    // On sauvegarde l'URL actuelle dans la session.
+                    $request->getSession()->set('return_to_after_product_creation', $request->getUri());
 
                     // Redirection vers la route pour creations des produits dans un formulaire vide
                     return $this->redirectToRoute('app_ajout_produit', ['signalId' => $signal->getId(), 'codeCIS' => null]);
@@ -407,6 +435,9 @@ final class SignalDetailController extends AbstractController
                     $em->persist($dto->suiviInitial);
                     $em->persist($dto->rddInitial);
                     $em->flush();
+
+                    // On sauvegarde l'URL actuelle dans la session.
+                    $request->getSession()->set('return_to_after_measure_creation', $request->getUri());
 
                     // Redirection vers la route pour la création d'une mesure, en liant au RDD initial
                     return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signal->getId(), 'rddId' => $dto->rddInitial->getId()]);

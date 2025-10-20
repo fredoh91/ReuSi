@@ -84,8 +84,7 @@ final class GestionMesuresController extends AbstractController
                     $this->logger->info('creation mesure - 01 - bouton annulation');
                 }
 
-                // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
-                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                return $this->redirectAfterModification($request, $signal->getId());
             }
             if ($form->get('validation')->isClicked()) {
 
@@ -108,8 +107,7 @@ final class GestionMesuresController extends AbstractController
 
                     $this->addFlash('success', 'La mesure ' . $mesure->getLibMesure() . ' a bien été créée.');
 
-                    // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
-                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                    return $this->redirectAfterModification($request, $signal->getId());
 
                 } else {
                     // Formulaire invalide
@@ -198,8 +196,7 @@ final class GestionMesuresController extends AbstractController
                     $this->logger->info('creation mesure - 01 - bouton annulation');
                 }
 
-                // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
-                return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                return $this->redirectAfterModification($request, $signal->getId());
             }
             if ($form->get('validation')->isClicked()) {
 
@@ -222,8 +219,7 @@ final class GestionMesuresController extends AbstractController
 
                     $this->addFlash('success', 'La mesure a bien été modifiée.');
 
-                    // return $this->redirectToRoute('app_modif_RDD', ['signalId' => $signal->getId(), 'rddId' => $rddId]);
-                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+                    return $this->redirectAfterModification($request, $signal->getId());
 
                 } else {
                     // Formulaire invalide
@@ -308,5 +304,19 @@ final class GestionMesuresController extends AbstractController
         return $this->redirectToRoute('app_signal_modif', [
             'signalId' => $mesure->getSignalLie()->getId(),
         ]);
+    }
+
+    private function redirectAfterModification(Request $request, int $signalId): Response
+    {
+        $session = $request->getSession();
+        $returnToUrl = $session->get('return_to_after_measure_creation');
+
+        if ($returnToUrl) {
+            $session->remove('return_to_after_measure_creation');
+            return $this->redirect($returnToUrl);
+        }
+
+        // Fallback redirection
+        return $this->redirectToRoute('app_signal_modif', ['signalId' => $signalId]);
     }
 }
