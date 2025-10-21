@@ -27,7 +27,7 @@
                     </a>
                 </div>
                 <div class="col d-grid">
-                    <a href="{{ path('app_reunion_add_suivi_signal', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-primary">
+                    <a href="{{ path('app_reunion_search_for_suivi', {'reunionId': reunionSignal.id, 'type': 'signal', 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-primary">
                         <i class="bi bi-plus-circle me-1"></i> Ajouter un suivi de signal
                     </a>
                 </div>
@@ -37,7 +37,7 @@
                     </a>
                 </div>
                 <div class="col d-grid">
-                    <a href="{{ path('app_reunion_add_suivi_fm', {'reunionId': reunionSignal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-info">
+                    <a href="{{ path('app_reunion_search_for_suivi', {'reunionId': reunionSignal.id, 'type': 'fait_marquant', 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab}) }}" class="btn btn-outline-info">
                         <i class="bi bi-plus-circle-fill me-1"></i> Ajouter un suivi de fait marquant
                     </a>
                 </div>

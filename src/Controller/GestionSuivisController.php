@@ -4,13 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Suivi;
 use App\Entity\StatutSignal;
+use App\Entity\ReunionSignal;
 use App\Form\SuiviDetailType;
+use App\Form\SignalSearchType;
 use App\Form\SuiviAvecRddType;
 use App\Entity\ReleveDeDecision;
 use App\Form\Model\SuiviAvecRddDTO;
 use App\Repository\SignalRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\ReunionSignal; // Ajout du use
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -399,30 +401,151 @@ final class GestionSuivisController extends AbstractController
 
     }
 
-    #[Route('/reunion/{reunionId}/add_suivi_signal', name: 'app_reunion_add_suivi_signal', defaults: ['type' => 'signal'])]
-    #[Route('/reunion/{reunionId}/add_suivi_fm', name: 'app_reunion_add_suivi_fm', defaults: ['type' => 'fait_marquant'])]
-    public function addSuiviFromReunion(
+    #[Route('/reunion/{reunionId}/search-for-suivi/{type}', name: 'app_reunion_search_for_suivi', requirements: ['type' => 'signal|fait_marquant'])]
+    public function searchSignalForSuivi(
         int $reunionId,
         string $type,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        SignalRepository $signalRepository,
+        PaginatorInterface $paginator
     ): Response {
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
         if (!$reunion) {
             throw $this->createNotFoundException('Réunion non trouvée.');
         }
 
-        // TODO: Implémenter la logique de recherche de signal/fait marquant
-        // et de création du suivi.
+        $form = $this->createForm(SignalSearchType::class, null, [
+            'method' => 'GET',
+            'csrf_protection' => false,
+        ]);
+        $form->handleRequest($request);
 
-        // Pour l'instant, on retourne une réponse simple pour que la route existe.
-        $this->addFlash(
-            'info',
-            sprintf('Fonctionnalité "Ajouter un suivi de %s" pour la réunion du %s à implémenter.', $type, $reunion->getDateReunion()->format('d/m/Y'))
+        $criteria = $form->isSubmitted() && $form->isValid() ? $form->getData() : [];
+
+        $queryBuilder = $signalRepository->findForSuiviAddition($type, $criteria, $reunion);
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            10 // Nombre d'éléments par page
         );
 
-        $routeSource = $request->query->get('routeSource', 'app_home');
-        $params = $request->query->all('params');
-        return $this->redirectToRoute($routeSource, $params);
+        $currentTab = $request->query->get('tab', 'nouveaux-signaux'); // Récupère le paramètre 'tab' de l'URL
+
+        return $this->render('gestion_suivis/search_for_suivi.html.twig', [
+            'reunion' => $reunion,
+            'type' => $type,
+            'form' => $form->createView(),
+            'signaux' => $pagination,
+            'currentTab' => $currentTab, // Passe le paramètre 'tab' à la vue
+        ]);
+    }
+
+    #[Route('/reunion/{reunionId}/create-suivi-for/{signalId}', name: 'app_reunion_create_suivi')]
+    public function createSuiviForReunion(
+        int $reunionId,
+        int $signalId,
+        EntityManagerInterface $em,
+        SignalRepository $signalRepo
+    ): Response {
+        $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
+        if (!$reunion) {
+            throw $this->createNotFoundException('Réunion non trouvée.');
+        }
+
+        $signal = $signalRepo->find($signalId);
+        if (!$signal) {
+            throw $this->createNotFoundException('Signal non trouvé.');
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+        $userName = $user->getUserName();
+
+        // --- Début de la logique de persistance (inspirée de creation_suivi) ---
+
+        // Lier la réunion sélectionnée au Suivi et au RDD
+        $nextNumeroSuivi = $em->getRepository(Suivi::class)->donneNextNumeroSuivi($signalId);
+        $suivi = new Suivi();
+        $suivi->setSignalLie($signal);
+        $suivi->setNumeroSuivi($nextNumeroSuivi);
+        $suivi->setCreatedAt(new \DateTimeImmutable());
+        $suivi->setUpdatedAt(new \DateTimeImmutable());
+        $suivi->setUserCreate($userName);
+        $suivi->setUserModif($userName);
+        $suivi->setReunionSignal($reunion);
+
+        $nextNumeroRDD = $em->getRepository(ReleveDeDecision::class)->donneNextNumeroRDD($signalId);
+        $RDD = new ReleveDeDecision();
+        $RDD->setSignalLie($signal);
+        $RDD->setNumeroRDD($nextNumeroRDD);
+        $RDD->setCreatedAt(new \DateTimeImmutable());
+        $RDD->setUpdatedAt(new \DateTimeImmutable());
+        $RDD->setUserCreate($userName);
+        $RDD->setUserModif($userName);
+        $RDD->setReunionSignal($reunion);
+
+        $suivi->setRddLie($RDD);
+        $signal->addReunionSignal($reunion);
+
+        // Gestion du statut du signal (passage à "en_cours")
+        $statutActif = $em->getRepository(StatutSignal::class)->findOneBy(['SignalLie' => $signal, 'StatutActif' => true]);
+        if ($statutActif) {
+            $statutActif->setStatutActif(false);
+            $statutActif->setDateDesactivation(new \DateTimeImmutable());
+            $em->persist($statutActif);
+        }
+        $nouveauStatut = new StatutSignal();
+        $nouveauStatut->setLibStatut('en_cours');
+        $nouveauStatut->setDateMiseEnPlace(new \DateTimeImmutable());
+        $nouveauStatut->setStatutActif(true);
+        $nouveauStatut->setSignalLie($signal);
+        $em->persist($nouveauStatut);
+        $signal->addStatutSignal($nouveauStatut);
+
+        // Duplication des mesures
+        $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
+            'SignalLie' => $signal,
+            'DesactivateAt' => null,
+        ]);
+
+        foreach ($mesuresNonCloturees as $ancienneMesure) {
+            $newMesure = new \App\Entity\MesuresRDD();
+            $newMesure->setLibMesure($ancienneMesure->getLibMesure());
+            $newMesure->setDetailCommentaire($ancienneMesure->getDetailCommentaire());
+            $newMesure->setDateCloturePrev($ancienneMesure->getDateCloturePrev());
+            $newMesure->setRddLie($RDD);
+            $newMesure->setSignalLie($signal);
+            $newMesure->setCreatedAt(new \DateTimeImmutable());
+            $newMesure->setUpdatedAt(new \DateTimeImmutable());
+            $newMesure->setUserCreate($userName);
+            $newMesure->setUserModif($userName);
+            $em->persist($newMesure);
+
+            // Clôture de l'ancienne mesure
+            $ancienneMesure->setDesactivateAt(new \DateTimeImmutable());
+            $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunion->getDateReunion()));
+            $ancienneMesure->setUpdatedAt(new \DateTimeImmutable());
+            $ancienneMesure->setUserModif($userName);
+            $em->persist($ancienneMesure);
+        }
+
+        // Persistance du nouveau RDD et du nouveau Suivi
+        $em->persist($RDD);
+        $em->persist($suivi);
+        $em->persist($signal);
+
+        $em->flush();
+
+        $this->addFlash('success', sprintf(
+            'Le suivi pour le signal "%s" a bien été ajouté à la réunion du %s.',
+            $signal->getTitre(),
+            $reunion->getDateReunion()->format('d/m/Y')
+        ));
+
+        return $this->redirectToRoute('app_reunion_signal_detail', ['reuSiId' => $reunionId]);
     }
 }

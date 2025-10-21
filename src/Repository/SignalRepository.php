@@ -103,4 +103,54 @@ class SignalRepository extends ServiceEntityRepository
 
         return $qb;
     }
+
+    public function findForSuiviAddition(string $typeSignal, array $criteria, \App\Entity\ReunionSignal $reunion): QueryBuilder
+    {
+        $qb = $this->findByTypeSignalWithCriteria($typeSignal, $criteria);
+
+        // Condition 1: Exclure les signaux ayant déjà un Suivi pour la réunion EN COURS
+        $qb->leftJoin('s.suivis', 'existing_suivi_for_current_reunion', \Doctrine\ORM\Query\Expr\Join::WITH, 'existing_suivi_for_current_reunion.reunionSignal = :reunionId')
+           ->andWhere('existing_suivi_for_current_reunion.id IS NULL');
+
+        // Condition 2: Exclure les signaux ayant un Suivi pour une réunion FUTURE
+        // Sous-requête pour trouver les IDs des signaux qui ont un suivi lié à une réunion future
+        $subQuerySignalsWithFutureReunion = $this->getEntityManager()->createQueryBuilder()
+            ->select('s_future.id')
+            ->from('App\Entity\Signal', 's_future')
+            ->join('s_future.suivis', 'su_future')
+            ->join('su_future.reunionSignal', 'rs_future')
+            ->where('rs_future.DateReunion > :reunionDate');
+
+        $qb->andWhere($qb->expr()->notIn('s.id', $subQuerySignalsWithFutureReunion->getDQL()));
+
+        // Condition 3: Antériorité
+        // Exclure les signaux dont la dernière date de réunion associée est >= à la réunion en cours
+        // OU les signaux sans réunion associée dont la date de création est >= à la réunion en cours
+
+        // Sous-requête pour trouver les IDs des signaux dont la dernière date de réunion associée est >= à la réunion en cours
+        $subQuerySignalsWithRecentReunion = $this->getEntityManager()->createQueryBuilder()
+            ->select('s_recent.id')
+            ->from('App\Entity\Signal', 's_recent')
+            ->leftJoin('s_recent.suivis', 'su_recent')
+            ->leftJoin('su_recent.reunionSignal', 'rs_recent')
+            ->groupBy('s_recent.id')
+            ->having('MAX(rs_recent.DateReunion) >= :reunionDate');
+
+        // Sous-requête pour trouver les IDs des signaux sans réunion associée dont la date de création est >= à la réunion en cours
+        $subQuerySignalsCreatedRecentlyWithoutReunion = $this->getEntityManager()->createQueryBuilder()
+            ->select('s_created_recent.id')
+            ->from('App\Entity\Signal', 's_created_recent')
+            ->leftJoin('s_created_recent.suivis', 'su_created_recent')
+            ->leftJoin('su_created_recent.reunionSignal', 'rs_created_recent')
+            ->where('s_created_recent.CreatedAt >= :reunionDate')
+            ->andWhere('rs_created_recent.id IS NULL'); // Pas de réunion associée
+
+        $qb->andWhere($qb->expr()->notIn('s.id', $subQuerySignalsWithRecentReunion->getDQL()))
+           ->andWhere($qb->expr()->notIn('s.id', $subQuerySignalsCreatedRecentlyWithoutReunion->getDQL()));
+
+        $qb->setParameter('reunionDate', $reunion->getDateReunion());
+        $qb->setParameter('reunionId', $reunion->getId());
+
+        return $qb;
+    }
 }
