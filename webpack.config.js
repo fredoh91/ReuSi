@@ -23,6 +23,7 @@ Encore
      */
     .addEntry('app', './assets/app.js')
     .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
+    .addEntry('ReunionSignalDate', './assets/js/ReunionSignalDate.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')

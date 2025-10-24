@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la réunion{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>
+        {% if reunion_signal.id is not null %}
+            Modifier la réunion du {{ reunion_signal.DateReunion ? reunion_signal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'N/A' }}
+        {% else %}
+            Ajouter une nouvelle réunion
+        {% endif %}
+    </h1>
+
+    {{ form_start(form) }}
+        <div class="my-3">
+            {{ form_row(form.DateReunion) }}
+        </div>
+        <div class="my-3">
+            {{ form_row(form.ReunionAnnulee) }}
+        </div>
+
+        <div class="d-flex justify-content-start gap-2 mt-4">
+            {{ form_widget(form.save) }}
+            <a href="{{ path('app_reunion_signal_date') }}" class="btn btn-secondary">Retour à la liste</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

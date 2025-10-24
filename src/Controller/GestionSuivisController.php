@@ -447,7 +447,8 @@ final class GestionSuivisController extends AbstractController
         int $reunionId,
         int $signalId,
         EntityManagerInterface $em,
-        SignalRepository $signalRepo
+        SignalRepository $signalRepo,
+        Request $request
     ): Response {
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
         if (!$reunion) {
@@ -546,6 +547,12 @@ final class GestionSuivisController extends AbstractController
             $reunion->getDateReunion()->format('d/m/Y')
         ));
 
-        return $this->redirectToRoute('app_reunion_signal_detail', ['reuSiId' => $reunionId]);
+        // Récupérer l'onglet de la requête pour la redirection
+        $tab = $request->query->get('tab', 'nouveaux-signaux');
+
+        return $this->redirectToRoute('app_reunion_signal_detail', [
+            'reuSiId' => $reunionId,
+            'tab' => $tab,
+        ]);
     }
 }

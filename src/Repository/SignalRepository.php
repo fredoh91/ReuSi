@@ -143,7 +143,8 @@ class SignalRepository extends ServiceEntityRepository
             ->leftJoin('s_created_recent.suivis', 'su_created_recent')
             ->leftJoin('su_created_recent.reunionSignal', 'rs_created_recent')
             ->where('s_created_recent.CreatedAt >= :reunionDate')
-            ->andWhere('rs_created_recent.id IS NULL'); // Pas de réunion associée
+            ->groupBy('s_created_recent.id')
+            ->having('COUNT(rs_created_recent.id) = 0');
 
         $qb->andWhere($qb->expr()->notIn('s.id', $subQuerySignalsWithRecentReunion->getDQL()))
            ->andWhere($qb->expr()->notIn('s.id', $subQuerySignalsCreatedRecentlyWithoutReunion->getDQL()));
