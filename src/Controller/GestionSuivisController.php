@@ -11,6 +11,7 @@ use App\Form\SuiviAvecRddType;
 use App\Entity\ReleveDeDecision;
 use App\Form\Model\SuiviAvecRddDTO;
 use App\Repository\SignalRepository;
+use App\Service\SignalStatusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +30,8 @@ final class GestionSuivisController extends AbstractController
         SignalRepository $signalRepo,
         Request $request,
         EntityManagerInterface $em,
-        RouterInterface $router
+        RouterInterface $router,
+        SignalStatusService $signalStatusService
     ): Response
     {
 
@@ -160,6 +162,7 @@ final class GestionSuivisController extends AbstractController
                 $em->persist($dto->suivi);
                 $em->persist($dto->rddLie);
                 $em->flush();
+                $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
                 if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
                     $route = $router->getRouteCollection()->get($redirectRoute);
@@ -206,7 +209,8 @@ final class GestionSuivisController extends AbstractController
         int $signalId, 
         SignalRepository $signalRepo, 
         Request $request, 
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        SignalStatusService $signalStatusService
     ): Response
     {
 
@@ -342,21 +346,6 @@ final class GestionSuivisController extends AbstractController
                         $RDD->setReunionSignal($reunionSelectionnee);
                         $signal->addReunionSignal($reunionSelectionnee);
 
-                        // Gestion du statut du signal (passage à "en_cours")
-                        $statutActif = $em->getRepository(StatutSignal::class)->findOneBy(['SignalLie' => $signal, 'StatutActif' => true]);
-                        if ($statutActif) {
-                            $statutActif->setStatutActif(false);
-                            $statutActif->setDateDesactivation(new \DateTimeImmutable());
-                            $em->persist($statutActif);
-                        }
-                        $nouveauStatut = new StatutSignal();
-                        $nouveauStatut->setLibStatut('en_cours');
-                        $nouveauStatut->setDateMiseEnPlace(new \DateTimeImmutable());
-                        $nouveauStatut->setStatutActif(true);
-                        $nouveauStatut->setSignalLie($signal);
-                        $em->persist($nouveauStatut);
-                        $signal->addStatutSignal($nouveauStatut);
-
                         // Persistance des nouvelles mesures dupliquées
                         foreach ($nouvellesMesures as $newMesure) {
                             $em->persist($newMesure);
@@ -377,6 +366,8 @@ final class GestionSuivisController extends AbstractController
                         $em->persist($signal);
 
                         $em->flush();
+
+                        $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
 
                         $this->addFlash('success', 'Le nouveau suivi et son relevé de décision ont bien été créés pour la date du ' . $reunionSelectionnee->getDateReunion()->format('d/m/Y'));
 
@@ -448,7 +439,8 @@ final class GestionSuivisController extends AbstractController
         int $signalId,
         EntityManagerInterface $em,
         SignalRepository $signalRepo,
-        Request $request
+        Request $request,
+        SignalStatusService $signalStatusService
     ): Response {
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
         if (!$reunion) {
@@ -492,21 +484,6 @@ final class GestionSuivisController extends AbstractController
         $suivi->setRddLie($RDD);
         $signal->addReunionSignal($reunion);
 
-        // Gestion du statut du signal (passage à "en_cours")
-        $statutActif = $em->getRepository(StatutSignal::class)->findOneBy(['SignalLie' => $signal, 'StatutActif' => true]);
-        if ($statutActif) {
-            $statutActif->setStatutActif(false);
-            $statutActif->setDateDesactivation(new \DateTimeImmutable());
-            $em->persist($statutActif);
-        }
-        $nouveauStatut = new StatutSignal();
-        $nouveauStatut->setLibStatut('en_cours');
-        $nouveauStatut->setDateMiseEnPlace(new \DateTimeImmutable());
-        $nouveauStatut->setStatutActif(true);
-        $nouveauStatut->setSignalLie($signal);
-        $em->persist($nouveauStatut);
-        $signal->addStatutSignal($nouveauStatut);
-
         // Duplication des mesures
         $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
             'SignalLie' => $signal,
@@ -540,6 +517,8 @@ final class GestionSuivisController extends AbstractController
         $em->persist($signal);
 
         $em->flush();
+
+        $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
 
         $this->addFlash('success', sprintf(
             'Le suivi pour le signal "%s" a bien été ajouté à la réunion du %s.',

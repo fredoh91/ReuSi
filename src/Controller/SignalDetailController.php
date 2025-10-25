@@ -11,6 +11,7 @@ use App\Entity\ReleveDeDecision;
 use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\Model\SignalAvecSuiviInitialDTO;
+use App\Service\SignalStatusService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,6 +51,17 @@ final class SignalDetailController extends AbstractController
         $signal->setUserCreate($userName);
         $signal->setUserModif($userName);
         $signal->setTypeSignal($typeSignal);
+
+        // Valorisation des champs du statut "brouillon" créé dans le constructeur
+        $brouillonStatut = $signal->getStatutSignals()->first();
+        if ($brouillonStatut) {
+            $now = new \DateTimeImmutable();
+            $brouillonStatut->setDateMiseEnPlace($now);
+            $brouillonStatut->setCreatedAt($now);
+            $brouillonStatut->setUpdatedAt($now);
+            $brouillonStatut->setUserCreate($userName);
+            $brouillonStatut->setUserModif($userName);
+        }
 
         $suivi = new Suivi();
         $suivi->setCreatedAt(new \DateTimeImmutable());
@@ -102,7 +114,8 @@ final class SignalDetailController extends AbstractController
     public function signal_modif(
         EntityManagerInterface $em,
         Request $request,
-        int $signalId
+        int $signalId,
+        SignalStatusService $signalStatusService
     ): Response {
         $signal = $em->getRepository(Signal::class)->find($signalId);
 
@@ -297,7 +310,17 @@ final class SignalDetailController extends AbstractController
                     // $em->persist($signal);
                     $em->flush();
 
-                    $this->addFlash('success', 'Le signal ' . $signalId . ' a bien été modifié');
+                    // Gérer la clôture du signal
+                    $aCloturer = $signalForm->get('aCloturer')->getData();
+                    if ($aCloturer === true) {
+                        $signalStatusService->clotureSignal($dto->signal, $userName);
+                        $this->addFlash('success', 'Le signal ' . $signalId . ' a été clôturé.');
+                    } else {
+                        $this->addFlash('success', 'Le signal ' . $signalId . ' a bien été modifié');
+                    }
+
+                    // Mettre à jour le statut si une réunion a été ajoutée au suivi initial
+                    $signalStatusService->updateToPrevuIfNeeded($dto->signal, $userName);
 
 
                     // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);

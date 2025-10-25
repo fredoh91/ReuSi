@@ -129,7 +129,6 @@ class Signal
         // Création automatique du StatutSignal "brouillon"
         $statutSignal = new StatutSignal();
         $statutSignal->setLibStatut('brouillon');
-        $statutSignal->setDateMiseEnPlace(new \DateTimeImmutable());
         $statutSignal->setDateDesactivation(null);
         $statutSignal->setStatutActif(true);
         $statutSignal->setSignalLie($this);

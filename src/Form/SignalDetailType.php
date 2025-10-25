@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Signal;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -24,6 +25,13 @@ class SignalDetailType extends AbstractType
                 'label' => 'Commentaire de l\'analyse de risque',
                 'label_attr' => ['class' => 'fw-bold'],
                 'required' => false,
+            ])
+            ->add('aCloturer', CheckboxType::class, [
+                'label' => 'Clôturer ce signal',
+                'required' => false,
+                'mapped' => false, // Très important !
+                'attr' => ['class' => 'form-check-input'],
+                'label_attr' => ['class' => 'form-check-label fw-bold text-danger'],
             ])
             ->add('validation', SubmitType::class, [
                 'label' => 'Valider',
