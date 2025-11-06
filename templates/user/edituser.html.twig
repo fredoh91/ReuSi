@@ -1,0 +1,29 @@
+{% extends 'base_dark_theme.html.twig' %}
+
+{% block title %}Modifier l'utilisateur
+{% endblock %}
+
+{% block body %}
+
+	<div class="container my-3">
+		<div class="row">
+			<h1>Visualisation/Modification de l'utilisateur</h1>
+			<div class="col">
+				{{ form_start(form) }}
+
+				{% include "_partials/_user_registration_edit.html.twig" %}
+
+				<div class="row">
+					<div class="col-3">
+						{{ form_widget(form.Valider) }}
+					</div>
+					<div class="col-3">
+						{{ form_widget(form.Annuler) }}
+					</div>
+				</div>
+				
+				{{ form_end(form) }}
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+<div class="row">
+	<div class="col-6">
+		{{ form_label(form.Prenom, 'Prénom :') }}
+		{{ form_widget(form.Prenom) }}
+	</div>
+	<div class="col-6">
+		{{ form_label(form.Nom, 'Nom :') }}
+		{{ form_widget(form.Nom) }}
+	</div>
+</div>
+<div class="row">
+	<div class="col-6">
+		{{ form_label(form.email, 'E-mail :') }}
+		{{ form_widget(form.email) }}
+	</div>
+	<div class="col-6">
+		{{ form_label(form.UserName, 'UserName :') }}
+		{{ form_widget(form.UserName) }}
+	</div>
+</div>
+<div class="row">
+	<div class="col-6">
+		{{ form_label(form.roles, 'rôle(s) :') }}
+		{{ form_widget(form.roles) }}
+	</div>
+	{# <div class="col-6">
+		{{ form_label(form.plainPassword, 'Mot de passe :') }}
+		{{ form_widget(form.plainPassword) }}
+	</div> #}
+</div>

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello AjoutManuelUserController!
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid p-5">
+		{% if Users %}
+
+
+			<table class="table table-sm table-bordered table-hover text-center">
+				<thead class="table-secondary">
+					<tr>
+						<th scope="col">id_utilisateur</th>
+						<th scope="col">Nom</th>
+						<th scope="col">Prenom</th>
+						<th scope="col">UserName</th>
+						<th scope="col">email</th>
+						<th scope="col">roles</th>
+						<th scope="col-2">password hashé</th>
+						<th scope="col">password en clair</th>
+						<th scope="col">DateCreation</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for User in Users %}
+						<tr>
+							<td>{{ User.id|e }}</td>
+							<td>{{ User.Nom|e }}</td>
+							<td>{{ User.Prenom|e }}</td>
+							<td>{{ User.UserName|e }}</td>
+							<td>{{ User.email|e }}</td>
+							<td>
+								<ul>
+									{% for role in User.roles %}
+										<li>{{ role|e }}</li>
+									{% endfor %}
+								</ul>
+							</td>
+							<td>{{ User.password|e }}</td>
+							<td>{{ User.passwordEnClair|e }}</td>
+							<td>{{ User.DateCreation|format_datetime(locale='fr') }}</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="9">Il n'y a pas d'utilisateur avec un mot de passe à hasher</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+		{% endif %}
+	</div>
+{% endblock %}

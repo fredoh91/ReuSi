@@ -1,0 +1,86 @@
+{% extends 'base_dark_theme.html.twig' %}
+
+{% block title %}Liste des utilisateurs
+{% endblock %}
+
+{% block body %}
+
+	<div class="container-fluid">
+		{% if Users %}
+			Nombre de lignes :
+			{{ NbUsers }}
+			<h3>Liste des utilisateurs</h3>
+			{# {{dump(Susars)}} #}
+			<table class="table table-sm table-bordered table-hover text-center">
+				<thead class="table-secondary">
+					<tr>
+						<th scope="col">id_utilisateur</th>
+						<th scope="col">Nom</th>
+						<th scope="col">Prénom</th>
+						<th scope="col">UserName</th>
+						<th scope="col">e-mail</th>
+						<th scope="col">rôle(s)</th>
+						<th scope="col-2">password</th>
+						<th scope="col">Date création</th>
+						<th scope="col">Date désactivation</th>
+						<th scope="col">Date de dernière connexion</th>
+						<th scope="col">Affichage/modification</th>
+						<th scope="col">Modification du mot de passe</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for User in Users %}
+						<tr>
+							<td>{{ User.id|e }}</td>
+							<td>{{ User.Nom|e }}</td>
+							<td>{{ User.Prenom|e }}</td>
+							<td>{{ User.UserName|e }}</td>
+							<td>{{ User.email|e }}</td>
+							<td>
+								<ul>
+									{% for role in User.roles %}
+										<li>{{ role|e }}</li>
+									{% endfor %}
+								</ul>
+							</td>
+							<td>{{ User.password|e }}</td>
+							<td>{{ User.DateCreation|format_datetime(locale='fr') }}</td>
+							{% if User.DateDesactivation is not null %}
+								<td>{{ User.DateDesactivation|format_datetime(locale='fr') }}</td>
+							{% else %}
+								<td>Actif</td>
+							{% endif %}
+							{% if User.DateDerniereConnexion is not null %}
+								<td>{{ User.DateDerniereConnexion|format_datetime(locale='fr') }}</td>
+							{% else %}
+								<td>Ne s'est jamais connecté</td>
+							{% endif %}
+							<td>
+								<a href="{{ path('app_modif_user', {'id': User.id}) }}" class="btn btn-warning">Modifier</a>
+							</td>
+							<td>
+								<a href="{{ path('app_modif_user_password_super_admin', {'id': User.id}) }}" class="btn btn-danger">Modifier le mot de passe</a>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="9">Il n'y a pas d'utilistaeur inscrit</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<div class="p-3">
+				{% for message in app.flashes('success') %}
+					<div class="alert alert-success">
+						{{ message }}
+					</div>
+				{% endfor %}
+			</div>
+
+			<a href="{{ path('app_register') }}" class="btn btn-primary">Ajout d'un utilisateur</a>
+			{{ knp_pagination_render(Users) }}
+		{% endif %}
+	</div>
+
+{% endblock %}
