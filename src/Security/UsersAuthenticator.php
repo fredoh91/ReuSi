@@ -35,10 +35,9 @@ class UsersAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $formData = $request->request->all('toggle_password_form');
-        $email = $formData['email'] ?? '';
-        $password = $formData['password'] ?? '';
-        $csrfToken = $formData['_csrf_token'] ?? '';
+        $email = $request->request->get('_email', '');
+        $password = $request->request->get('_password', '');
+        $csrfToken = $request->request->get('_token', '');
 
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 

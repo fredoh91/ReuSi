@@ -20,7 +20,7 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
-                username_parameter: _username    # Sans préfixe
+                username_parameter: _email    # Sans préfixe
                 password_parameter: _password    # Sans préfixe
                 csrf_parameter: _token # Doit correspondre à csrf_field_name
                 csrf_token_id: authenticate # Doit correspondre à csrf_token_id

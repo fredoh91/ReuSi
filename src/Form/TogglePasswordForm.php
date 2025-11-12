@@ -16,8 +16,8 @@ class TogglePasswordForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            // IMPORTANT: Le nom du champ doit être '_username' pour l'auth Symfony
-            ->add('_username', EmailType::class, [
+            // Le nom du champ est '_email' pour mieux refléter son contenu
+            ->add('_email', EmailType::class, [
                 'label' => 'Email',
                 'data' => $options['last_username'], // Récupère la dernière saisie
                 'attr' => [
