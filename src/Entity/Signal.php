@@ -115,6 +115,12 @@ class Signal
     #[ORM\JoinTable(name: 'direction_pole_concerne_signal')]
     private Collection $directionPoleConcernes;
 
+    /**
+     * @var Collection<int, Gamme>
+     */
+    #[ORM\ManyToMany(targetEntity: Gamme::class, inversedBy: 'signals')]
+    private Collection $gammes;
+
     // #[ORM\Column(length: 255, nullable: true)]
     // private ?string $TypeSignal = null;
 
@@ -137,6 +143,7 @@ class Signal
         $this->mesuresRDDs = new ArrayCollection();
         $this->suivis = new ArrayCollection();
         $this->directionPoleConcernes = new ArrayCollection();
+        $this->gammes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -560,6 +567,30 @@ class Signal
         if ($this->directionPoleConcernes->removeElement($directionPoleConcerne)) {
             $directionPoleConcerne->removeSignal($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Gamme>
+     */
+    public function getGammes(): Collection
+    {
+        return $this->gammes;
+    }
+
+    public function addGamme(Gamme $gamme): static
+    {
+        if (!$this->gammes->contains($gamme)) {
+            $this->gammes->add($gamme);
+        }
+
+        return $this;
+    }
+
+    public function removeGamme(Gamme $gamme): static
+    {
+        $this->gammes->removeElement($gamme);
 
         return $this;
     }
