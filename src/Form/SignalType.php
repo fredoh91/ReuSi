@@ -73,10 +73,10 @@ class SignalType extends AbstractType
             ->add('NiveauRisqueInitial', ChoiceType::class, [
                 'label' => 'Niveau de risque initial',
                 'choices' => [
-                    'Faible' => 'Faible',
-                    'Modéré' => 'Modéré',
-                    'Élevé' => 'Élevé',
-                    'Critique' => 'Critique',
+                    'SHR' => 'SHR',
+                    'SRI' => 'SRI',
+                    'SRM' => 'SRM',
+                    'SRF' => 'SRF',
                 ],
                 'label_attr' => ['class' => 'fw-bold'],
                 'required' => $options['required_fields']['NiveauRisqueInitial'] ?? false,
@@ -86,10 +86,10 @@ class SignalType extends AbstractType
             ->add('NiveauRisqueFinal', ChoiceType::class, [
                 'label' => 'Niveau de risque final',
                 'choices' => [
-                    'Faible' => 'Faible',
-                    'Modéré' => 'Modéré',
-                    'Élevé' => 'Élevé',
-                    'Critique' => 'Critique',
+                    'SHR' => 'SHR',
+                    'SRI' => 'SRI',
+                    'SRM' => 'SRM',
+                    'SRF' => 'SRF',
                 ],
                 'label_attr' => ['class' => 'fw-bold'],
                 'required' => is_array($requiredFields) ? ($requiredFields['NiveauRisqueFinal'] ?? false) : false,

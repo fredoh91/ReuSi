@@ -75,7 +75,9 @@ class VUUtilRepository extends ServiceEntityRepository
         // Fonction de normalisation des paramètres
         $normalize = function ($str) {
             $str = mb_strtoupper($str ?? '', 'UTF-8');
-            $str = iconv('UTF-8', 'ASCII//TRANSLIT', $str); // retire les accents
+            // Utilise l'extension intl pour une translittération propre
+            $transliterator = \Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', \Transliterator::FORWARD);
+            $str = $transliterator->transliterate($str);
             $str = preg_replace('/\s+/', '', $str); // retire les espaces
             return $str;
         };
@@ -159,7 +161,9 @@ class VUUtilRepository extends ServiceEntityRepository
         // Fonction de normalisation des paramètres
         $normalize = function ($str) {
             $str = mb_strtoupper($str ?? '', 'UTF-8');
-            $str = iconv('UTF-8', 'ASCII//TRANSLIT', $str); // retire les accents
+            // Utilise l'extension intl pour une translittération propre
+            $transliterator = \Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', \Transliterator::FORWARD);
+            $str = $transliterator->transliterate($str);
             $str = preg_replace('/\s+/', '', $str); // retire les espaces
             return $str;
         };
