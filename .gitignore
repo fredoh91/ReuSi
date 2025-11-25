@@ -29,4 +29,6 @@ npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 
+### IA configuration files ###
 /GEMINI.md
+/WARP.md
