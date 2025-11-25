@@ -1,3 +1,4 @@
+// import './stimulus_bootstrap.js';
 // Importe la configuration JavaScript de Symfony UX (Stimulus, Turbo, etc.)
 // Ce fichier est généré automatiquement lors de l'installation de Symfony UX
 // import './bootstrap.js';
