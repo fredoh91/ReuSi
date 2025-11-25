@@ -18,8 +18,10 @@ class SuiviInitialDetailType extends SuiviType
     {
         parent::buildForm($builder, $options);
         
-        // Ajout des champs spécifiques à SuiviInitialDetailType si nécessaire
-        // Par exemple, des boutons ou des champs supplémentaires
+        // Masquer le champ DescriptionSuivi pour le suivi initial
+        // car il est hérité du SuiviType parent et n'est pas souhaité ici.
+        // On le supprime de ce formulaire spécifique.
+        $builder->remove('DescriptionSuivi');
     }
 
     public function configureOptions(OptionsResolver $resolver): void
