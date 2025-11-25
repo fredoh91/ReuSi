@@ -77,28 +77,14 @@
 
                     <!-- Nouvelle ligne pour contenir les deux blocs côte à côte -->
                     <div class="row mt-3">
-                        <!-- Bloc Directions / Pôles -->
+
+                        <!-- bloc Gammes -->
                         <div class="col-md-9">
-                            <fieldset class="mb-3 border p-3 rounded dir-pole-fieldset">
-                                <legend class="text-center h5 mb-3 fw-bold">
-                                    {{ form.signal.directionPoleConcernes.vars.label }}
-                                </legend>
-                                <div id="{{ form.signal.directionPoleConcernes.vars.id }}">
-                                    {# On boucle sur les groupes créés par l'option 'group_by' #}
-                                    {% for group_label, choices in form.signal.directionPoleConcernes.vars.choices %}
-                                        <div class="mb-2">
-                                            <p class="fw-bold mb-1">{{ group_label }}</p>
-                                            <div class="row">
-                                                {# Pour chaque groupe, on boucle sur les cases à cocher #}
-                                                {% for choice in choices %}
-                                                    <div class="col-md-2">
-                                                        {{ form_widget(form.signal.directionPoleConcernes[choice.value]) }}
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
+                            <fieldset class="mb-3 border p-3 rounded gamme-fieldset">
+                                {# <legend class="text-center h5 mb-3 fw-bold">
+                                    {{ form.signal.gammes.vars.label }}
+                                </legend> #}
+                                {{ form_row(form.signal.gammes) }}
                             </fieldset>
                         </div>
                         <!-- Nouveau bloc pour Source, Référence, Identifiant -->

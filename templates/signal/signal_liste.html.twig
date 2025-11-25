@@ -5,6 +5,16 @@
 
 {% block body %}
 
+
+	{# Affichage des messages flash #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+
+
 <div class="container-md">
 
 	{% if signal is not empty %}
@@ -70,12 +80,5 @@
 	{% endif %}
 
 </div>
-{# <div class="container-fluid px-5"> #}
-{# <div class="container-md">
 
-    {{ form_start(form) }}
-
-    {{ form_end(form) }}
-
-</div> #}
 {% endblock %}

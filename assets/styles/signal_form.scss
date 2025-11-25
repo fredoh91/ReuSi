@@ -30,3 +30,42 @@
 .suivi_rdd-inactif {
     background-color: $Suivi_rdd_inactif_bg; // Pour la card
 }
+
+/*
+ * Style pour le champ d'autocomplétion (Tom Select) des gammes.
+ */
+.gamme-fieldset {
+    /* Cible le conteneur principal de Tom Select */
+    .ts-control {
+
+        /* Cible chaque élément sélectionné (les "pilules") */
+        .item {
+            background-color: #cccbcb !important; /* Votre vert */
+            background-image: none !important;    /* Ligne cruciale pour enlever tout dégradé */
+            color: black !important;              /* Forcez la couleur du texte si besoin */
+            border-radius: 4px;        // Coins arrondis
+            padding: 5px 10px;         // Espacement intérieur
+            margin: 3px;               // Espacement extérieur
+            font-weight: 500;
+            border: 1px solid #8dda8e; /* Une bordure adaptée */
+
+            /* Style pour le bouton de suppression (la croix) */
+            .remove {
+                color: rgb(119, 119, 119);          // Couleur de la croix
+                text-decoration: none; // Enlève le soulignement au survol
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                    background-color: #dc3545 !important; // Fond rouge au survol (exemple)
+                    color: rgb(34, 34, 34) !important;    // Couleur de la croix
+                }
+            }
+        }
+
+        /* Style pour l'élément sélectionné quand il est actif/focus */
+        .item.active {
+            background-color: #0a58ca; // Un bleu plus foncé quand l'élément est actif
+        }
+    }
+}

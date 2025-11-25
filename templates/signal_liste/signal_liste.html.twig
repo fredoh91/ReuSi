@@ -9,6 +9,19 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block body %}
+
+
+
+	{# Affichage des messages flash #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+
+
+
 <div class="container-fluid mt-4">
     <h1>{{ page_title }}</h1>
 

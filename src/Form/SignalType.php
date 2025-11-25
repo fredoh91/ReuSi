@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\DirectionPoleConcerne;
+use App\Entity\Gamme;
 use App\Entity\Signal;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -11,8 +11,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+// use Symfony\Bridge\Doctrine\Form\Type\EntityType; // Commenté car n'est plus directement utilisé
 use Doctrine\ORM\EntityRepository;
+// use App\Entity\DirectionPoleConcerne; // Commenté car le champ directionPoleConcernes est remplacé
+use App\Form\GammeAutocompleteType; // Ajouté pour le champ Gammes
+// use Symfony\UX\Autocomplete\Form\BaseEntityAutocompleteType; // Commenté car GammeAutocompleteType est utilisé à la place
 
 class SignalType extends AbstractType
 {
@@ -93,6 +96,7 @@ class SignalType extends AbstractType
                 'disabled' => is_array($disabledFields) ? ($disabledFields['NiveauRisqueFinal'] ?? false) : false,
                 'attr' => (is_array($options['readonly_fields']) && ($options['readonly_fields']['NiveauRisqueFinal'] ?? false)) ? ['readonly' => 'readonly'] : [],
             ])
+            /*
             ->add('directionPoleConcernes', EntityType::class, [
                 'class' => DirectionPoleConcerne::class,
                 'query_builder' => function (EntityRepository $er) {
@@ -120,6 +124,14 @@ class SignalType extends AbstractType
                 'attr' => [
                     'class' => 'direction-pole-group',
                 ],
+            ])
+            */
+            ->add('gammes', GammeAutocompleteType::class, [
+                'multiple' => true,
+                'required' => false,
+                'label' => 'Gamme(s) concernée(s)',
+                'label_attr' => ['class' => 'fw-bold'],
+                // Les options query_builder, choice_label, group_by sont maintenant dans GammeAutocompleteType
             ]);
 
         // Ajout des boutons conditionnels
