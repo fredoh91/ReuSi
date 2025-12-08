@@ -1,0 +1,118 @@
+// assets/styles/ajout_produit.scss
+
+// Importation des variables globales définies dans _variables.scss
+@import "variables"; 
+
+// Classe principale pour encapsuler les styles de cette page
+.page-ajout-produit {
+    background-color: $ANSM_gris_clair;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    min-height: 100vh;
+}
+
+// Style des cartes pour un look plus doux
+.page-ajout-produit .card {
+    border: 1px solid $ANSM_gris_clair;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    margin-bottom: 2rem !important;
+}
+
+.page-ajout-produit .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.page-ajout-produit .card-header {
+    background-color: $Ctnr_tab_violet_clair;
+    color: $ANSM_violet;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    border-bottom: 1px solid $ANSM_gris_clair;
+    padding: 1rem 1.5rem;
+
+    h5 {
+        font-weight: 600;
+    }
+}
+
+.page-ajout-produit .card-body {
+    padding: 1.25rem;
+}
+
+/*
+ * CIBLE PRINCIPALE POUR TASSER LES CHAMPS
+ * Le thème de formulaire de Symfony ajoute une <div> avec une classe .mb-3
+ * autour de chaque champ. Nous ciblons cette classe pour réduire la marge.
+*/
+.page-ajout-produit .card-body .mb-3 {
+    margin-bottom: 0.5rem !important;
+}
+
+
+// Aération entre les rangées du formulaire (les .row)
+.page-ajout-produit .card-body .row {
+    margin-bottom: 0.5rem;
+}
+
+.page-ajout-produit .card-body .row:last-of-type {
+    margin-bottom: 0;
+}
+
+// Style des labels
+.page-ajout-produit .form-label {
+    font-weight: 500;
+    color: $ANSM_gris_fonce;
+    margin-bottom: 0.25rem;
+}
+
+// Styles personnalisés pour les boutons
+.page-ajout-produit .btn {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    border: none;
+}
+
+.page-ajout-produit .btn-validation {
+    background-color: $ANSM_vert_fonce;
+    color: white;
+}
+.page-ajout-produit .btn-validation:hover {
+    background-color: darken($ANSM_vert_fonce, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba($ANSM_vert_fonce, 0.4);
+}
+
+.page-ajout-produit .btn-annulation {
+    background-color: $Ctnr_tab_rouge_clair; // Couleur pastel rouge pour annuler
+    color: $ANSM_violet; // Texte en violet foncé
+    border: 1px solid $Ctnr_tab_rouge_clair;
+}
+.page-ajout-produit .btn-annulation:hover {
+    background-color: darken($Ctnr_tab_rouge_clair, 5%);
+    transform: translateY(-2px);
+}
+
+.page-ajout-produit .btn-formatage-dci {
+    background-color: $Fond_fait_marquant; // Couleur pastel bleu-vert
+    color: $ANSM_violet; // Texte en violet foncé
+    border: 1px solid $Fond_fait_marquant;
+}
+.page-ajout-produit .btn-formatage-dci:hover {
+    background-color: darken($Fond_fait_marquant, 5%);
+    transform: translateY(-2px);
+}
+
+.page-ajout-produit .btn-formatage-produit {
+    background-color: $Fond_signal; // Couleur pastel beige-orangé
+    color: $ANSM_violet; // Texte en violet foncé
+    border: 1px solid $Fond_signal;
+}
+.page-ajout-produit .btn-formatage-produit:hover {
+    background-color: darken($Fond_signal, 5%);
+    transform: translateY(-2px);
+}

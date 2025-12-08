@@ -37,7 +37,9 @@ class ReleveDeDecisionRepository extends ServiceEntityRepository
 
         $maxNumero = $query->getSingleScalarResult();
 
-        return $maxNumero !== null ? $maxNumero + 1 : 1;
+        // Si aucun RDD n'existe (maxNumero est null), le prochain numéro est 0 (le premier RDD)
+        // Sinon, le prochain numéro est le maximum actuel + 1.
+        return $maxNumero !== null ? $maxNumero + 1 : 0;
     }
 
 

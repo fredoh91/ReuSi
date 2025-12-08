@@ -28,7 +28,7 @@ class SignalAvecSuiviInitialType extends AbstractType
                 'required' => false,
             ])
             ->add('rddInitial', SignalRddDetailType::class, [
-                'label' => 'Relevé de Décision Initial (N°1)',
+                'label' => 'Relevé de Décision Initial (N°0)', // Changement ici
                 'is_initial' => true, // Option pour masquer certains champs si nécessaire
                 'required' => false,
                 'reunions' => $options['reunions'],

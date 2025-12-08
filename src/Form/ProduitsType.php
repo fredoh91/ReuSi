@@ -157,11 +157,11 @@ class ProduitsType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
-            ->add('Complement', TextType::class, [
-                'label' => 'Complément',
-                'required' => false,
-                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
+            // ->add('Complement', TextType::class, [
+            //     'label' => 'Complément',
+            //     'required' => false,
+            //     'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
+            // ])
             ->add('Tel', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
@@ -172,14 +172,14 @@ class ProduitsType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
-            ->add('MedicAccesLibre', CheckboxType::class, [
-                'label' => 'Médicament en accès libre',
-                'required' => false,
-            ])
-            ->add('PrescriptionDelivrance', TextType::class, [
-                'label' => 'Conditions de prescription et de délivrance',
-                'required' => false,
-            ])
+            // ->add('MedicAccesLibre', CheckboxType::class, [
+            //     'label' => 'Médicament en accès libre',
+            //     'required' => false,
+            // ])
+            // ->add('PrescriptionDelivrance', TextType::class, [
+            //     'label' => 'Conditions de prescription et de délivrance',
+            //     'required' => false,
+            // ])
             // ->add('SignalLie', EntityType::class, [
             //     'class' => Signal::class,
             //     'choice_label' => 'id',

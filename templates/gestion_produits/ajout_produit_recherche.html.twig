@@ -1,303 +1,169 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajout de produit à un signal
-{% endblock %}
+{% block title %}Ajout de produit à un signal{% endblock %}
 
 {% block body %}
+	{# On charge la nouvelle feuille de style #}
+	{{ encore_entry_link_tags('ajoutproduit_css') }} 
 
-	{# {{ encore_entry_link_tags('rechlabo_css') }} #}
-	<div class="container mt-5">
-		<div class="row justify-content-center">
-			{# <div class="col-md-6"> #}
+	{# On ajoute une div principale avec notre classe personnalisée pour appliquer le fond et l'espacement #}
+	<div class="page-ajout-produit">
+		<div class="container">
+			<div class="row justify-content-center">
 				{{ form_start(form) }}
-				{# <div class="mb-3"> #}
 
+					{# On retire les classes bg-primary et text-white, le SCSS s'en occupe #}
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header">
                             <h5 class="mb-0">Informations médicament</h5>
                         </div>
                         <div class="card-body">
-
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-6">
-									{{ form_label(form.Denomination) }}
+									{{ form_row(form.Denomination) }}
 								</div>
 								<div class="col-6">
-									{{ form_label(form.DCI) }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-6">
-									{{ form_widget(form.Denomination) }}
-								</div>
-								<div class="col-6">
-									{{ form_widget(form.DCI) }}
+									{{ form_row(form.DCI) }}
 								</div>
 							</div>
 
-
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-2">
-									{{ form_label(form.CodeATC) }}
+									{{ form_row(form.CodeATC) }}
 								</div>
 								<div class="col-4">
-									{{ form_label(form.LibATC) }}
-								</div>
-								<div class="col-2">
-									{{ form_label(form.Dosage) }}
-								</div>
-								<div class="col-2">
-									{{ form_label(form.Voie) }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-2">
-									{{ form_widget(form.CodeATC) }}
+									{{ form_row(form.LibATC) }}
 								</div>
 								<div class="col-4">
-									{{ form_widget(form.LibATC) }}
+									{{ form_row(form.Dosage) }}
 								</div>
 								<div class="col-2">
-									{{ form_widget(form.Dosage) }}
-								</div>
-								<div class="col-2">
-									{{ form_widget(form.Voie) }}
+									{{ form_row(form.Voie) }}
 								</div>
 							</div>
 
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-2">
-									{{ form_label(form.TypeProcedure) }}
+									{{ form_row(form.TypeProcedure) }}
 								</div>
 								<div class="col-2">
-									{{ form_label(form.CodeDossier) }}
+									{{ form_row(form.CodeDossier) }}
 								</div>
 								<div class="col-2">
-									{{ form_label(form.CodeCIS) }}
+									{{ form_row(form.CodeCIS) }}
 								</div>
 								<div class="col-2">
-									{{ form_label(form.nomProduit) }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-2">
-									{{ form_widget(form.TypeProcedure) }}
-								</div>
-								<div class="col-2">
-									{{ form_widget(form.CodeDossier) }}
-								</div>
-								<div class="col-2">
-									{{ form_widget(form.CodeCIS) }}
-								</div>
-								<div class="col-2">
-									{{ form_widget(form.nomProduit) }}
+									{{ form_row(form.nomProduit) }}
 								</div>
 							</div>
                         </div>
                     </div>
 					
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header">
                             <h5 class="mb-0">Informations exploitant</h5>
                         </div>
                         <div class="card-body">
-							
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-1">
-									{{ form_label(form.idLaboratoire, 'ID labo') }}
+									{{ form_row(form.idLaboratoire, { 'label': 'ID labo' }) }}
 								</div>
 								<div class="col-4">
-									{{ form_label(form.Laboratoire) }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-1">
-									{{ form_widget(form.idLaboratoire) }}
-								</div>
-								<div class="col-4">
-									{{ form_widget(form.Laboratoire) }}
+									{{ form_row(form.Laboratoire) }}
 								</div>
 							</div>
                             
-                            <div class="row">
+                            <div class="row align-items-end">
                                 <div class="col-3">
-                                    {{ form_label(form.Adresse, 'Adresse') }}
+                                    {{ form_row(form.Adresse, { 'label': 'Adresse' }) }}
                                 </div>
                                 <div class="col-3">
-                                    {{ form_label(form.AdresseComplExpl, 'Adresse complémentaire') }}
+                                    {{ form_row(form.AdresseComplExpl, { 'label': 'Complément' }) }}
                                 </div>
                                 <div class="col-1">
-                                    {{ form_label(form.CodePostExpl, 'CP') }}
+                                    {{ form_row(form.CodePostExpl, { 'label': 'CP' }) }}
                                 </div>
                                 <div class="col-3">
-                                    {{ form_label(form.NomVilleExpl, 'Ville') }}
-                                </div>
-                                <div class="col-1">
-                                    {# {{ form_label(form.DboPaysLibAbr) }} #}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    {{ form_widget(form.Adresse) }}
-                                </div>
-                                <div class="col-3">
-                                    {{ form_widget(form.AdresseComplExpl) }}
-                                </div>
-                                <div class="col-1">
-                                    {{ form_widget(form.CodePostExpl) }}
-                                </div>
-                                <div class="col-3">
-                                    {{ form_widget(form.NomVilleExpl) }}
-                                </div>
-                                <div class="col-1">
-                                    {# {{ form_widget(form.DboPaysLibAbr) }} #}
+                                    {{ form_row(form.NomVilleExpl, { 'label': 'Ville' }) }}
                                 </div>
                             </div>
                             
-                            <div class="row">
+                            <div class="row align-items-end">
                                 <div class="col-2">
-                                    {{ form_label(form.Tel) }}
+                                    {{ form_row(form.Tel) }}
                                 </div>
                                 <div class="col-2">
-                                    {{ form_label(form.Fax) }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-2">
-                                    {{ form_widget(form.Tel) }}
-                                </div>
-                                <div class="col-2">
-                                    {{ form_widget(form.Fax) }}
+                                    {{ form_row(form.Fax) }}
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header">
                             <h5 class="mb-0">Informations titulaire</h5>
                         </div>
                         <div class="card-body">
-                            {# --- Ici, tes lignes de labels et widgets --- #}
-                            <div class="row">
+                            <div class="row align-items-end">
                                 <div class="col-1">
-                                    {{ form_label(form.idTitulaire, 'ID tit.') }}
+                                    {{ form_row(form.idTitulaire, { 'label': 'ID tit.' }) }}
                                 </div>
                                 <div class="col-4">
-                                    {{ form_label(form.Titulaire) }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-1">
-                                    {{ form_widget(form.idTitulaire) }}
-                                </div>
-                                <div class="col-4">
-                                    {{ form_widget(form.Titulaire) }}
+                                    {{ form_row(form.Titulaire) }}
                                 </div>
                             </div>
 							
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-3">
-									{{ form_label(form.AdresseContact, 'Adresse') }}
+									{{ form_row(form.AdresseContact, { 'label': 'Adresse' }) }}
 								</div>
 								<div class="col-3">
-									{{ form_label(form.AdresseCompl, 'Adresse complémentaire') }}
+									{{ form_row(form.AdresseCompl, { 'label': 'Complément' }) }}
 								</div>
 								<div class="col-1">
-									{{ form_label(form.CodePost, 'CP') }}
+									{{ form_row(form.CodePost, { 'label': 'CP' }) }}
 								</div>
 								<div class="col-3">
-									{{ form_label(form.NomVille, 'Ville') }}
+									{{ form_row(form.NomVille, { 'label': 'Ville' }) }}
 								</div>
 								<div class="col-1">
-									{{ form_label(form.DboPaysLibAbr) }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-3">
-									{{ form_widget(form.AdresseContact) }}
-								</div>
-								<div class="col-3">
-									{{ form_widget(form.AdresseCompl) }}
-								</div>
-								<div class="col-1">
-									{{ form_widget(form.CodePost) }}
-								</div>
-								<div class="col-3">
-									{{ form_widget(form.NomVille) }}
-								</div>
-								<div class="col-1">
-									{{ form_widget(form.DboPaysLibAbr) }}
+									{{ form_row(form.DboPaysLibAbr) }}
 								</div>
 							</div>
 							
-							<div class="row">
+							<div class="row align-items-end">
 								<div class="col-2">
-									{{ form_label(form.TelContact, 'Téléphone') }}
+									{{ form_row(form.TelContact, { 'label': 'Téléphone' }) }}
 								</div>
 								<div class="col-2">
-									{{ form_label(form.FaxContact, 'Fax') }}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-2">
-									{{ form_widget(form.TelContact) }}
-								</div>
-								<div class="col-2">
-									{{ form_widget(form.FaxContact) }}
+									{{ form_row(form.FaxContact, { 'label': 'Fax' }) }}
 								</div>
 							</div>
                         </div>
                     </div>
-				{# <div class="row">
-					<div class="col">
-						{{ form_label(form.CodeATC) }}
-						{{ form_widget(form.CodeATC) }}
-						{{ form_errors(form.CodeATC) }}
-					</div>
-					<div class="col">
-						{{ form_label(form.LibATC) }}
-						{{ form_widget(form.LibATC) }}
-						{{ form_errors(form.LibATC) }}
-					</div>
-				</div>
-				<div class="row">
-					<div class="col">
-						{{ form_label(form.codeCIS) }}
-						{{ form_widget(form.codeCIS) }}
-						{{ form_errors(form.codeCIS) }}
-					</div>
-					<div class="col">
-						{{ form_label(form.libRechDenomination) }}
-						{{ form_widget(form.libRechDenomination) }}
-						{{ form_errors(form.libRechDenomination) }}
-					</div>
-				</div> #}
-				{# </div> #}
 
-				<div class="row justify-content-center mt-3">
-
-					<div class="col-3 d-flex justify-content-center">
-							{{ form_widget(form.validation) }}
+				<div class="row justify-content-center mt-3 gy-3">
+					{# Ajout des classes personnalisées pour les boutons #}
+					<div class="col-md-3 d-grid">
+						{{ form_widget(form.validation, {'attr': {'class': 'btn-validation'}}) }}
 					</div>
-					<div class="col-3 d-flex justify-content-center">
-							{{ form_widget(form.annulation) }}
+					<div class="col-md-3 d-grid">
+						{{ form_widget(form.annulation, {'attr': {'class': 'btn-annulation'}}) }}
 					</div>
-					<div class="col-3 d-flex justify-content-center">
-						<button type="button" id="BtnFormatDCI" class="btn btn-primary m-1">
-							Formatage du produit de type "DCI"
+					<div class="col-md-3 d-grid">
+						<button type="button" id="BtnFormatDCI" class="btn btn-formatage-dci m-1">
+							Formatage DCI
 						</button>							
 					</div>
-					<div class="col-3 d-flex justify-content-center">
-						<button type="button" id="BtnFormatProduit" class="btn btn-primary m-1">
-							Formatage du produit de type "produit"
+					<div class="col-md-3 d-grid">
+						<button type="button" id="BtnFormatProduit" class="btn btn-formatage-produit m-1">
+							Formatage Produit
 						</button>							
 					</div>
 				</div>
 
 				{{ form_end(form) }}
-
-			{# </div> #}
+			</div>
 		</div>
 	</div>
 

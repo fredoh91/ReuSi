@@ -76,7 +76,7 @@ final class SignalDetailController extends AbstractController
         $rdd->setUpdatedAt(new \DateTimeImmutable());
         $rdd->setUserCreate($userName);
         $rdd->setUserModif($userName);
-        $rdd->setNumeroRDD(1);
+        $rdd->setNumeroRDD(0);
         $rdd->setSignalLie($signal);
 
         $suivi->setRddLie($rdd);
@@ -146,8 +146,8 @@ final class SignalDetailController extends AbstractController
             $suiviInitial->setCreatedAt(new \DateTimeImmutable());
             $suiviInitial->setUpdatedAt(new \DateTimeImmutable());
 
-            // On tente de retrouver le premier RDD (NumeroRDD = 1) pour recréer les liens
-            $firstRdd = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 1]);
+            // On tente de retrouver le premier RDD (NumeroRDD = 0) pour recréer les liens
+            $firstRdd = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 0]);
             if ($firstRdd) {
                 $suiviInitial->setRddLie($firstRdd);
                 // Si le RDD est lié à une réunion, on lie aussi le suivi
@@ -162,8 +162,8 @@ final class SignalDetailController extends AbstractController
             $this->addFlash('warning', 'Le suivi initial manquant a été automatiquement recréé.');
         }
 
-        // On cherche le RDD initial (NumeroRDD = 1)
-        $rddInitial = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 1]);
+        // On cherche le RDD initial (NumeroRDD = 0)
+        $rddInitial = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 0]);
         if (!$rddInitial && $suiviInitial->getRddLie()) {
             // Cas où le RDD est lié au suivi mais pas directement au signal avec le bon numéro
             $rddInitial = $suiviInitial->getRddLie();

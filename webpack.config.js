@@ -26,6 +26,7 @@ Encore
     .addEntry('ReunionSignalDate', './assets/js/ReunionSignalDate.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')
+    .addStyleEntry('ajoutproduit_css', './assets/styles/ajout_produit.scss')
     .addStyleEntry('rdd_css', './assets/styles/rdd.scss')
     .addStyleEntry('suivi_css', './assets/styles/suivi.scss')
     .addStyleEntry('signal_css', './assets/styles/signal.scss')
