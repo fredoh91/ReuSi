@@ -2,6 +2,8 @@
 
 {% block title %}Liste des réunions signal{% endblock %}
 
+{% block body_class 'reunion-signal-liste-bg' %}
+
 {% block body %}
 
 {{ encore_entry_link_tags('reunion_signal_liste_css') }}
@@ -30,7 +32,8 @@
     </div>
 
     {% if pagination.getTotalItemCount > 0 %}
-        <table class="table table-striped table-hover">
+        <div class="table-wrapper mt-4">
+            <table class="table table-striped table-hover">
             <thead class="table-light">
                 <tr>
                     <th>Date de Réunion</th>
@@ -140,6 +143,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         <div class="navigation d-flex justify-content-center">
             {# {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }} #}
             {{ knp_pagination_render(pagination) }}

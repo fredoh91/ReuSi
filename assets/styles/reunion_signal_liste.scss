@@ -1,6 +1,24 @@
 @use "sass:color";
 @use "variables" as *;
 
+// 1. Applique le fond doux à la page entière
+body.reunion-signal-liste-bg {
+    background-color: color.mix($reunion-signal-page-bg, #f5f5f5, 25%);
+}
+
+// 2. Rend le conteneur intérieur transparent pour laisser voir le fond du body
+.page-reunion-signal {
+    background-color: transparent;
+}
+
+// 3. On rend la card de recherche transparente aussi
+// La card de recherche aura sa propre couleur pastel légèrement différente du fond de page.
+.page-reunion-signal .card {
+    background-color: color.mix($reunion-signal-page-bg, white, 10%); // Un pastel très clair
+    border: 1px solid rgba(0, 0, 0, 0.08); // Une bordure subtile
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); // Une légère ombre
+}
+
 // Styles pour la table de la liste des réunions.
 // On personnalise les couleurs de base de la table pour un thème complet.
 .page-reunion-signal .table {
@@ -68,4 +86,16 @@
     font-size: 0.9em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+// Conteneur pour la table pour lui appliquer un border-radius et une ombre.
+.table-wrapper {
+    border-radius: 0.5rem; // Coins arrondis
+    overflow: hidden;      // Masque les coins de la table qui dépassent
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); // Ombre légère
+}
+
+// Retire la marge du bas de la table quand elle est dans le wrapper
+.table-wrapper .table {
+    margin-bottom: 0;
 }

@@ -1,7 +1,8 @@
 // assets/styles/ajout_produit.scss
 
+@use "sass:color";
 // Importation des variables globales définies dans _variables.scss
-@import "variables"; 
+@use "variables" as *; 
 
 // Classe principale pour encapsuler les styles de cette page
 .page-ajout-produit {
@@ -82,7 +83,7 @@
     color: white;
 }
 .page-ajout-produit .btn-validation:hover {
-    background-color: darken($ANSM_vert_fonce, 10%);
+    background-color: color.adjust($ANSM_vert_fonce, $lightness: -10%);
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba($ANSM_vert_fonce, 0.4);
 }
@@ -93,7 +94,7 @@
     border: 1px solid $Ctnr_tab_rouge_clair;
 }
 .page-ajout-produit .btn-annulation:hover {
-    background-color: darken($Ctnr_tab_rouge_clair, 5%);
+    background-color: color.adjust($Ctnr_tab_rouge_clair, $lightness: -5%);
     transform: translateY(-2px);
 }
 
@@ -103,7 +104,7 @@
     border: 1px solid $Fond_fait_marquant;
 }
 .page-ajout-produit .btn-formatage-dci:hover {
-    background-color: darken($Fond_fait_marquant, 5%);
+    background-color: color.adjust($Fond_fait_marquant, $lightness: -5%);
     transform: translateY(-2px);
 }
 
@@ -113,6 +114,6 @@
     border: 1px solid $Fond_signal;
 }
 .page-ajout-produit .btn-formatage-produit:hover {
-    background-color: darken($Fond_signal, 5%);
+    background-color: color.adjust($Fond_signal, $lightness: -5%);
     transform: translateY(-2px);
 }
