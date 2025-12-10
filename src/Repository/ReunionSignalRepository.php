@@ -56,10 +56,10 @@ class ReunionSignalRepository extends ServiceEntityRepository
             ->setParameter('annulee', 0);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
-            ->select('IDENTITY(rdd.reunionSignal)')
-            ->from('App\Entity\ReleveDeDecision', 'rdd')
-            ->where('rdd.SignalLie = :signalId')
-            ->andWhere('rdd.reunionSignal IS NOT NULL');
+            ->select('IDENTITY(su.reunionSignal)')
+            ->from('App\Entity\Suivi', 'su')
+            ->where('su.SignalLie = :signalId')
+            ->andWhere('su.reunionSignal IS NOT NULL');
 
         $qb->andWhere($qb->expr()->orX(
             $qb->expr()->notIn('r.id', $subQuery->getDQL()),
@@ -67,13 +67,84 @@ class ReunionSignalRepository extends ServiceEntityRepository
                 $qb->expr()->exists(
                     $this->getEntityManager()->createQueryBuilder()
                         ->select('1')
-                        ->from('App\Entity\ReleveDeDecision', 'rdd2')
-                        ->where('rdd2.SignalLie = :signalId')
+                        ->from('App\Entity\Suivi', 'su2')
+                        ->where('su2.SignalLie = :signalId')
                         ->getDQL()
                 )
             )
         ))
         ->setParameter('signalId', $signalId);
+
+
+        // Exclure les réunions déjà liées à un RDD du signal
+        // $qb->andWhere('r.id NOT IN (
+        //     SELECT IDENTITY(rdd.reunionSignal)
+        //     FROM App\Entity\ReleveDeDecision rdd
+        //     WHERE rdd.SignalLie = :signalId
+        // )')
+        // ->setParameter('signalId', $signalId);
+
+// dump($qb->getQuery()->getSQL());
+
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Retourne la liste des "réunions signal" qui ne sont pas annulés et qui ne sont pas liées à un signal donné.
+     *
+     * @param integer $signalId
+     * @param integer $days - Nombre de jours à considérer, au dela de ce nombre de jour les réunions ne sont pas retournées.
+     * @return array array<ReunionSignal>
+     */
+    public function findReunionsNotCancelledAndNotLinkedToSignalAndUpper(int $signalId, int $days = 100, string $sensTri = 'ASC'): array
+    {
+        $dateLimit = new \DateTime(sprintf('-%d days', $days));
+        // Récupérer la date maximale déjà attribuée au signal (via les Suivis liés)
+        $maxDateQb = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(rs.DateReunion)')
+            ->from('App\Entity\Suivi', 'su')
+            ->leftJoin('su.reunionSignal', 'rs')
+            ->where('su.SignalLie = :signalId')
+            ->andWhere('su.reunionSignal IS NOT NULL')
+            ->setParameter('signalId', $signalId);
+
+        $maxDateScalar = $maxDateQb->getQuery()->getSingleScalarResult();
+        $maxDateAssigned = $maxDateScalar ? new \DateTime($maxDateScalar) : null;
+
+        $qb = $this->createQueryBuilder('r')
+            ->andWhere('r.DateReunion > :dateLimit')
+            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->orderBy('r.DateReunion', $sensTri)
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('annulee', 0);
+
+        $subQuery = $this->getEntityManager()->createQueryBuilder()
+            ->select('IDENTITY(su.reunionSignal)')
+            ->from('App\Entity\Suivi', 'su')
+            ->where('su.SignalLie = :signalId')
+            ->andWhere('su.reunionSignal IS NOT NULL');
+
+        $qb->andWhere($qb->expr()->orX(
+            $qb->expr()->notIn('r.id', $subQuery->getDQL()),
+            $qb->expr()->not(
+                $qb->expr()->exists(
+                    $this->getEntityManager()->createQueryBuilder()
+                        ->select('1')
+                        ->from('App\Entity\Suivi', 'su2')
+                        ->where('su2.SignalLie = :signalId')
+                        ->getDQL()
+                )
+            )
+        ))
+        ->setParameter('signalId', $signalId);
+
+        // Si une date maximale est déjà attribuée au signal, ne garder
+        // que les réunions strictement supérieures à cette date.
+        if ($maxDateAssigned) {
+            $qb->andWhere('r.DateReunion > :maxDateAssigned')
+               ->setParameter('maxDateAssigned', $maxDateAssigned);
+        }
 
 
         // Exclure les réunions déjà liées à un RDD du signal

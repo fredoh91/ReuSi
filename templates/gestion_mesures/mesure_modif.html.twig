@@ -45,7 +45,7 @@
 
                     <div class="row mb-3">
                         <div class="col-md-12">
-                            {{ form_label(form.DetailCommentaire, 'Détails/commentaires') }}
+                            {{ form_label(form.DetailCommentaire, 'Détail de la mesure') }}
                             {{ form_widget(form.DetailCommentaire) }}
                         </div>
                     </div>
@@ -53,12 +53,19 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            {{ form_label(form.DateCloturePrev, 'Date de clôture prévisionnelle') }}
-                            {{ form_widget(form.DateCloturePrev) }}
+                            {{ form_label(form.DatePrevisionnelle, 'Date prévisionnelle') }}
+                            {{ form_widget(form.DatePrevisionnelle) }}
                         </div>
                         <div class="col-md-6">
-                            {{ form_label(form.DateClotureEffective, 'Date de clôture effective') }}
-                            {{ form_widget(form.DateClotureEffective) }}
+                            {{ form_label(form.DateMiseEnOeuvre, 'Date de mise en œuvre') }}
+                            {{ form_widget(form.DateMiseEnOeuvre) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form_label(form.Statut, 'Statut') }}
+                            {{ form_widget(form.Statut) }}
                         </div>
                     </div>
 

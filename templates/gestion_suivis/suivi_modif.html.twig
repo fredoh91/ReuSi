@@ -118,7 +118,7 @@
                                             <th>Date clôture prév.</th>
                                             <th>Date clôture eff.</th>
                                             <th style="width: 100px;">Modif.</th>
-                                            <th style="width: 100px;">Clôture</th>
+                                            {# <th style="width: 100px;">Clôture</th> #}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -139,7 +139,7 @@
                                                         </button>
                                                     {% endif %}
                                                 </td>
-                                                <td>
+                                                {# <td>
                                                     {% if isLatest and mesure.id %}
                                                         {% if mesure.DesactivateAt is null %}
                                                             <a href="{{ path('app_toggle_cloture_mesure', {
@@ -164,7 +164,7 @@
                                                             <i class="bi {{ mesure.DesactivateAt is null ? 'bi-check-square' : 'bi-arrow-counterclockwise' }}"></i> {{ mesure.DesactivateAt is null ? 'Clore' : 'Rouvrir' }}
                                                         </button>
                                                     {% endif %}
-                                                </td>
+                                                </td> #}
                                             </tr>
                                         {% endfor %}
                                     </tbody>

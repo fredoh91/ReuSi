@@ -14,11 +14,24 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class MesureDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Pré-remplir le Statut à la création et le rendre lecture seule
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            $data = $event->getData();
+            if ($data && method_exists($data, 'getId') && $data->getId() === null) {
+                if (method_exists($data, 'setStatut')) {
+                    $data->setStatut('en_cours');
+                }
+            }
+        });
+
         $builder
             ->add('LibMesure', EntityType::class, [
                 'class' => ListeMesures::class,
@@ -35,24 +48,52 @@ class MesureDetailType extends AbstractType
                 'mapped' => false, // On gère manuellement la donnée dans le contrôleur
             ])
             ->add('DetailCommentaire', TextareaType::class, [
-                'label' => 'Détail / Commentaire',
+                'label' => 'Détail de la mesure',
                 'required' => false,
                 'attr' => ['rows' => 3, 'class' => 'form-control'],
                 'label_attr' => ['class' => 'form-label fw-bold'],
             ])
-            ->add('DateCloturePrev', DateType::class, [
+            // ->add('DateCloturePrev', DateType::class, [
+            //     'widget' => 'single_text',
+            //     'label' => 'Date de clôture prévisionnelle',
+            //     'required' => false,
+            //     'attr' => ['class' => 'form-control'],
+            //     'label_attr' => ['class' => 'form-label fw-bold'],
+            // ])
+            // ->add('DateClotureEffective', DateType::class, [
+            //     'widget' => 'single_text',
+            //     'label' => 'Date de clôture effective',
+            //     'required' => false,
+            //     'attr' => ['class' => 'form-control'],
+            //     'label_attr' => ['class' => 'form-label fw-bold'],
+            // ])
+            ->add('DatePrevisionnelle', DateType::class, [
                 'widget' => 'single_text',
-                'label' => 'Date de clôture prévisionnelle',
+                'label' => 'Date prévisionnelle',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
                 'label_attr' => ['class' => 'form-label fw-bold'],
             ])
-            ->add('DateClotureEffective', DateType::class, [
+            ->add('DateMiseEnOeuvre', DateType::class, [
                 'widget' => 'single_text',
-                'label' => 'Date de clôture effective',
+                'label' => 'Date de mise en œuvre',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
                 'label_attr' => ['class' => 'form-label fw-bold'],
+            ])
+            ->add('Statut', ChoiceType::class, [
+                'label' => 'Statut',
+                'required' => false,
+                'choices' => [
+                    'en cours' => 'en_cours',
+                    'effectuée' => 'effectuee',
+                    'annulée' => 'annulee',
+                    'historisée' => 'historisee',
+                ],
+                'placeholder' => '--- Sélectionner ---',
+                'attr' => ['class' => 'form-select'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
+                'disabled' => true,
             ])
             // ->add('DesactivateAt', null, [
             //     'widget' => 'single_text',

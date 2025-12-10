@@ -47,6 +47,15 @@ class MesuresRDD
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
 
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $DatePrevisionnelle = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $DateMiseEnOeuvre = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $Statut = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -183,4 +192,41 @@ class MesuresRDD
 
         return $this;
     }
+
+    public function getDatePrevisionnelle(): ?\DateTimeImmutable
+    {
+        return $this->DatePrevisionnelle;
+    }
+
+    public function setDatePrevisionnelle(?\DateTimeImmutable $DatePrevisionnelle): static
+    {
+        $this->DatePrevisionnelle = $DatePrevisionnelle;
+
+        return $this;
+    }
+
+    public function getDateMiseEnOeuvre(): ?\DateTimeImmutable
+    {
+        return $this->DateMiseEnOeuvre;
+    }
+
+    public function setDateMiseEnOeuvre(?\DateTimeImmutable $DateMiseEnOeuvre): static
+    {
+        $this->DateMiseEnOeuvre = $DateMiseEnOeuvre;
+
+        return $this;
+    }
+
+    public function getStatut(): ?string
+    {
+        return $this->Statut;
+    }
+
+    public function setStatut(?string $Statut): static
+    {
+        $this->Statut = $Statut;
+
+        return $this;
+    }
+
 }

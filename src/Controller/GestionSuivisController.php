@@ -229,7 +229,7 @@ final class GestionSuivisController extends AbstractController
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
 
-        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignalAndUpper($signalId, 200, 'DESC');
 
         // On regarde les autres Suivis de ce signal et on récupère le numéro max
         $nextNumeroSuivi = $em->getRepository(Suivi::class)->donneNextNumeroSuivi($signalId);
@@ -276,7 +276,7 @@ final class GestionSuivisController extends AbstractController
         // On recupère toutes les anciennes mesures non-cloturées de ce pour les associer a ce nouveau RDD
         $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
             'SignalLie' => $signal,
-            'DesactivateAt' => null,
+            'Statut' => 'en_cours',
         ]);
 
         foreach ($mesuresNonCloturees as $mesure) {
@@ -285,6 +285,9 @@ final class GestionSuivisController extends AbstractController
             $newMesure->setLibMesure($mesure->getLibMesure());
             $newMesure->setDetailCommentaire($mesure->getDetailCommentaire());
             $newMesure->setDateCloturePrev($mesure->getDateCloturePrev());
+            $newMesure->setDatePrevisionnelle($mesure->getDatePrevisionnelle());
+            $newMesure->setDateMiseEnOeuvre($mesure->getDateMiseEnOeuvre());
+            $newMesure->setStatut('en_cours');
 
             $newMesure->setRddLie($RDD); // Associer la nouvelle mesure au nouveau RDD
             $newMesure->setSignalLie($signal); // Associer la nouvelle mesure au signal
@@ -354,7 +357,8 @@ final class GestionSuivisController extends AbstractController
                         // Clôture des anciennes mesures
                         foreach ($mesuresNonCloturees as $ancienneMesure) {
                             $ancienneMesure->setDesactivateAt(new \DateTimeImmutable());
-                            $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunionSelectionnee->getDateReunion()));
+                            $ancienneMesure->setStatut('historisee');
+                            // $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunionSelectionnee->getDateReunion()));
                             $ancienneMesure->setUpdatedAt(new \DateTimeImmutable());
                             $ancienneMesure->setUserModif($userName);
                             $em->persist($ancienneMesure);
@@ -487,7 +491,7 @@ final class GestionSuivisController extends AbstractController
         // Duplication des mesures
         $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
             'SignalLie' => $signal,
-            'DesactivateAt' => null,
+            'Statut' => 'en_cours',
         ]);
 
         foreach ($mesuresNonCloturees as $ancienneMesure) {
