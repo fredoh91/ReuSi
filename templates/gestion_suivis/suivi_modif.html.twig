@@ -114,9 +114,9 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>Libellé de la mesure</th>
-                                            <th>Détails/Commentaires</th>
-                                            <th>Date clôture prév.</th>
-                                            <th>Date clôture eff.</th>
+                                            <th>Détail de la mesure</th>
+                                            <th>Date prévisionnelle</th>
+                                            <th>Date de mise en œuvre</th>
                                             <th style="width: 100px;">Modif.</th>
                                             {# <th style="width: 100px;">Clôture</th> #}
                                         </tr>
@@ -126,8 +126,8 @@
                                             <tr class="{{ mesure.DesactivateAt ? 'text-muted' : '' }}">
                                                 <td>{{ mesure.LibMesure }}</td>
                                                 <td>{{ mesure.DetailCommentaire }}</td>
-                                                <td>{{ mesure.DateCloturePrev ? mesure.DateCloturePrev|date('d/m/Y') : '' }}</td>
-                                                <td>{{ mesure.DateClotureEffective ? mesure.DateClotureEffective|date('d/m/Y') : '' }}</td>
+                                                <td>{{ mesure.DatePrevisionnelle ? mesure.DatePrevisionnelle|date('d/m/Y') : '' }}</td>
+                                                <td>{{ mesure.DateMiseEnOeuvre ? mesure.DateMiseEnOeuvre|date('d/m/Y') : '' }}</td>
                                                 <td>
                                                     {% if isLatest and mesure.id %}
                                                         <a href="{{ path('app_modif_mesure', {'signalId': signal.id, 'rddId': rdd.id, 'mesureId': mesure.id}) }}" class="btn btn-sm btn-primary" style="width: 95px;" title="Modifier la mesure">

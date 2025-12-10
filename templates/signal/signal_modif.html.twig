@@ -207,20 +207,20 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Libellé de la mesure</th>
-                                                        <th>Détails/Commentaires</th>
-                                                        <th>Date clôture prév.</th>
-                                                        <th>Date clôture eff.</th>
+                                                        <th>Détail de la mesure</th>
+                                                        <th>Date prévisionnelle</th>
+                                                        <th>Date de mise en œuvre</th>
                                                         <th style="width: 100px;">Modif.</th>
-                                                        <th style="width: 100px;">Clôture</th>
+                                                        {# <th style="width: 100px;">Clôture</th> #}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {% for mesure in mesuresInitiales %}
                                                         <tr class="{{ mesure.DesactivateAt ? 'text-muted' : '' }}">
                                                             <td>{{ mesure.LibMesure }}</td>
-                                                            <td>{{ mesure.DateCloturePrev ? mesure.DateCloturePrev|date('d/m/Y') : '' }}</td>
                                                             <td>{{ mesure.DetailCommentaire }}</td>
-                                                            <td>{{ mesure.DateClotureEffective ? mesure.DateClotureEffective|date('d/m/Y') : '' }}</td>
+                                                            <td>{{ mesure.DatePrevisionnelle ? mesure.DatePrevisionnelle|date('d/m/Y') : '' }}</td>
+                                                            <td>{{ mesure.DateMiseEnOeuvre ? mesure.DateMiseEnOeuvre|date('d/m/Y') : '' }}</td>
                                                             <td>
                                                                 {% if isLatestRdd and mesure.id %}
                                                                     <a href="{{ path('app_modif_mesure', {'signalId': signal.id, 'rddId': form.rddInitial.vars.data.id, 'mesureId': mesure.id}) }}" class="btn btn-sm btn-primary" style="width: 95px;" title="Modifier la mesure">
@@ -232,7 +232,7 @@
                                                                     </button>
                                                                 {% endif %}
                                                             </td>
-                                                            <td>
+                                                            {# <td>
                                                                 {% if isLatestRdd and mesure.id %}
                                                                     {% if mesure.DesactivateAt is null %}
                                                                         <a href="{{ path('app_toggle_cloture_mesure', {
@@ -257,7 +257,7 @@
                                                                         <i class="bi {{ mesure.DesactivateAt is null ? 'bi-check-square' : 'bi-arrow-counterclockwise' }}"></i> {{ mesure.DesactivateAt is null ? 'Clore' : 'Rouvrir' }}
                                                                     </button>
                                                                 {% endif %}
-                                                            </td>
+                                                            </td> #}
                                                         </tr>
                                                     {% endfor %}
                                                 </tbody>
