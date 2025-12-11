@@ -42,8 +42,9 @@ class ReleveDeDecisionType extends AbstractType
                 'disabled' => $options['disabled_fields']['DescriptionRDD'] ?? false,
                 'attr' => [
                     'class' => 'form-control',
-                    'rows' => 3,
+                    'rows' => 10,
                 ],
+                
             ])
             ->add('PassageCTP', ChoiceType::class, [
                 'choices' => [

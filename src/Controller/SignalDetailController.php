@@ -31,8 +31,8 @@ final class SignalDetailController extends AbstractController
     }
 
     
-    #[Route('/signal_new', name: 'app_signal_new', defaults: ['typeSignal' => 'signal'])]
-    #[Route('/fait_marquant_new', name: 'app_fait_marquant_new', defaults: ['typeSignal' => 'fait_marquant'])]
+    #[Route('/signal_new/{routeSource}', name: 'app_signal_new', defaults: ['typeSignal' => 'signal', 'routeSource' => null])]
+    #[Route('/fait_marquant_new/{routeSource}', name: 'app_fait_marquant_new', defaults: ['typeSignal' => 'fait_marquant', 'routeSource' => null])]
     public function new(
         EntityManagerInterface $em,
         Request $request,
@@ -95,17 +95,27 @@ final class SignalDetailController extends AbstractController
         $em->persist($rdd);
         $em->flush();
 
+
         // Get all query params from the incoming request
         $queryParams = $request->query->all();
-        
+
         // Add/overwrite signalId for the route path
         $routeParams = ['signalId' => $signal->getId()];
-        
+
         // Remove reunionId as it was only for the 'new' action
         unset($queryParams['reunionId']);
 
         // Merge route params and query params for redirection
         $finalParams = array_merge($routeParams, $queryParams);
+
+        // If routeSource was provided as a path placeholder, include it too
+        $routeSourceAttr = $request->attributes->get('routeSource');
+        if ($routeSourceAttr !== null && $routeSourceAttr !== '') {
+            // don't overwrite existing query param if present
+            if (!array_key_exists('routeSource', $finalParams)) {
+                $finalParams['routeSource'] = $routeSourceAttr;
+            }
+        }
 
         return $this->redirectToRoute('app_signal_modif', $finalParams);
     }

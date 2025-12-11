@@ -36,6 +36,7 @@ class SignalType extends AbstractType
                 'label_attr' => ['class' => 'fw-bold'],
                 'required' => is_array($requiredFields) ? ($requiredFields['DescriptionSignal'] ?? true) : true,
                 'disabled' => is_array($disabledFields) ? ($disabledFields['DescriptionSignal'] ?? false) : false,
+                'attr' => ['rows' => 10, 'class' => 'form-control'],
             ])
             ->add('Indication', TextareaType::class, [
                 'label' => 'Indication',
@@ -129,6 +130,7 @@ class SignalType extends AbstractType
             ->add('gammes', GammeAutocompleteType::class, [
                 'multiple' => true,
                 'required' => false,
+                'placeholder' => '',
                 'label' => 'Gamme(s) concernée(s)',
                 'label_attr' => ['class' => 'fw-bold'],
                 // Les options query_builder, choice_label, group_by sont maintenant dans GammeAutocompleteType

@@ -64,14 +64,20 @@
 
                     {# Description, Indication et contexte #}
                     <div class="row">
+                        <div class="col-12">{{ form_label(form.signal.DescriptionSignal) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">{{ form_widget(form.signal.DescriptionSignal) }}</div>
+                    </div>
+
+                    {# Description, Indication et contexte #}
+                    <div class="row">
                         <div class="col-4">{{ form_label(form.signal.Indication) }}</div>
-                        <div class="col-4">{{ form_label(form.signal.DescriptionSignal) }}</div>
-                        <div class="col-4">{{ form_label(form.signal.Contexte) }}</div>
+                        <div class="col-8">{{ form_label(form.signal.Contexte) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-4">{{ form_widget(form.signal.Indication) }}</div>
-                        <div class="col-4">{{ form_widget(form.signal.DescriptionSignal) }}</div>
-                        <div class="col-4">{{ form_widget(form.signal.Contexte) }}</div>
+                        <div class="col-8">{{ form_widget(form.signal.Contexte) }}</div>
                     </div>
 
 
@@ -193,9 +199,13 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-9">{{ form_row(form.rddInitial.DescriptionRDD) }}</div>
-                                            <div class="col-md-3 d-flex flex-column justify-content-around">
+                                            <div class="col-md-12">{{ form_row(form.rddInitial.DescriptionRDD) }}</div>
+                                        </div>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-2 d-flex flex-column justify-content-around">
                                                 {{ form_row(form.rddInitial.PassageCTP) }}
+                                            </div>
+                                            <div class="col-md-2 d-flex flex-column justify-content-around">
                                                 {{ form_row(form.rddInitial.PassageRSS) }}
                                             </div>
                                         </div>

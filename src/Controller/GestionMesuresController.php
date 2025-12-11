@@ -14,6 +14,7 @@ use App\Repository\ReleveDeDecisionRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class GestionMesuresController extends AbstractController
@@ -198,7 +199,9 @@ final class GestionMesuresController extends AbstractController
 
                 return $this->redirectAfterModification($request, $signal->getId());
             }
-            if ($form->get('validation')->isClicked()) {
+
+            if ($form->get('validation')->isClicked()
+                || $form->get('annulation_mesure')->isClicked()) {
 
                 if ($form->isValid()) {
                     // Traitement de la validation
@@ -213,13 +216,27 @@ final class GestionMesuresController extends AbstractController
                         // On extrait la chaîne de caractères et on la définit sur l'entité MesuresRDD
                         $mesure->setLibMesure($listeMesureObject->getLibMesure());
                     }
-
-                    $em->persist($mesure);
-                    $em->flush();
-
-                    $this->addFlash('success', 'La mesure a bien été modifiée.');
-
-                    return $this->redirectAfterModification($request, $signal->getId());
+                    // Si l'utilisateur souhaite annuler la mesure, vérifier que DetailCommentaire n'est pas vide
+                    if ($form->get('annulation_mesure')->isClicked()) {
+                        $detail = trim((string) $mesure->getDetailCommentaire());
+                        if ($detail === '') {
+                            // Empêcher la validation: ajouter une erreur au champ et laisser l'utilisateur corriger
+                            $form->get('DetailCommentaire')->addError(new FormError('Le champ "Détail de la mesure" doit être rempli pour annuler la mesure.'));
+                        } else {
+                            // Procéder à l'annulation
+                            $mesure->setStatut('annulee');
+                            $this->addFlash('success', 'La mesure ' . $mesure->getLibMesure() . ' a bien été annulée.');
+                            $em->persist($mesure);
+                            $em->flush();
+                            return $this->redirectAfterModification($request, $signal->getId());
+                        }
+                    } else {
+                        // Modification simple
+                        $this->addFlash('success', 'La mesure ' . $mesure->getLibMesure() . ' a bien été modifiée.');
+                        $em->persist($mesure);
+                        $em->flush();
+                        return $this->redirectAfterModification($request, $signal->getId());
+                    }
 
                 } else {
                     // Formulaire invalide

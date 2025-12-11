@@ -117,15 +117,20 @@ class MesureDetailType extends AbstractType
             
             ->add('validation', SubmitType::class, [
                 'attr' => ['class' => 'btn btn-success px-4'],
-                'label' => 'Validation',
+                'label' => 'Valider',
                 'row_attr' => ['id' => 'validation'],
+            ])
+            ->add('annulation_mesure', SubmitType::class, [
+                'attr' => ['class' => 'btn btn-danger px-4'],
+                'label' => 'Annuler cette mesure',
+                'row_attr' => ['id' => 'annulation_mesure'],
             ])
             ->add('annulation', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-secondary px-4',
                     'formnovalidate' => true,
                 ],
-                'label' => 'Annulation',
+                'label' => 'Fermer',
                 'row_attr' => ['id' => 'annulation'],
             ])
         ;
