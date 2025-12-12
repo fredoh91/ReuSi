@@ -37,7 +37,8 @@
 					{{ form_start(form) }}
 
                     <div class="row mb-3">
-                        <div class="col-md-12">
+                        {# Ajout de l'attribut stimulus_controller ici #}
+                        <div class="col-md-12" {{ stimulus_controller('recherche-mesure') }}>
                             {{ form_label(form.LibMesure, 'Libellé de la mesure') }}
                             {{ form_widget(form.LibMesure) }}
                         </div>

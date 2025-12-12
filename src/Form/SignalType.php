@@ -36,7 +36,10 @@ class SignalType extends AbstractType
                 'label_attr' => ['class' => 'fw-bold'],
                 'required' => is_array($requiredFields) ? ($requiredFields['DescriptionSignal'] ?? true) : true,
                 'disabled' => is_array($disabledFields) ? ($disabledFields['DescriptionSignal'] ?? false) : false,
-                'attr' => ['rows' => 10, 'class' => 'form-control'],
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 10,
+                ],
             ])
             ->add('Indication', TextareaType::class, [
                 'label' => 'Indication',

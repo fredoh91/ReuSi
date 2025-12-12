@@ -34,7 +34,7 @@ class SuiviType extends AbstractType
                 'disabled' => $options['disabled_fields']['DescriptionSuivi'] ?? false,
                 'attr' => [
                     'class' => 'form-control',
-                    'rows' => 3,
+                    'rows' => 10,
                 ],
             ])
             ->add('PiloteDS', TextType::class, [

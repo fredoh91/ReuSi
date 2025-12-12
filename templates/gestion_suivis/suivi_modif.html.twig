@@ -99,10 +99,22 @@
                             </h6>
                         </div>
                         <div class="card-body">
-                            <div class="row">
+                            {# <div class="row">
                                 <div class="col-md-9">{{ form_row(form.rddLie.DescriptionRDD) }}</div>
                                 <div class="col-md-3 d-flex flex-column justify-content-around">
                                     {{ form_row(form.rddLie.PassageCTP) }}
+                                    {{ form_row(form.rddLie.PassageRSS) }}
+                                </div>
+                            </div> #}
+
+                            <div class="row">
+                                <div class="col-md-12">{{ form_row(form.rddLie.DescriptionRDD) }}</div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-md-2 d-flex flex-column justify-content-around">
+                                    {{ form_row(form.rddLie.PassageCTP) }}
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-around">
                                     {{ form_row(form.rddLie.PassageRSS) }}
                                 </div>
                             </div>
