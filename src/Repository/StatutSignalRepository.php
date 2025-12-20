@@ -28,6 +28,19 @@ class StatutSignalRepository extends ServiceEntityRepository
         ;
     }
 
+
+    public function findLastStatutBySignal($signalIdvalue): ?StatutSignal
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.SignalLie = :signalId')
+            ->setParameter('signalId', $signalIdvalue)
+            ->orderBy('s.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     //    /**
     //     * @return StatutSignal[] Returns an array of StatutSignal objects
     //     */

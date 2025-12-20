@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SuiviRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,6 +48,17 @@ class Suivi
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $EmetteurSuivi = null;
+
+    /**
+     * @var Collection<int, StatutSuivi>
+     */
+    #[ORM\OneToMany(targetEntity: StatutSuivi::class, mappedBy: 'SuiviLie')]
+    private Collection $statutSuivis;
+
+    public function __construct()
+    {
+        $this->statutSuivis = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -180,6 +193,36 @@ class Suivi
     public function setEmetteurSuivi(?string $EmetteurSuivi): static
     {
         $this->EmetteurSuivi = $EmetteurSuivi;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StatutSuivi>
+     */
+    public function getStatutSuivis(): Collection
+    {
+        return $this->statutSuivis;
+    }
+
+    public function addStatutSuivi(StatutSuivi $statutSuivi): static
+    {
+        if (!$this->statutSuivis->contains($statutSuivi)) {
+            $this->statutSuivis->add($statutSuivi);
+            $statutSuivi->setSuiviLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStatutSuivi(StatutSuivi $statutSuivi): static
+    {
+        if ($this->statutSuivis->removeElement($statutSuivi)) {
+            // set the owning side to null (unless already changed)
+            if ($statutSuivi->getSuiviLie() === $this) {
+                $statutSuivi->setSuiviLie(null);
+            }
+        }
 
         return $this;
     }
