@@ -37,7 +37,19 @@ class SuiviType extends AbstractType
                     'rows' => 10,
                 ],
             ])
-            ->add('PiloteDS', TextType::class, [
+            // ->add('PiloteDS', TextType::class, [
+            ->add('PiloteDS', ChoiceType::class, [
+                'choices' => [
+                    'PGS' => 'PGS',
+                    'PP' => 'PP',
+                    'PS' => 'PS',
+                    'RGA' => 'RGA',
+                    'EC' => 'EC',
+                    'Addicto' => 'ADDICTO',
+                    'EM' => 'EM',
+                    'UNC' => 'UNC',
+                    'Dir. SURV' => 'DIR_SURV',
+                ],
                 'label' => 'Pilote DS',
                 'label_attr' => ['class' => 'form-label fw-bold'],
                 'required' => $options['required_fields']['PiloteDS'] ?? false,
