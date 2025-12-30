@@ -16,6 +16,19 @@ class StatutSuiviRepository extends ServiceEntityRepository
         parent::__construct($registry, StatutSuivi::class);
     }
 
+
+    public function findLastStatutBySuivi($suiviIdvalue): ?StatutSuivi
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.SuiviLie = :suiviId')
+            ->setParameter('suiviId', $suiviIdvalue)
+            ->orderBy('s.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+    
     //    /**
     //     * @return StatutSuivi[] Returns an array of StatutSuivi objects
     //     */

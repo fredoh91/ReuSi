@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Repository\StatutSignalRepository;
+use App\Repository\StatutSuiviRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -12,23 +12,23 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'app:test_StatutSignalRepository',
-    description: 'Commande pour tester la méthode findLastStatutBySignal du StatutSignalRepository pendant le DEV',
+    name: 'app:test_StatutSuiviRepository',
+    description: 'Commande pour tester la méthode findLastStatutBySuivi du StatutSuiviRepository pendant le DEV',
 )]
-class TestStatutSignalRepository extends Command
+class TestStatutSuiviRepository extends Command
 {
-    private StatutSignalRepository $statutSignalRepository;
+    private StatutSuiviRepository $statutSuiviRepository;
 
     /**
      * Undocumented function
-     * ex : symfony console app:test_StatutSignalRepository findLastStatutBySignal 1
+     * ex : symfony console app:test_StatutSuiviRepository findLastStatutBySuivi 1
      *
-     * @param StatutSignalRepository $statutSignalRepository
+     * @param StatutSuiviRepository $statutSuiviRepository
      */
-    public function __construct(StatutSignalRepository $statutSignalRepository)
+    public function __construct(StatutSuiviRepository $statutSuiviRepository)
     {
         parent::__construct();
-        $this->statutSignalRepository = $statutSignalRepository;
+        $this->statutSuiviRepository = $statutSuiviRepository;
     }
 
     protected function configure(): void
@@ -39,9 +39,9 @@ class TestStatutSignalRepository extends Command
                 InputArgument::REQUIRED,
                 'methode permettant de récupérer le dernier statut')
             ->addArgument(
-                'signalId', 
+                'suiviId', 
                 InputArgument::REQUIRED,
-                'signalId pour lequel on veut récupérer le dernier statut')
+                'suiviId pour lequel on veut récupérer le dernier statut')
             ->addOption(
                 'debug',
                 null, 
@@ -52,7 +52,7 @@ class TestStatutSignalRepository extends Command
 
     /**
      * cette méthode est lancée par la commande.
-     * exemple de commande : symfony console app:test_StatutSignalRepository findLastStatutBySignal 1
+     * exemple de commande : symfony console app:test_StatutSuiviRepository findLastStatutBySuivi 1
      *
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -61,7 +61,7 @@ class TestStatutSignalRepository extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $signalId = $input->getArgument('signalId');
+        $suiviId = $input->getArgument('suiviId');
         $methode = $input->getArgument('methode');
 
         if(!$methode){
@@ -70,20 +70,20 @@ class TestStatutSignalRepository extends Command
         }
 
         
-        if (!$signalId) {      
-            $io->error('Cette commande doit recevoir en argument l\'identifiant du signal pour lequel on veut récupérer le dernier statut.');
+        if (!$suiviId) {      
+            $io->error('Cette commande doit recevoir en argument l\'identifiant du suivi pour lequel on veut récupérer le dernier statut.');
             return Command::FAILURE;
         }  
 
-        if ($signalId) {
-            // $io->note(sprintf('You passed an argument: %s', $signalId));
-            if($methode=='findLastStatutBySignal'){
+        if ($suiviId) {
+            // $io->note(sprintf('You passed an argument: %s', $suiviId));
+            if($methode=='findLastStatutBySuivi'){
 
-                $statutSignal = $this->statutSignalRepository->findLastStatutBySignal($signalId);
-                if ($statutSignal) {
-                    $io->success('Le dernier statut signal est : ' . $statutSignal->getLibStatut());
+                $statutSuivi = $this->statutSuiviRepository->findLastStatutBySuivi($suiviId);
+                if ($statutSuivi) {
+                    $io->success('Le dernier statut suivi est : ' . $statutSuivi->getLibStatut());
                 } else {
-                    $io->error('Aucun statut signal trouvé pour le signal d\'identifiant ' . $signalId);
+                    $io->error('Aucun statut suivi trouvé pour le suivi d\'identifiant ' . $suiviId);
                 }
                 return Command::SUCCESS;
 

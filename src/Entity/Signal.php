@@ -94,6 +94,7 @@ class Signal
      * @var Collection<int, StatutSignal>
      */
     #[ORM\OneToMany(targetEntity: StatutSignal::class, mappedBy: 'SignalLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(["id" => "ASC"])]
     private Collection $statutSignals;
 
     /**

@@ -52,12 +52,21 @@ class Suivi
     /**
      * @var Collection<int, StatutSuivi>
      */
-    #[ORM\OneToMany(targetEntity: StatutSuivi::class, mappedBy: 'SuiviLie')]
+    #[ORM\OneToMany(targetEntity: StatutSuivi::class, mappedBy: 'SuiviLie', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(["id" => "ASC"])]
     private Collection $statutSuivis;
 
     public function __construct()
     {
         $this->statutSuivis = new ArrayCollection();
+                // Création automatique du StatutSignal "brouillon"
+        $statutSuivi = new StatutSuivi();
+        $statutSuivi->setLibStatut('brouillon');
+        $statutSuivi->setDateDesactivation(null);
+        $statutSuivi->setStatutActif(true);
+        $statutSuivi->setSuiviLie($this);
+
+        $this->statutSuivis->add($statutSuivi);
     }
 
     public function getId(): ?int

@@ -44,7 +44,7 @@ class ReunionSignalRepository extends ServiceEntityRepository
      * @param integer $days - Nombre de jours à considérer, au dela de ce nombre de jour les réunions ne sont pas retournées.
      * @return array array<ReunionSignal>
      */
-    public function findReunionsNotCancelledAndNotLinkedToSignal(int $signalId, int $days = 100, string $sensTri = 'ASC'): array
+    public function findReunionsNotCancelledAndNotLinkedToSignal(?int $signalId, int $days = 100, string $sensTri = 'ASC'): array
     {
         $dateLimit = new \DateTime(sprintf('-%d days', $days));
 
@@ -55,37 +55,27 @@ class ReunionSignalRepository extends ServiceEntityRepository
             ->setParameter('dateLimit', $dateLimit)
             ->setParameter('annulee', 0);
 
-        $subQuery = $this->getEntityManager()->createQueryBuilder()
-            ->select('IDENTITY(su.reunionSignal)')
-            ->from('App\Entity\Suivi', 'su')
-            ->where('su.SignalLie = :signalId')
-            ->andWhere('su.reunionSignal IS NOT NULL');
+        if ($signalId !== null) {
+            $subQuery = $this->getEntityManager()->createQueryBuilder()
+                ->select('IDENTITY(su.reunionSignal)')
+                ->from('App\Entity\Suivi', 'su')
+                ->where('su.SignalLie = :signalId')
+                ->andWhere('su.reunionSignal IS NOT NULL');
 
-        $qb->andWhere($qb->expr()->orX(
-            $qb->expr()->notIn('r.id', $subQuery->getDQL()),
-            $qb->expr()->not(
-                $qb->expr()->exists(
-                    $this->getEntityManager()->createQueryBuilder()
-                        ->select('1')
-                        ->from('App\Entity\Suivi', 'su2')
-                        ->where('su2.SignalLie = :signalId')
-                        ->getDQL()
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->notIn('r.id', $subQuery->getDQL()),
+                $qb->expr()->not(
+                    $qb->expr()->exists(
+                        $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from('App\Entity\Suivi', 'su2')
+                            ->where('su2.SignalLie = :signalId')
+                            ->getDQL()
+                    )
                 )
-            )
-        ))
-        ->setParameter('signalId', $signalId);
-
-
-        // Exclure les réunions déjà liées à un RDD du signal
-        // $qb->andWhere('r.id NOT IN (
-        //     SELECT IDENTITY(rdd.reunionSignal)
-        //     FROM App\Entity\ReleveDeDecision rdd
-        //     WHERE rdd.SignalLie = :signalId
-        // )')
-        // ->setParameter('signalId', $signalId);
-
-// dump($qb->getQuery()->getSQL());
-
+            ))
+            ->setParameter('signalId', $signalId);
+        }
 
         return $qb->getQuery()->getResult();
     }
