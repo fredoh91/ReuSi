@@ -217,6 +217,14 @@ final class SignalDetailController extends AbstractController
         if ($reunionInitiale && !in_array($reunionInitiale, $date_reunion)) {
             array_unshift($date_reunion, $reunionInitiale);
         }
+
+        $lastStatutSignal = $signalStatusService->findLastStatutBySignal($signal) ?: null;
+        if ($lastStatutSignal) {
+            $dernierStatutSignal = $lastStatutSignal->getLibStatut();
+        } else {
+            $dernierStatutSignal = null;
+        }
+
         
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [ 'reunions' => $date_reunion, ]);
         $form->handleRequest($request);
@@ -237,6 +245,50 @@ final class SignalDetailController extends AbstractController
                 if ($suiviInitial) { $rddInitial->setReunionSignal($suiviInitial->getReunionSignal()); }
             }
             
+
+
+            // Gestion des statutSignal et statutSuivi si nécessaire
+            // $lastStatutSignal = $signalStatusService->findLastStatutBySignal($signal);
+            if ($lastStatutSignal) {
+                // dump ($lastStatutSignal);
+                // On met a jour le statut du signal a "presente" si les conditions suivantes sont remplies :
+                //    - le statut actuel est "prevu"
+                //    - le suivi initial a une réunion associée et la date de cette réunion est passée
+                //    - la description du relevé de décision initial est remplie
+                if($lastStatutSignal->getLibStatut() == 'prevu' && $suiviInitial && $suiviInitial->getReunionSignal()) {
+                    $dateReunion = $suiviInitial->getReunionSignal()->getDateReunion();
+                    $now = new \DateTimeImmutable();
+                    if($dateReunion <= $now && $rddInitial && trim($rddInitial->getDescriptionRDD()) != '') {
+                        // On peut passer le statut a "presente"
+                        // Désactiver l'ancien statut "prevu"
+                        $lastStatutSignal->setStatutActif(false);
+                        $lastStatutSignal->setDateDesactivation(new \DateTimeImmutable());
+                        $lastStatutSignal->setUpdatedAt(new \DateTimeImmutable());
+                        $lastStatutSignal->setUserModif($userName);
+                        $em->persist($lastStatutSignal);
+
+                        // Créer le nouveau statut "presente"
+                        $nouveauStatutSignal = new StatutSignal();
+                        $nouveauStatutSignal->setLibStatut('presente');
+                        $nouveauStatutSignal->setDateMiseEnPlace(new \DateTimeImmutable());
+                        $nouveauStatutSignal->setStatutActif(true);
+                        $nouveauStatutSignal->setSignalLie($signal);
+                        $nouveauStatutSignal->setCreatedAt(new \DateTimeImmutable());
+                        $nouveauStatutSignal->setUserCreate($userName);
+                        $nouveauStatutSignal->setUpdatedAt(new \DateTimeImmutable());
+                        $nouveauStatutSignal->setUserModif($userName);
+
+                        $em->persist($nouveauStatutSignal);
+                    }
+                }
+
+
+
+            } else {
+                $this->logger->error('Aucun statut signal trouvé pour le signal ID ' . $signal->getId());
+            }
+            // dump($dto);
+            // dd($form);
             $em->flush();
 
             // Handle specific button actions
@@ -265,6 +317,7 @@ final class SignalDetailController extends AbstractController
             'lstSuivi' => $em->getRepository(Suivi::class)->findForSignalExcludingInitial($signal),
             'latestSuiviId' => ($latestSuivi = $em->getRepository(Suivi::class)->findLatestForSignal($signal)) ? $latestSuivi->getId() : null,
             'mesuresInitiales' => $rddInitial ? $rddInitial->getMesuresRDDs()->toArray() : [],
+            'dernierStatutSignal' => $dernierStatutSignal
         ]);
     }
 

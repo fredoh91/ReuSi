@@ -55,6 +55,12 @@
                 </div>
                 <div class="card-body">
 
+                    {# Cloture du signal #}
+                    <div class="row">
+                        {# <div class="col-1">{{ form_label(form.signal.aCloturer) }}</div> #}
+                        <div class="col-3">{{ form_widget(form.signal.aCloturer) }}</div>
+                    </div>
+
                     {# Titre #}
                     <div class="row">
                         <div class="col-12">{{ form_label(form.signal.Titre) }}</div>
@@ -159,7 +165,11 @@
                                     <div class="col-2">
                                         {# {{ form_label(form.suiviInitial.reunionSignal, 'Date réunion') }} #}
                                         {% if form.suiviInitial.reunionSignal is defined %}
-                                            {{ form_label(form.suiviInitial.reunionSignal, 'Date réunion') }}
+
+
+                                            {{ form_label(form.suiviInitial.reunionSignal, 'Date réunion initiale') }}
+                                            {# {{ form_label(form.suiviInitial.reunionSignal, 'Date réunion initiale') }} #}
+
                                         {% else %}
                                             <label>Date réunion</label>
                                         {% endif %}
@@ -176,12 +186,31 @@
                                     <div class="col-2">
                                         {# {{ form_widget(form.suiviInitial.reunionSignal) }} #}
                                         {% if form.suiviInitial.reunionSignal is defined %}
-                                            {{ form_widget(form.suiviInitial.reunionSignal, {
+                                            {% if dernierStatutSignal is defined %}
+                                                {% if dernierStatutSignal == 'presente' or dernierStatutSignal == 'cloture' %}
+                                                    {% set menuNonModifiable = true %}
+                                                {% else %}
+                                                    {% set menuNonModifiable = false %}
+                                                {% endif %}
+                                            {% else %}
+                                                {% set menuNonModifiable = false %}
+                                            {% endif %}
+                                            
+                                            {# {{ form_widget(form.suiviInitial.reunionSignal, {
                                                 'attr': {
                                                     'class': 'form-select' ~ (lstSuivi is not empty ? ' is-disabled' : ''),
                                                     'disabled': (lstSuivi is not empty)
                                                 }
+                                            }) }} #}
+
+                                            {{ form_widget(form.suiviInitial.reunionSignal, {
+                                                'attr': {
+                                                    'class': 'form-select' ~ (menuNonModifiable ? ' is-disabled' : ''),
+                                                    'disabled': menuNonModifiable
+                                                }
                                             }) }}
+
+
                                         {% else %}
                                             <select class="form-control" disabled>
                                                 <option value="">Aucune réunion disponible</option>

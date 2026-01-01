@@ -6,6 +6,7 @@ use App\Entity\Signal;
 use App\Entity\StatutSignal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr\Func;
 
 class SignalStatusService
 {
@@ -102,5 +103,12 @@ class SignalStatusService
 
         $this->entityManager->persist($nouveauStatut);
         $this->entityManager->flush();
+    }
+
+
+    public function findLastStatutBySignal($signalIdvalue): ?StatutSignal
+    {
+        return $this->entityManager->getRepository(StatutSignal::class)
+            ->findLastStatutBySignal($signalIdvalue);
     }
 }
