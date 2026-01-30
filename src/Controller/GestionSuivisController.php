@@ -381,6 +381,8 @@ final class GestionSuivisController extends AbstractController
             }
         }
 
+
+
         return $this->render('gestion_suivis/suivi_modif.html.twig', [
             'signalId' => $signalId,
             'signal' => $signal,

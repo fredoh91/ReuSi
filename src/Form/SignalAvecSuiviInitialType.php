@@ -31,7 +31,7 @@ class SignalAvecSuiviInitialType extends AbstractType
                 'label' => 'Relevé de Décision Initial (N°0)', // Changement ici
                 'is_initial' => true, // Option pour masquer certains champs si nécessaire
                 'required' => false,
-                'reunions' => $options['reunions'],
+                // 'reunions' => $options['reunions'],
             ])
         ;
     }

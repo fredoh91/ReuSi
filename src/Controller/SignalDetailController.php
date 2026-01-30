@@ -95,7 +95,13 @@ final class SignalDetailController extends AbstractController
                     $statutSignalEnCours = new StatutSignal();
                     if ($suiviInitial && $suiviInitial->getReunionSignal()) {
                         // On a une réunion de sélectionné
-                        $statutSignalEnCours->setLibStatut('prevu');
+                        $dateReunion = $suiviInitial->getReunionSignal()->getDateReunion();
+                        if($dateReunion <= $now && trim($rdd->getDescriptionRDD()) != '') {
+                            // on a une date de réunion antérieure a la date du jour et une description de RDD remplie
+                            $statutSignalEnCours->setLibStatut('presente');
+                        } else {
+                            $statutSignalEnCours->setLibStatut('prevu');
+                        }
                     } else {
                         // On n'a pas une réunion de sélectionné
                         $statutSignalEnCours->setLibStatut('en_cours_de_creation');
@@ -168,11 +174,14 @@ final class SignalDetailController extends AbstractController
                  // ... handle other buttons like ajout_mesure, etc.
             }
         }
+        
+        $isDateSuiviInitModifiable = true;
 
         return $this->render('signal/signal_modif.html.twig', [
             'form' => $form->createView(),
             'signal' => $dto->signal,
-            'isCreationMode' => true,
+            'isCreationSignalMode' => true,
+            'isDateSuiviInitModifiable' => $isDateSuiviInitModifiable,
             'lstProduits' => [],
             'lstRDD' => [],
             'latestRddId' => null,
@@ -212,13 +221,23 @@ final class SignalDetailController extends AbstractController
         $dto->suiviInitial = $suiviInitial;
         $dto->rddInitial = $rddInitial;
 
+
+
+
+
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
         $reunionInitiale = $dto->suiviInitial ? $dto->suiviInitial->getReunionSignal() : null;
+
+
         if ($reunionInitiale && !in_array($reunionInitiale, $date_reunion)) {
             array_unshift($date_reunion, $reunionInitiale);
         }
 
+
         $lastStatutSignal = $signalStatusService->findLastStatutBySignal($signal) ?: null;
+
+
+
         if ($lastStatutSignal) {
             $dernierStatutSignal = $lastStatutSignal->getLibStatut();
         } else {
@@ -227,9 +246,20 @@ final class SignalDetailController extends AbstractController
 
         
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [ 'reunions' => $date_reunion, ]);
-        $form->handleRequest($request);
+// dd($dto);
+// pas de bug reunion signal à ce point 
+        $form->handleRequest($request);         // le bug reunion signal apparait à ce point 
+
+// debug [
+// $em->flush();
+// // dump(($suiviInitial));
+// dd('function signal_modif_2');
+//debug ]
+
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+
             $signalForm = $form->get('signal');
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
 
@@ -297,6 +327,11 @@ final class SignalDetailController extends AbstractController
                 return $this->redirectToRoute($routeSource);
             }
 
+            if ($signalForm->has('ajout_suivi') && $signalForm->get('ajout_suivi')->isClicked()) {
+                $request->getSession()->set('return_to_after_product_creation', $request->getUri());
+                return $this->redirectToRoute('app_creation_suivi', ['signalId' => $signal->getId()]);
+            }
+
             if ($signalForm->has('ajout_produit') && $signalForm->get('ajout_produit')->isClicked()) {
                 $request->getSession()->set('return_to_after_product_creation', $request->getUri());
                 return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);
@@ -305,11 +340,22 @@ final class SignalDetailController extends AbstractController
         }
 
         $latestRDD = $em->getRepository(ReleveDeDecision::class)->findLatestForSignal($signal);
-        
+
+        $isDateSuiviInitModifiable = true;
+        if ($suiviInitial) {
+            $lastStatutSuivi = $em->getRepository(StatutSuivi::class)->findOneBy(['SuiviLie' => $suiviInitial], ['id' => 'DESC']);
+            if ($lastStatutSuivi && $lastStatutSuivi->getLibStatut() === 'presente') {
+                $isDateSuiviInitModifiable = false;
+            }
+        }
+
+        // dd('isDateSuiviInitModifiable', $isDateSuiviInitModifiable);
+
         return $this->render('signal/signal_modif.html.twig', [
             'form' => $form->createView(),
             'signal' => $signal,
-            'isCreationMode' => false,
+            'isCreationSignalMode' => false,
+            'isDateSuiviInitModifiable' => $isDateSuiviInitModifiable,
             'lstProduits' => $signal->getProduits(),
             'lstRDD' => $signal->getReleveDeDecision(),
             'latestRddId' => $latestRDD ? $latestRDD->getId() : null,

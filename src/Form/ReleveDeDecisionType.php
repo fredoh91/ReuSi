@@ -53,7 +53,8 @@ class ReleveDeDecisionType extends AbstractType
                 ],
                 'label' => 'Passage en CTP',
                 'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => $options['required_fields']['PassageCTP'] ?? true,
+                // 'required' => $options['required_fields']['PassageCTP'] ?? true,
+                'required' => false,
                 'disabled' => $options['disabled_fields']['PassageCTP'] ?? false,
                 'attr' => ['class' => 'form-select'],
                 'placeholder' => '',
@@ -67,26 +68,27 @@ class ReleveDeDecisionType extends AbstractType
                 'label_attr' => ['class' => 'form-label fw-bold'],
                 'attr' => ['class' => 'form-select'],
                 'placeholder' => '',
-                'required' => $options['required_fields']['PassageRSS'] ?? false,
+                // 'required' => $options['required_fields']['PassageRSS'] ?? false,
+                'required' => false,
                 'disabled' => $options['disabled_fields']['PassageRSS'] ?? false,
             ])
             ;
 
-        // Ajout conditionnel du champ de réunion si des réunions sont fournies
-        if (!empty($reunions)) {
-            $builder->add('reunionSignal', EntityType::class, [
-                'class' => ReunionSignal::class,
-                'choices' => $reunions,
-                'choice_label' => function ($reunion) {
-                    return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
-                },
-                'placeholder' => '-- Sélectionner une réunion --',
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => $options['required_fields']['reunionSignal'] ?? false,
-                'disabled' => $options['disabled_fields']['reunionSignal'] ?? false,
-                'attr' => ['class' => 'form-select'],
-            ]);
-        }
+        // // Ajout conditionnel du champ de réunion si des réunions sont fournies
+        // if (!empty($reunions)) {
+        //     $builder->add('reunionSignal', EntityType::class, [
+        //         'class' => ReunionSignal::class,
+        //         'choices' => $reunions,
+        //         'choice_label' => function ($reunion) {
+        //             return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
+        //         },
+        //         'placeholder' => '-- Sélectionner une réunion --',
+        //         'label_attr' => ['class' => 'form-label fw-bold'],
+        //         'required' => $options['required_fields']['reunionSignal'] ?? false,
+        //         'disabled' => $options['disabled_fields']['reunionSignal'] ?? false,
+        //         'attr' => ['class' => 'form-select'],
+        //     ]);
+        // }
 
         // Champ pour le numéro de RDD (généralement en lecture seule)
         if ($options['show_numero_rdd'] ?? false) {
@@ -109,14 +111,14 @@ class ReleveDeDecisionType extends AbstractType
                 // 'NumeroRDD' => false,  // Le numéro RDD n'est pas obligatoire car il est généré automatiquement
                 'DescriptionRDD' => true,
                 'PassageCTP' => true,
-                'reunionSignal' => false,
+                // 'reunionSignal' => false,
                 'PassageRSS' => false,
             ],
             'disabled_fields' => [
                 // 'NumeroRDD' => true,   // Le numéro RDD est en lecture seule
                 'DescriptionRDD' => false,
                 'PassageCTP' => false,
-                'reunionSignal' => false,
+                // 'reunionSignal' => false,
                 'PassageRSS' => false,
             ],
             'show_numero_rdd' => false,

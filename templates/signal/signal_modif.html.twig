@@ -24,7 +24,7 @@
     {% endfor %}
 
 
-    {% set action = isCreationMode ? "Création d'un" : "Modification du" %}
+    {% set action = isCreationSignalMode ? "Création d'un" : "Modification du" %}
     {% if signal.TypeSignal == 'signal' %}
         <div class="display-4 text-center mt-3 mb-3">{{ action }} signal</div>
     {% elseif signal.TypeSignal == 'fait_marquant' %}
@@ -56,9 +56,41 @@
                 <div class="card-body">
 
                     {# Cloture du signal #}
-                    <div class="row">
-                        {# <div class="col-1">{{ form_label(form.signal.aCloturer) }}</div> #}
-                        <div class="col-3">{{ form_widget(form.signal.aCloturer) }}</div>
+                    <div data-controller="cloture-signal">
+                        <div class="row">
+                            {# <div class="col-1">{{ form_label(form.signal.aCloturer) }}</div> #}
+                            <div class="col-3">
+                                {# {{ form_widget(form.signal.aCloturer) }} #}
+                                {{ form_widget(form.signal.aCloturer, {
+                                    'attr': {
+                                        'data-cloture-signal-target': 'checkbox',
+                                        'data-action': 'change->cloture-signal#askConfirmation'
+                                    }
+                                }) }}
+                            </div>
+                        </div>
+
+                        <!-- Modal de confirmation de clôture -->
+                        <div class="modal fade" data-cloture-signal-target="modal" tabindex="-1" aria-labelledby="clotureModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="clotureModalLabel">Avertissement</h5>
+                                        <button type="button" class="btn-close" data-action="cloture-signal#cancel" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Vous êtes sur le point de modifier le statut de clôture de ce {{ signal.TypeSignal|replace({'_': ' '}) }}.</p>
+                                        <p class="fw-bold">Une fois un {{ signal.TypeSignal|replace({'_': ' '}) }} clôturé, aucune modification ne sera plus possible.</p>
+                                        <p>Il faudra décocher cette case pour de nouveau y apporter des modifications.</p>
+                                        <p>Êtes-vous sûr de vouloir continuer ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-action="cloture-signal#cancel">Annuler</button>
+                                        <button type="button" class="btn btn-danger" data-action="cloture-signal#confirm">Confirmer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {# Titre #}
@@ -203,12 +235,26 @@
                                                 }
                                             }) }} #}
 
-                                            {{ form_widget(form.suiviInitial.reunionSignal, {
+
+
+                                            {% if isDateSuiviInitModifiable == false %}
+                                                {{ form_row(form.suiviInitial.reunionSignal, {
+                                                    'attr': {
+                                                        'class': 'form-control-plaintext',
+                                                        'style': 'pointer-events: none; background-color: #e9ecef;'
+                                                    }
+                                                }) }}
+                                            {% else %}
+                                                {{ form_row(form.suiviInitial.reunionSignal) }}
+                                            {% endif %}
+
+
+                                            {# {{ form_widget(form.suiviInitial.reunionSignal, {
                                                 'attr': {
                                                     'class': 'form-select' ~ (menuNonModifiable ? ' is-disabled' : ''),
                                                     'disabled': menuNonModifiable
                                                 }
-                                            }) }}
+                                            }) }} #}
 
 
                                         {% else %}
