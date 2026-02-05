@@ -65,7 +65,19 @@
                     </div>
                     <div class="col-md-6">
                         {{ form_label(form.suivi.reunionSignal, 'Date de la réunion') }}
-                        {{ form_widget(form.suivi.reunionSignal) }}
+                        {# {{ form_widget(form.suivi.reunionSignal) }} #}
+
+                        {% if isDateSuiviInitModifiable == false %}
+                            {{ form_widget(form.suivi.reunionSignal, {
+                                'attr': {
+                                    'class': 'form-control-plaintext',
+                                    'style': 'pointer-events: none; background-color: #e9ecef;'
+                                }
+                            }) }}
+                        {% else %}
+                            {{ form_widget(form.suivi.reunionSignal) }}
+                        {% endif %}
+
                     </div>
                 </div>
 

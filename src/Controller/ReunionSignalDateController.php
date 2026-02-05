@@ -51,7 +51,17 @@ final class ReunionSignalDateController extends AbstractController
     #[Route('/reunion_signal_date/new', name: 'app_reunion_signal_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $reunionSignal = new ReunionSignal();
+
+
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
+        $reunionSignal = new ReunionSignal($userName);
         $form = $this->createForm(ReunionSignalType::class, $reunionSignal, [
             'save_button_label' => 'Ajouter la réunion'
         ]);

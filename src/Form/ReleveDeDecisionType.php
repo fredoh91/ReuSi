@@ -38,8 +38,10 @@ class ReleveDeDecisionType extends AbstractType
             ->add('DescriptionRDD', TextareaType::class, [
                 'label' => 'Description du relevé de décision',
                 'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => $options['required_fields']['DescriptionRDD'] ?? true,
-                'disabled' => $options['disabled_fields']['DescriptionRDD'] ?? false,
+                // 'required' => $options['required_fields']['DescriptionRDD'] ?? true,
+                // 'disabled' => $options['disabled_fields']['DescriptionRDD'] ?? false,
+                'required' => false,
+                'disabled' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 10,

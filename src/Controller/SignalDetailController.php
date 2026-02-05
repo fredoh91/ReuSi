@@ -9,6 +9,7 @@ use App\Entity\StatutSignal;
 use Psr\Log\LoggerInterface;
 use App\Entity\ReunionSignal;
 use App\Entity\ReleveDeDecision;
+use App\Service\SuiviStatusService;
 use App\Service\SignalStatusService;
 use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,8 +31,8 @@ final class SignalDetailController extends AbstractController
         $this->kernel = $kernel;
     }
 
-    #[Route('/signal_new', name: 'app_signal_new', defaults: ['typeSignal' => 'signal', 'routeSource' => null])]
-    #[Route('/fait_marquant_new', name: 'app_fait_marquant_new', defaults: ['typeSignal' => 'fait_marquant', 'routeSource' => null])]
+    #[Route('/signal_new', name: 'app_signal_new', defaults: ['typeSignal' => 'signal'])]
+    #[Route('/fait_marquant_new', name: 'app_fait_marquant_new', defaults: ['typeSignal' => 'fait_marquant'])]
     public function new(
         Request $request,
         EntityManagerInterface $em,
@@ -44,16 +45,43 @@ final class SignalDetailController extends AbstractController
         }
         $userName = $user->getUserName();
 
+        // Récupération des paramètres optionnels
+        $reunionId = $request->query->get('reunionId');
+
         $dto = new SignalAvecSuiviInitialDTO();
         $dto->signal = new Signal();
         $dto->signal->setTypeSignal($typeSignal);
         $dto->suiviInitial = new Suivi();
         $dto->suiviInitial->setNumeroSuivi(0);
+        
+        // Pré-selection de la réunion si fournie
+        if ($reunionId) {
+            $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
+            if ($reunion) {
+                $dto->suiviInitial->setReunionSignal($reunion);
+            }
+        }
+
         $dto->rddInitial = new ReleveDeDecision();
         $dto->rddInitial->setNumeroRDD(0);
 
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal(null, 200, 'DESC');
         
+        // S'assurer que la réunion pré-sélectionnée est dans la liste des choix
+        if ($dto->suiviInitial->getReunionSignal()) {
+            $reunionSelectionnee = $dto->suiviInitial->getReunionSignal();
+            $found = false;
+            foreach ($date_reunion as $r) {
+                if ($r->getId() === $reunionSelectionnee->getId()) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                array_unshift($date_reunion, $reunionSelectionnee);
+            }
+        }
+
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
             'reunions' => $date_reunion,
         ]);
@@ -63,9 +91,15 @@ final class SignalDetailController extends AbstractController
         if ($form->isSubmitted()) {
             $signalForm = $form->get('signal');
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
+            $reuSiId = $request->query->get('reuSiId');
+            $tab = $request->query->get('tab');
+
+            $redirectParams = [];
+            if ($reuSiId) $redirectParams['reuSiId'] = $reuSiId;
+            if ($tab) $redirectParams['tab'] = $tab;
 
             if ($signalForm->get('annulation')->isClicked()) {
-                return $this->redirectToRoute($routeSource);
+                return $this->redirectToRoute($routeSource, $redirectParams);
             }
 
             if ($form->isValid()) {
@@ -162,7 +196,7 @@ final class SignalDetailController extends AbstractController
                 // Now handle the specific button's action
                 if ($signalForm->get('validation')->isClicked()) {
                     $this->addFlash('success', 'Signal créé avec succès.');
-                    return $this->redirectToRoute($routeSource);
+                    return $this->redirectToRoute($routeSource, $redirectParams);
                 }
 
                 if ($signalForm->has('ajout_produit') && $signalForm->get('ajout_produit')->isClicked()) {
@@ -172,6 +206,17 @@ final class SignalDetailController extends AbstractController
                     return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);
                 }
                  // ... handle other buttons like ajout_mesure, etc.
+                
+                if ($form->get('suivi')->get('ajout_mesure')->isClicked()) {
+
+                    dd('coucou');
+
+                    // On sauvegarde les données avant de rediriger
+                    // $em->persist($dto->suivi);
+                    // $em->persist($dto->rddLie);
+                    // $em->flush();
+                    return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signalId, 'rddId' => $dto->rddLie->getId()]);
+                }
             }
         }
         
@@ -197,6 +242,7 @@ final class SignalDetailController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         SignalStatusService $signalStatusService,
+        SuiviStatusService $suiviStatusService,
         int $signalId
     ): Response {
         $signal = $em->getRepository(Signal::class)->find($signalId);
@@ -221,22 +267,14 @@ final class SignalDetailController extends AbstractController
         $dto->suiviInitial = $suiviInitial;
         $dto->rddInitial = $rddInitial;
 
-
-
-
-
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
         $reunionInitiale = $dto->suiviInitial ? $dto->suiviInitial->getReunionSignal() : null;
-
 
         if ($reunionInitiale && !in_array($reunionInitiale, $date_reunion)) {
             array_unshift($date_reunion, $reunionInitiale);
         }
 
-
         $lastStatutSignal = $signalStatusService->findLastStatutBySignal($signal) ?: null;
-
-
 
         if ($lastStatutSignal) {
             $dernierStatutSignal = $lastStatutSignal->getLibStatut();
@@ -262,6 +300,8 @@ final class SignalDetailController extends AbstractController
 
             $signalForm = $form->get('signal');
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
+            $reuSiId = $request->query->get('reuSiId', null);
+            $tab = $request->query->get('tab', null);
 
             if ($signalForm->get('annulation')->isClicked()) {
                 return $this->redirectToRoute($routeSource);
@@ -317,14 +357,52 @@ final class SignalDetailController extends AbstractController
             } else {
                 $this->logger->error('Aucun statut signal trouvé pour le signal ID ' . $signal->getId());
             }
-            // dump($dto);
-            // dd($form);
             $em->flush();
-
+            
             // Handle specific button actions
             if ($signalForm->get('validation')->isClicked()) {
                 $this->addFlash('success', 'Signal ' . $signalId . ' modifié.');
-                return $this->redirectToRoute($routeSource);
+
+                // dump('reuSiId : ',$reuSiId);
+                // dump('tab : ',$tab);
+                // dd($routeSource);
+
+                // il faut insérer la logique suivante :
+                //   - si la date de reunion du suivi initial existe et que cette date est inférieure ou égal a la date du jour
+                //     ET (
+                //              que la description du RDD initial n'est pas vide
+                //           OU qu'il y a au moins une mesure dans le RDD initial
+                //        )
+                //     ET que le statut du signal n'est pas "presente"
+                //     ALORS on met le statut du signal à "presente"
+
+                $dateReuSiInitiale = $suiviInitial?->getReunionSignal()?->getDateReunion();
+                if ($dateReuSiInitiale && $dateReuSiInitiale <= new \DateTimeImmutable) {
+                    $dateReuSiInitiale_estPassee = true;
+                } else {
+                    $dateReuSiInitiale_estPassee = false;
+                }   
+
+
+                $desciptionRDDInitiale = $rddInitial ? $rddInitial->getDescriptionRDD() : null;
+                $mesuresRDDInitiales = $rddInitial ? $rddInitial->getMesuresRDDs()->toArray() : null;
+                $rddRempli = (trim($desciptionRDDInitiale) != '') || (is_array($mesuresRDDInitiales) && count($mesuresRDDInitiales) > 0);
+
+
+                $dernierStatutPremierSuivi = $em->getRepository(StatutSuivi::class)->findLastStatutBySuivi($suiviInitial->getId());
+                $dernierStatutPremierSuivi_pasPresente = $dernierStatutPremierSuivi && $dernierStatutPremierSuivi->getLibStatut() != 'presente';
+
+                if ($dateReuSiInitiale_estPassee && $rddRempli && $dernierStatutPremierSuivi_pasPresente) {
+                    // on peut passer le statut du signal a "presente"
+                    $suiviStatusService->updateStatutSuivi($suiviInitial, $userName, 'presente');
+                    $signalStatusService->updateToPresenteIfNeeded($signal, $userName); 
+                }
+
+                // return $this->redirectToRoute($routeSource, ['signalId' => $signal->getId(), 'tab' => 'nouveaux-signaux']);
+                return $this->redirectToRoute($routeSource, [
+                    'reuSiId' => $reuSiId, 
+                    'tab' => $tab,
+                ]);
             }
 
             if ($signalForm->has('ajout_suivi') && $signalForm->get('ajout_suivi')->isClicked()) {
@@ -335,6 +413,12 @@ final class SignalDetailController extends AbstractController
             if ($signalForm->has('ajout_produit') && $signalForm->get('ajout_produit')->isClicked()) {
                 $request->getSession()->set('return_to_after_product_creation', $request->getUri());
                 return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);
+            }
+
+
+            if ($signalForm->has('ajout_mesure') && $signalForm->get('ajout_mesure')->isClicked()) {
+                $request->getSession()->set('return_to_after_mesure_creation', $request->getUri());
+                return $this->redirectToRoute('app_creation_mesure', ['signalId' => $signalId, 'rddId' => $dto->rddInitial->getId()]);
             }
 
         }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Suivi;
+use App\Entity\StatutSuivi;
 use App\Entity\StatutSignal;
 use App\Entity\ReunionSignal;
 use App\Form\SuiviDetailType;
@@ -12,6 +13,7 @@ use App\Entity\ReleveDeDecision;
 use App\Form\Model\SuiviAvecRddDTO;
 use App\Repository\SignalRepository;
 use App\Service\SignalStatusService;
+use App\Service\SuiviStatusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +47,14 @@ final class GestionSuivisController extends AbstractController
         // Gérer le cas où le suivi n'existe pas
         if (!$suivi) {
             throw $this->createNotFoundException('Le suivi avec l\'id ' . $suiviId . ' n\'existe pas.');
+        }
+
+        $isDateSuiviInitModifiable = true;
+        if ($suivi) {
+            $lastStatutSuivi = $em->getRepository(StatutSuivi::class)->findOneBy(['SuiviLie' => $suivi], ['id' => 'DESC']);
+            if ($lastStatutSuivi && $lastStatutSuivi->getLibStatut() === 'presente') {
+                $isDateSuiviInitModifiable = false;
+            }
         }
 
         $user = $this->getUser(); // Récupère l'utilisateur connecté
@@ -196,6 +206,7 @@ final class GestionSuivisController extends AbstractController
             'form' => $form->createView(),
             'rdd' => $dto->rddLie, // On passe le RDD depuis le DTO
             'typeModifCreation' => 'modification',
+            'isDateSuiviInitModifiable' => $isDateSuiviInitModifiable,
             'lstMesures' => $lstMesures, // On peut les passer à la vue pour un aperçu
             'isLatest' => $isLatestSuivi, // Un Suivi en création est considéré comme le plus récent pour l'UI
             'latestSuiviId' => $latestSuivi ? $latestSuivi->getId() : null,
@@ -243,6 +254,8 @@ final class GestionSuivisController extends AbstractController
         $suivi = new Suivi();
         $suivi->setSignalLie($signal);
         $suivi->setNumeroSuivi($nextNumeroSuivi);
+
+        $isDateSuiviInitModifiable = true;
 
         $suivi->setCreatedAt(new \DateTimeImmutable());
         $suivi->setUpdatedAt(new \DateTimeImmutable());
@@ -390,6 +403,7 @@ final class GestionSuivisController extends AbstractController
             'form' => $form->createView(),
             'rdd' => $dto->rddLie, // On passe le RDD depuis le DTO
             'typeModifCreation' => 'creation',
+            'isDateSuiviInitModifiable' => $isDateSuiviInitModifiable,
             'lstMesures' => $nouvellesMesures, // On peut les passer à la vue pour un aperçu
             'isLatest' => true, // Un Suivi en création est considéré comme le plus récent pour l'UI
             'latestSuiviId' => $latestSuivi ? $latestSuivi->getId() : null,
@@ -446,7 +460,8 @@ final class GestionSuivisController extends AbstractController
         EntityManagerInterface $em,
         SignalRepository $signalRepo,
         Request $request,
-        SignalStatusService $signalStatusService
+        SignalStatusService $signalStatusService,
+        SuiviStatusService $suiviStatusService
     ): Response {
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
         if (!$reunion) {
@@ -468,7 +483,7 @@ final class GestionSuivisController extends AbstractController
 
         // Lier la réunion sélectionnée au Suivi et au RDD
         $nextNumeroSuivi = $em->getRepository(Suivi::class)->donneNextNumeroSuivi($signalId);
-        $suivi = new Suivi();
+        $suivi = new Suivi($userName);
         $suivi->setSignalLie($signal);
         $suivi->setNumeroSuivi($nextNumeroSuivi);
         $suivi->setCreatedAt(new \DateTimeImmutable());
@@ -525,6 +540,7 @@ final class GestionSuivisController extends AbstractController
         $em->flush();
 
         $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
+        $suiviStatusService->updateStatutSuivi($suivi, $userName, 'prevu');
 
         $this->addFlash('success', sprintf(
             'Le suivi pour le signal "%s" a bien été ajouté à la réunion du %s.',

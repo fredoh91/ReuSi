@@ -56,16 +56,21 @@ class Suivi
     #[ORM\OrderBy(["id" => "ASC"])]
     private Collection $statutSuivis;
 
-    public function __construct()
+    public function __construct(?string $userName = null)
     {
         $this->statutSuivis = new ArrayCollection();
                 // Création automatique du StatutSignal "brouillon"
+        $now = new \DateTimeImmutable();
         $statutSuivi = new StatutSuivi();
         $statutSuivi->setLibStatut('brouillon');
         $statutSuivi->setDateDesactivation(null);
         $statutSuivi->setStatutActif(true);
         $statutSuivi->setSuiviLie($this);
-
+        $statutSuivi->setDateMiseEnPlace($now);
+        $statutSuivi->setCreatedAt($now);
+        $statutSuivi->setUpdatedAt($now);
+        $statutSuivi->setUserCreate($userName);
+        $statutSuivi->setUserModif($userName);
         $this->statutSuivis->add($statutSuivi);
     }
 

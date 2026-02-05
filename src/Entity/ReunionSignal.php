@@ -52,11 +52,15 @@ class ReunionSignal
     #[ORM\OneToMany(targetEntity: Suivi::class, mappedBy: 'reunionSignal')]
     private Collection $suivis;
 
-    public function __construct()
+    public function __construct(?string $userName = null)
     {
         $this->ReleveDeDecision = new ArrayCollection();
         $this->SignalLie = new ArrayCollection();
         $this->suivis = new ArrayCollection();
+        $this->UserCreate = $userName;
+        $this->UserModif = $userName;
+        $this->CreatedAt = new \DateTimeImmutable();
+        $this->UpdatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
