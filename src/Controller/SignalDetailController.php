@@ -430,6 +430,16 @@ final class SignalDetailController extends AbstractController
             $lastStatutSuivi = $em->getRepository(StatutSuivi::class)->findOneBy(['SuiviLie' => $suiviInitial], ['id' => 'DESC']);
             if ($lastStatutSuivi && $lastStatutSuivi->getLibStatut() === 'presente') {
                 $isDateSuiviInitModifiable = false;
+            } else {
+                // si le suivi initial est lié à une réunion dont la date est passée, et que le suivi suivant a également une date passée, alors on considère que le suivi initial n'est plus modifiable
+                $dateReuSiInitiale = $suiviInitial->getReunionSignal() ? $suiviInitial->getReunionSignal()->getDateReunion() : null;
+                $suiviNumeroUn = $em->getRepository(Suivi::class)->findSuiviByIdSignalAndNumeroSuivi($signal, 1);
+                $dateReuSiPremierSuivi = $suiviNumeroUn ? $suiviNumeroUn->getReunionSignal()->getDateReunion() : null;
+                if ($dateReuSiInitiale && $dateReuSiInitiale <= new \DateTimeImmutable) {
+                    if ($dateReuSiPremierSuivi && $dateReuSiPremierSuivi <= new \DateTimeImmutable) {
+                        $isDateSuiviInitModifiable = false;
+                    }
+                }
             }
         }
 

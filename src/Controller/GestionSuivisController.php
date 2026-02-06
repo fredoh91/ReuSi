@@ -49,13 +49,34 @@ final class GestionSuivisController extends AbstractController
             throw $this->createNotFoundException('Le suivi avec l\'id ' . $suiviId . ' n\'existe pas.');
         }
 
+        // $isDateSuiviInitModifiable = true;
+        // if ($suivi) {
+        //     $lastStatutSuivi = $em->getRepository(StatutSuivi::class)->findOneBy(['SuiviLie' => $suivi], ['id' => 'DESC']);
+        //     if ($lastStatutSuivi && $lastStatutSuivi->getLibStatut() === 'presente') {
+        //         $isDateSuiviInitModifiable = false;
+        //     }
+        // }
+
         $isDateSuiviInitModifiable = true;
         if ($suivi) {
             $lastStatutSuivi = $em->getRepository(StatutSuivi::class)->findOneBy(['SuiviLie' => $suivi], ['id' => 'DESC']);
             if ($lastStatutSuivi && $lastStatutSuivi->getLibStatut() === 'presente') {
                 $isDateSuiviInitModifiable = false;
+            } else {
+                // si le suivi en cours est lié à une réunion dont la date est passée, et que le suivi suivant a également une date passée, alors on considère que le suivi en cours n'est plus modifiable
+                $dateReuSiEnCours = $suivi->getReunionSignal() ? $suivi->getReunionSignal()->getDateReunion() : null;
+                $numSuiviEnCours = $suivi->getNumeroSuivi();
+                $suiviSuivant = $em->getRepository(Suivi::class)->findSuiviByIdSignalAndNumeroSuivi($signal, $numSuiviEnCours + 1);
+                $dateReuSuiviSuivant = $suiviSuivant ? $suiviSuivant->getReunionSignal()->getDateReunion() : null;
+                if ($dateReuSiEnCours && $dateReuSiEnCours <= new \DateTimeImmutable) {
+                    if ($dateReuSuiviSuivant && $dateReuSuiviSuivant <= new \DateTimeImmutable) {
+                        $isDateSuiviInitModifiable = false;
+                    }
+                }
             }
         }
+
+
 
         $user = $this->getUser(); // Récupère l'utilisateur connecté
         if ($user) {
@@ -65,8 +86,8 @@ final class GestionSuivisController extends AbstractController
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
 
-        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
-        
+        // $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignal($signalId, 200, 'DESC');
+        $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignalAndUpperWithSuivi(200, 'DESC', $suivi);
         // On récupère la réunion actuellement liée au suivi
         $reunionActuelle = $suivi->getReunionSignal();
         
@@ -174,7 +195,10 @@ final class GestionSuivisController extends AbstractController
                 $em->flush();
                 $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
+
+
                 if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
+
                     $route = $router->getRouteCollection()->get($redirectRoute);
                     if ($route) {
                         $routeRequirements = $route->getRequirements();
@@ -183,6 +207,9 @@ final class GestionSuivisController extends AbstractController
                             return $this->redirectToRoute($redirectRoute, $redirectParams);
                         }
                     }
+                } else {
+                    // Fallback si la route n'est pas valide ou pas fournie
+                    return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
                 }
             }
         }

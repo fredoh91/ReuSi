@@ -96,7 +96,22 @@ class SuiviRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-
+    /**
+     * Trouve le suivi initial (NumeroSuivi = 0) pour un signal donné.
+     *
+     * @param Signal $signal
+     * @return Suivi|null
+     */
+    public function findSuiviByIdSignalAndNumeroSuivi(Signal $signal, int $numeroSuivi): ?Suivi
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.SignalLie = :signal')
+            ->andWhere('s.NumeroSuivi = :numeroSuivi')
+            ->setParameter('signal', $signal)
+            ->setParameter('numeroSuivi', $numeroSuivi)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
     //    /**
     //     * @return Suivi[] Returns an array of Suivi objects

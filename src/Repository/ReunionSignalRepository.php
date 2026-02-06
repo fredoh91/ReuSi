@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\Suivi;
 use App\Entity\ReunionSignal;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<ReunionSignal>
@@ -14,6 +16,7 @@ class ReunionSignalRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ReunionSignal::class);
+
     }
 
 
@@ -147,6 +150,63 @@ class ReunionSignalRepository extends ServiceEntityRepository
 
 // dump($qb->getQuery()->getSQL());
 
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+
+
+
+    /**
+     * Retourne la liste des "réunions signal" qui ne sont pas annulés, qui ne sont pas liées à un signal donné et qui sont supérieures a la date du signal d'avant celui envoyé en paramétre.
+     *
+     * @param integer $signalId
+     * @param integer $days - Nombre de jours à considérer, au dela de ce nombre de jour les réunions ne sont pas retournées.
+     * @return array array<ReunionSignal>
+     */
+    public function findReunionsNotCancelledAndNotLinkedToSignalAndUpperWithSuivi(int $days = 100, string $sensTri = 'ASC', Suivi $suiviEnCours): array
+    {
+
+        $signalId = $suiviEnCours->getSignalLie();
+
+        $dateLimit = new \DateTime(sprintf('-%d days', $days));
+
+        $suiviPrecedent = $this->getEntityManager()->getRepository(Suivi::class)->findSuiviByIdSignalAndNumeroSuivi($signalId, $suiviEnCours->getNumeroSuivi() - 1);
+
+        $dateSuiviPrecedent = $suiviPrecedent && $suiviPrecedent->getReunionSignal() ? $suiviPrecedent->getReunionSignal()->getDateReunion() : null;
+
+        $qb = $this->createQueryBuilder('r')
+            ->andWhere('r.DateReunion > :dateLimit')
+            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->andWhere('r.DateReunion >= :dateSuiviPrecedent')
+            ->orderBy('r.DateReunion', $sensTri)
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('annulee', 0)
+            ->setParameter('dateSuiviPrecedent', $dateSuiviPrecedent);
+
+
+        if ($signalId !== null) {
+            $subQuery = $this->getEntityManager()->createQueryBuilder()
+                ->select('IDENTITY(su.reunionSignal)')
+                ->from('App\Entity\Suivi', 'su')
+                ->where('su.SignalLie = :signalId')
+                ->andWhere('su.reunionSignal IS NOT NULL');
+
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->notIn('r.id', $subQuery->getDQL()),
+                $qb->expr()->not(
+                    $qb->expr()->exists(
+                        $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from('App\Entity\Suivi', 'su2')
+                            ->where('su2.SignalLie = :signalId')
+                            ->getDQL()
+                    )
+                )
+            ))
+            ->setParameter('signalId', $signalId);
+        }
 
         return $qb->getQuery()->getResult();
     }
