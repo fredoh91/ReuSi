@@ -52,6 +52,7 @@ class ReleveDeDecisionType extends AbstractType
                 'choices' => [
                     'Oui' => 'oui',
                     'Non' => 'non',
+                    'En cours d\'évaluation' => 'en_cours_d_evaluation',
                 ],
                 'label' => 'Passage en CTP',
                 'label_attr' => ['class' => 'form-label fw-bold'],
@@ -65,6 +66,7 @@ class ReleveDeDecisionType extends AbstractType
                 'choices' => [
                     'Oui' => 'oui',
                     'Non' => 'non',
+                    'En cours d\'évaluation' => 'en_cours_d_evaluation',
                 ],
                 'label' => 'Passage en RSS',
                 'label_attr' => ['class' => 'form-label fw-bold'],
