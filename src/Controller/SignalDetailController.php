@@ -282,7 +282,8 @@ final class SignalDetailController extends AbstractController
             $dernierStatutSignal = null;
         }
 
-        
+
+
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [ 'reunions' => $date_reunion, ]);
 // dd($dto);
 // pas de bug reunion signal à ce point 
@@ -307,7 +308,7 @@ final class SignalDetailController extends AbstractController
                 return $this->redirectToRoute($routeSource);
             }
 
-            // For all other buttons, save the data
+            // Pour tous les autres boutons, on sauvegarde les modifications du signal et des entités liées
             $signal->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName);
             if ($suiviInitial) { $suiviInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName); }
             if ($rddInitial) { 
@@ -359,10 +360,23 @@ final class SignalDetailController extends AbstractController
             }
             $em->flush();
             
-            // Handle specific button actions
+            // action sur les différents boutons
             if ($signalForm->get('validation')->isClicked()) {
                 $this->addFlash('success', 'Signal ' . $signalId . ' modifié.');
 
+
+                $aCloturer = $signalForm->get('aCloturer')->getData();
+
+                if ($aCloturer) {
+                    $signalStatusService->updateToClotureIfNeeded($signal, $userName);
+                    $this->addFlash('info', 'Le signal a été clôturé.');
+                } else {
+                    if ($dernierStatutSignal && $dernierStatutSignal == 'cloture') {
+                        $signalStatusService->updateToDernierStatutAvantCloture($signal, $userName);
+                        $this->addFlash('info', 'Le signal est de nouveau actif (non-clôturé).');
+                    }
+                }
+                // dd($aCloturer);
                 // dump('reuSiId : ',$reuSiId);
                 // dump('tab : ',$tab);
                 // dd($routeSource);

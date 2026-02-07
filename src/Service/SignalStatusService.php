@@ -66,7 +66,7 @@ class SignalStatusService
     }
 
     /**
-     * Passe le statut du signal à "prevu" si les conditions sont remplies.
+     * Passe le statut du signal à "presente" si les conditions sont remplies.
      *
      * @param Signal $signal Le signal à mettre à jour.
      * @param string $userName Le nom de l\'utilisateur effectuant l\'action.
@@ -119,7 +119,7 @@ class SignalStatusService
      * @param Signal $signal Le signal à clôturer.
      * @param string $userName Le nom de l\'utilisateur effectuant l\'action.
      */
-    public function clotureSignal(Signal $signal, string $userName): void
+    public function updateToClotureIfNeeded(Signal $signal, string $userName): void
     {
         $statutActif = $this->entityManager->getRepository(StatutSignal::class)
             ->findOneBy(['SignalLie' => $signal, 'StatutActif' => true]);
@@ -141,6 +141,59 @@ class SignalStatusService
         // Créer le nouveau statut "cloture"
         $nouveauStatut = new StatutSignal();
         $nouveauStatut->setLibStatut('cloture');
+        $nouveauStatut->setDateMiseEnPlace(new DateTimeImmutable());
+        $nouveauStatut->setStatutActif(true);
+        $nouveauStatut->setSignalLie($signal);
+        $nouveauStatut->setCreatedAt(new DateTimeImmutable());
+        $nouveauStatut->setUserCreate($userName);
+        $nouveauStatut->setUpdatedAt(new DateTimeImmutable());
+        $nouveauStatut->setUserModif($userName);
+
+        $this->entityManager->persist($nouveauStatut);
+        $this->entityManager->flush();
+    }
+
+
+    /**
+     * Passe le statut du signal au statut avant la cloture, il redevient ainsi actif.
+     *
+     * @param Signal $signal Le signal à clôturer.
+     * @param string $userName Le nom de l\'utilisateur effectuant l\'action.
+     */
+    public function updateToDernierStatutAvantCloture(Signal $signal, string $userName): void
+    {
+        $statutActif = $this->entityManager->getRepository(StatutSignal::class)
+            ->findOneBy(['SignalLie' => $signal, 'StatutActif' => true]);
+
+        // On ne doit traiter qu'un signal actuellement clôturé
+        if ($statutActif && $statutActif->getLibStatut() !== 'cloture') {
+            return;
+        }
+
+        if ($statutActif) {
+            // Désactiver l\'ancien statut
+            $statutActif->setStatutActif(false);
+            $statutActif->setDateDesactivation(new DateTimeImmutable());
+            $statutActif->setUpdatedAt(new DateTimeImmutable());
+            $statutActif->setUserModif($userName);
+            $this->entityManager->persist($statutActif);
+        }
+
+        // On recherche le dernier statut qui n'est pas "cloture"
+        $qb = $this->entityManager->getRepository(StatutSignal::class)->createQueryBuilder('s');
+        $statutAvantCloture = $qb
+            ->where('s.SignalLie = :signal')
+            ->andWhere('s.LibStatut != :cloture')
+            ->setParameter('signal', $signal)
+            ->setParameter('cloture', 'cloture')
+            ->orderBy('s.DateMiseEnPlace', 'DESC')
+            ->addOrderBy('s.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $nouveauStatut = new StatutSignal();
+        $nouveauStatut->setLibStatut($statutAvantCloture ? $statutAvantCloture->getLibStatut() : 'brouillon');
         $nouveauStatut->setDateMiseEnPlace(new DateTimeImmutable());
         $nouveauStatut->setStatutActif(true);
         $nouveauStatut->setSignalLie($signal);

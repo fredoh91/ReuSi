@@ -61,10 +61,13 @@
                             {# <div class="col-1">{{ form_label(form.signal.aCloturer) }}</div> #}
                             <div class="col-3">
                                 {# {{ form_widget(form.signal.aCloturer) }} #}
+                                {% set isCloture = (dernierStatutSignal is defined and dernierStatutSignal == 'cloture') %}
                                 {{ form_widget(form.signal.aCloturer, {
+                                    'label': isCloture ? 'Signal clôturé' : 'Clôturer ce signal',
                                     'attr': {
                                         'data-cloture-signal-target': 'checkbox',
-                                        'data-action': 'change->cloture-signal#askConfirmation'
+                                        'data-action': 'change->cloture-signal#askConfirmation',
+                                        'checked': isCloture
                                     }
                                 }) }}
                             </div>
