@@ -163,17 +163,26 @@ final class GestionSuivisController extends AbstractController
 
         if ($form->isSubmitted()) {
 
-            $redirectRoute = $request->query->get('routeSource');
-            $redirectParams = $request->query->all('params');
-            $allowedRedirects = ['app_signal_liste','app_signal_modif','app_fait_marquant_liste'];
+            // $redirectRoute = $request->query->get('routeSource');
+            $redirectParams = $request->query->all();
+
+            $redirectRoute = $redirectParams['routeSource'] ?? null;
+            // $reuSiId = $redirectParams['reuSiId'] ?? null;
+            // $tab = $redirectParams['tab'] ?? null;
+            $allowedRedirects = ['app_signal_liste','app_signal_modif','app_fait_marquant_liste','app_reunion_signal_detail'];
             // Les boutons sont maintenant dans le sous-formulaire 'suivi'
             if ($form->get('suivi')->get('annulation')->isClicked()) {
+                
                 // return $this->redirectToRoute('app_signal_modif', ['signalId' => $signal->getId()]);
                 if ($redirectRoute && in_array($redirectRoute, $allowedRedirects)) {
                     $route = $router->getRouteCollection()->get($redirectRoute);
                     if ($route) {
                         $routeRequirements = $route->getRequirements();
                         $missingParams = array_diff(array_keys($routeRequirements), array_keys($redirectParams));
+                        // dump($route);
+                        // dump($missingParams);
+                        // dump($redirectParams);
+                        // dd($redirectRoute);
                         if (empty($missingParams)) {
                             return $this->redirectToRoute($redirectRoute, $redirectParams);
                         }

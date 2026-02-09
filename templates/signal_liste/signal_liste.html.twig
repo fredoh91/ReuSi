@@ -64,11 +64,11 @@
                         <th>ID</th>
                         <th>Titre</th>
                         <th>Description</th>
-                        <th>Créé le</th>
-                        <th>Modifié le</th>
+                        {# <th>Créé le</th>
+                        <th>Modifié le</th> #}
                         <th>Statut</th>
                         <th>Suivis</th>
-                        <th>RDDs</th>
+                        <th>Relevé de décision</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,7 +87,7 @@
                             <td>
                                 {{ signal.DescriptionSignal|slice(0, 500) }}{% if signal.DescriptionSignal|length > 500 %}...{% endif %}
                             </td>
-                            <td>
+                            {# <td>
                                 {% if signal.createdAt != null %}
                                     {{ signal.createdAt|format_datetime(dateFormat='short', timeFormat='short', locale='fr') }}
                                 {% else %}
@@ -100,15 +100,31 @@
                                 {% else %}
                                     ---
                                 {% endif %}
-                            </td>
+                            </td> #}
                             <td>
-                                {% set statutActif = null %}
+                                {% set status = get_signal_status(signal) %}
+                                {% set badge_class = 'secondary' %}
+                                {% if status == 'presente' %}
+                                    {% set badge_class = 'success' %}
+                                {% elseif status == 'prevu' or status == 'en_cours_de_creation' %}
+                                    {% set badge_class = 'info' %}
+                                {% elseif status == 'en_cours' %}
+                                    {% set badge_class = 'primary' %}
+                                {% elseif status == 'cloture' %}
+                                    {# On utilise 'dark' pour 'cloture' pour une meilleure visibilité que 'danger' qui est souvent rouge vif #}
+                                    {% set badge_class = 'danger' %}
+                                {% endif %}
+
+                                <span class="badge bg-{{ badge_class }}">{{ status|humanize_status }}</span>
+                                {# {% set statutActif = null %}
                                 {% for statut in signal.statutSignals %}
                                     {% if statut.statutActif %}
                                         {% set statutActif = statut %}
                                     {% endif %}
                                 {% endfor %}
-                                {{ statutActif ? statutActif.libStatut : '---' }}
+                                {{ statutActif ? statutActif.libStatut : '---' }} #}
+
+
                             </td>
                             <td>
                                 {% if signal.getSuivis() is not empty %}
@@ -141,20 +157,20 @@
                                         {% if rdd.DescriptionRDD is not empty %}
                                             <ul>
                                                 <li>
-                                                    {% if is_granted('ROLE_SUPER_ADMIN') %}
+                                                    {# {% if is_granted('ROLE_SUPER_ADMIN') %}
                                                         <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
-                                                    {% else %}
-                                                        {{ rdd.NumeroRDD }} -
-                                                    {% endif %}
-                                                    {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
+                                                    {% else %} #}
+                                                        {# {{ rdd.NumeroRDD }} #}
+                                                    {# {% endif %} #}
+                                                    {# {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} -  #}
                                                     {{ rdd.DescriptionRDD|slice(0, 300) }}{% if rdd.DescriptionRDD|length > 300 %}...{% endif %}
                                                 </li>
                                             </ul>
                                         {% else %}
                                             <ul>
                                                 <li>
-                                                    <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> -
-                                                    {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} - 
+                                                    {# <a href="{{ path('app_modif_RDD', {'signalId': signal.id, 'rddId': rdd.id}) }}">{{ rdd.NumeroRDD }}</a> - #}
+                                                    {# {{ rdd.reunionSignal and rdd.reunionSignal.DateReunion ? rdd.reunionSignal.DateReunion|format_datetime(dateFormat='short', timeFormat='none', locale='fr') : 'N/A' }} -  #}
                                                     Pas de description
                                                 </li>
                                             </ul>

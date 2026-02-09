@@ -305,7 +305,11 @@ final class SignalDetailController extends AbstractController
             $tab = $request->query->get('tab', null);
 
             if ($signalForm->get('annulation')->isClicked()) {
-                return $this->redirectToRoute($routeSource);
+                // return $this->redirectToRoute($routeSource);
+                return $this->redirectToRoute($routeSource, [
+                    'reuSiId' => $reuSiId, 
+                    'tab' => $tab,
+                ]);
             }
 
             // Pour tous les autres boutons, on sauvegarde les modifications du signal et des entités liées

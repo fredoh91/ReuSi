@@ -53,14 +53,31 @@ class SignalType extends AbstractType
                 'required' => is_array($requiredFields) ? ($requiredFields['Contexte'] ?? false) : false,
                 'disabled' => is_array($disabledFields) ? ($disabledFields['Contexte'] ?? false) : false,
             ])
-            ->add('SourceSignal', TextType::class, [
-                'required' => is_array($requiredFields) ? ($requiredFields['SourceSignal'] ?? false) : false,
+            // ->add('SourceSignal', TextType::class, [
+            //     'required' => is_array($requiredFields) ? ($requiredFields['SourceSignal'] ?? false) : false,
+            //     'label' => 'Source du signal',
+            //     'label_attr' => ['class' => 'fw-bold'],
+            //     'disabled' => is_array($disabledFields) ? ($disabledFields['SourceSignal'] ?? false) : false,
+            //     'attr' => [
+            //     ],
+            // ])
+            ->add('SourceSignal', ChoiceType::class, [
                 'label' => 'Source du signal',
                 'label_attr' => ['class' => 'fw-bold'],
+                'choices' => [
+                    'CRPV/CM' => 'CRPV_CM',
+                    'CRPV' => 'CRPV',
+                    'CEIP/SIMAD' => 'CEIP_SIMAD',
+                    'CEIP' => 'CEIP',
+                    'EMM' => 'EMM',
+                    'CASAR' => 'CASAR',
+                    'Suivi nat.' => 'suivi_nat',
+                ],
+                'required' => is_array($requiredFields) ? ($requiredFields['SourceSignal'] ?? false) : false,
                 'disabled' => is_array($disabledFields) ? ($disabledFields['SourceSignal'] ?? false) : false,
                 'attr' => [
                 ],
-            ])            
+            ])    
             ->add('RefSignal', TextType::class, [
                 'label' => 'Référence du signal',
                 'label_attr' => ['class' => 'fw-bold'],
@@ -76,13 +93,13 @@ class SignalType extends AbstractType
             ])
             ->add('NiveauRisqueInitial', ChoiceType::class, [
                 'label' => 'Niveau de risque initial',
+                'label_attr' => ['class' => 'fw-bold'],
                 'choices' => [
                     'SHR' => 'SHR',
                     'SRI' => 'SRI',
                     'SRM' => 'SRM',
                     'SRF' => 'SRF',
                 ],
-                'label_attr' => ['class' => 'fw-bold'],
                 'required' => $options['required_fields']['NiveauRisqueInitial'] ?? false,
                 'disabled' => $options['disabled_fields']['NiveauRisqueInitial'] ?? false,
                 'attr' => (is_array($options['readonly_fields']) && ($options['readonly_fields']['NiveauRisqueInitial'] ?? false)) ? ['readonly' => 'readonly'] : [],

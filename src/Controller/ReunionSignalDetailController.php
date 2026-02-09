@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Suivi;
+use App\Entity\Signal;
 use App\Entity\ReunionSignal;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,7 +60,15 @@ final class ReunionSignalDetailController extends AbstractController
                 }
             }
         }
- 
+
+
+        // On cherche les signaux et fait_marquant :
+        //      - la date de suivi initial est strictement inférieure a la date de la réunion en cours
+        //      ET aucun suivi n'est lié a la réunion en cours
+        //      ET non-cloturé
+        $signauxAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonTraites('signal', $reunionSignal);
+        $faitsMarquantsAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonTraites('fait_marquant', $reunionSignal);
+
         return $this->render('reunion_signal_detail/reunion_signal_detail.html.twig', [
             'currentTab' => $tab,
             'reunionSignal' => $reunionSignal,
@@ -67,6 +76,8 @@ final class ReunionSignalDetailController extends AbstractController
             'suivisSignaux' => $suivisSignaux,
             'nouveauxFaitsMarquants' => $nouveauxFaitsMarquants,
             'suivisFaitsMarquants' => $suivisFaitsMarquants,
+            'signauxAnterieurs' => $signauxAnterieurs,
+            'faitsMarquantsAnterieurs' => $faitsMarquantsAnterieurs,
         ]);
     }
 }

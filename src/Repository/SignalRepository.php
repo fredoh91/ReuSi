@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Signal;
+use App\Entity\ReunionSignal;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -40,6 +41,12 @@ class SignalRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->where('s.TypeSignal = :typeSignal')
             ->setParameter('typeSignal', $typeSignal);
+
+
+        // Eager Loading pour la performance
+        $qb->leftJoin('s.statutSignals', 'ss')->addSelect('ss')
+        ->leftJoin('s.suivis', 'su')->addSelect('su')
+        ->leftJoin('su.statutSuivis', 'sus')->addSelect('sus');
 
         // Recherche sur le Titre
         if (!empty($criteria['Titre'])) {
@@ -153,5 +160,35 @@ class SignalRepository extends ServiceEntityRepository
         $qb->setParameter('reunionId', $reunion->getId());
 
         return $qb;
+    }
+
+    /**
+     * Trouve les signaux/faits marquants antérieurs à la réunion mais non traités dans celle-ci.
+     * Critères :
+     * - Date de création (correspondant au suivi initial) < date réunion
+     * - Pas de suivi pour cette réunion
+     * - Non clôturé
+     */
+    public function findSignauxAnterieursNonTraites(string $typeSignal, ReunionSignal $reunion): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->andWhere('s.TypeSignal = :typeSignal')
+            ->setParameter('typeSignal', $typeSignal);
+
+        // 1. Date de suivi initial (création) strictement inférieure à la date de la réunion
+        $qb->andWhere('s.CreatedAt < :dateReunion')
+           ->setParameter('dateReunion', $reunion->getDateReunion());
+
+        // 2. Aucun suivi n'est lié à la réunion en cours
+        $qb->leftJoin('s.suivis', 'su_current', \Doctrine\ORM\Query\Expr\Join::WITH, 'su_current.reunionSignal = :reunion')
+           ->andWhere('su_current.id IS NULL')
+           ->setParameter('reunion', $reunion);
+
+        // 3. Non-clôturé
+        $qb->leftJoin('s.statutSignals', 'ss', \Doctrine\ORM\Query\Expr\Join::WITH, 'ss.StatutActif = true')
+           ->andWhere('ss.LibStatut != :cloture')
+           ->setParameter('cloture', 'cloture');
+
+        return $qb->getQuery()->getResult();
     }
 }

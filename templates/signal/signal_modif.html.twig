@@ -405,6 +405,7 @@
                                     <th>Numéro de suivi</th>
                                     <th>Date réunion</th>
                                     <th>Description</th>
+                                    <th>Relevé de décision</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -422,6 +423,7 @@
                                         </td>       {#  app_modif_suivi #}
                                         <td>{{ suivi.reunionSignal and suivi.reunionSignal.dateReunion ? suivi.reunionSignal.dateReunion|date('d/m/Y') : '' }}</td>
                                         <td>{{ suivi.DescriptionSuivi }}</td>
+                                        <td>{{ suivi.RddLie.DescriptionRDD }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

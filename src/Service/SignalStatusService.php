@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
+use App\Entity\Suivi;
 use App\Entity\Signal;
 use App\Entity\StatutSignal;
+use App\Entity\StatutSuivi;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Func;
@@ -211,5 +213,41 @@ class SignalStatusService
     {
         return $this->entityManager->getRepository(StatutSignal::class)
             ->findLastStatutBySignal($signalIdvalue);
+    }
+
+    /**
+     * Détermine un statut consolidé pour l'affichage dans les listes.
+     *
+     * @param Signal $signal Le signal à analyser.
+     * @return string Le statut calculé ('cloture', 'prevu', 'presente', ou 'en_cours').
+     */
+    public function donneStatutSignalSuivi(Signal $signal): string
+    {
+        // Règle 1: Si le statut du signal est 'cloture'
+        $lastStatutSignal = $this->findLastStatutBySignal($signal->getId());
+        if ($lastStatutSignal && $lastStatutSignal->getLibStatut() === 'cloture') {
+            return 'cloture';
+        }
+
+        // Règle 2 & 3: Analyser le dernier suivi
+        /** @var \App\Repository\SuiviRepository $suiviRepo */
+        $suiviRepo = $this->entityManager->getRepository(Suivi::class);
+        $latestSuivi = $suiviRepo->findLatestForSignal($signal);
+
+        if ($latestSuivi) {
+            /** @var \App\Repository\StatutSuiviRepository $statutSuiviRepo */
+            $statutSuiviRepo = $this->entityManager->getRepository(StatutSuivi::class);
+            $lastStatutSuivi = $statutSuiviRepo->findLastStatutBySuivi($latestSuivi->getId());
+
+            if ($lastStatutSuivi) {
+                $libStatut = $lastStatutSuivi->getLibStatut();
+                if (in_array($libStatut, ['prevu', 'presente'])) {
+                    return $libStatut;
+                }
+            }
+        }
+
+        // Statut par défaut si aucune des règles ci-dessus ne s'applique
+        return 'en_cours';
     }
 }
