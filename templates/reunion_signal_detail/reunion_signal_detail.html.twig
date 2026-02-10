@@ -2,6 +2,8 @@
 
 {% block title %}Détail de la réunion du {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime('long', 'none', locale='fr') : 'N/A' }}{% endblock %}
 
+{% block body_class 'reunion-signal-detail-bg' %}
+
 {% block body %}
 
 	{# Affichage des messages flash #}
@@ -72,238 +74,57 @@
     <!-- Tab panes -->
     <div class="tab-content p-3" id="reunionTabContent">
         {% if currentTab == 'nouveaux-signaux' %}
-            {% if nouveauxSignaux is not empty %}
-                {% for suivi in nouveauxSignaux %}
-                    {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-light text-center" role="alert">
-                    Aucun nouveau signal pour cette réunion.
-                </div>
-            {% endif %}
+
+            {# Card des signaux prévus à cette date #}
+            {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                'suiviLies': nouveauxSignaux,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+            } %}
+
+
         {% elseif currentTab == 'suivis-signaux' %}
-            {% if suivisSignaux is not empty %}
-                {% for suivi in suivisSignaux %}
-                    {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-light text-center" role="alert">
-                    Aucun suivi de signal pour cette réunion.
-                </div>
-            {% endif %}
 
+            {# Card des signaux prévus à cette date #}
+            {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                'suiviLies': suivisSignaux,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+            } %}
 
-
-{% include 'reunion_signal_detail/_signauxAnterieurs_card.html.twig' with {
-    'signauxAnterieurs': signauxAnterieurs,
-    'currentTab': currentTab,
-    'reunionSignal': reunionSignal,
-    'libelleCard': 'Autres signaux non-cloturés et non-prévus à cette date'
-} %}
-
-
-
-
-        {# {% if signauxAnterieurs is not empty %}
-            <div class="card mt-5 border-secondary">
-                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-archive me-2"></i>Autres signaux non-cloturés et non-prévus à cette date
-                    </h5>
-                    <span class="badge bg-light text-dark">{{ signauxAnterieurs|length }}</span>
-                </div>
-                <div class="card-body bg-light">
-                    {% for signalAnterieur in signauxAnterieurs %}
-                        {% set status = get_signal_status(signalAnterieur) %}
-                        {% set badge_class = 'secondary' %}
-                        {% if status == 'presente' %}
-                            {% set badge_class = 'success' %}
-                        {% elseif status == 'prevu' or status == 'en_cours_de_creation' %}
-                            {% set badge_class = 'info' %}
-                        {% elseif status == 'en_cours' %}
-                            {% set badge_class = 'primary' %}
-                        {% elseif status == 'cloture' %}
-                            {% set badge_class = 'dark' %}
-                        {% endif %}
-
-                        <div class="card mb-3 shadow-sm">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
-                                    <a href="{{ path('app_signal_modif', {'signalId': signalAnterieur.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab }) }}" class="text-decoration-none text-dark">
-                                        Signal n°{{ signalAnterieur.id }} : {{ signalAnterieur.Titre }}
-                                    </a>
-                                </h6>
-                                <div>
-                                    <span class="badge bg-{{ badge_class }} me-2">{{ status|humanize_status }}</span>
-                                    <a href="{{ path('app_reunion_create_suivi', {'reunionId': reunionSignal.id, 'signalId': signalAnterieur.id, 'tab': currentTab}) }}" class="btn btn-sm btn-outline-primary" title="Ajouter ce signal à la réunion en cours">
-                                        <i class="bi bi-plus-circle"></i> Traiter
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <strong>Description :</strong><br>
-                                    {{ signalAnterieur.DescriptionSignal|slice(0, 300) }}{% if signalAnterieur.DescriptionSignal|length > 300 %}...{% endif %}
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted text-uppercase fw-bold">Derniers Suivis</small>
-                                        <ul class="list-unstyled small mt-1">
-                                            {% for suivi in signalAnterieur.getSuivis()|slice(0, 3) %}
-                                                <li class="mb-1">
-                                                    <span class="fw-bold">#{{ suivi.NumeroSuivi }}</span> 
-                                                    {% if suivi.reunionSignal %}({{ suivi.reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }}){% endif %}
-                                                    : {{ suivi.DescriptionSuivi|slice(0, 100) }}...
-                                                </li>
-                                            {% else %}
-                                                <li class="text-muted fst-italic">Aucun suivi.</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted text-uppercase fw-bold">Derniers RDD</small>
-                                        <ul class="list-unstyled small mt-1">
-                                            {% for rdd in signalAnterieur.getReleveDeDecision()|slice(0, 3) %}
-                                                <li class="mb-1">
-                                                    {{ rdd.DescriptionRDD|slice(0, 100) }}...
-                                                </li>
-                                            {% else %}
-                                                <li class="text-muted fst-italic">Aucun RDD.</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %} #}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            {# Card des signaux antérieurs non-cloturés et non-prévus à cette date #}
+            {% include 'reunion_signal_detail/_signauxAnterieurs_card.html.twig' with {
+                'signauxAnterieurs': signauxAnterieurs,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+                'typeSignal': 'signal'
+            } %}
 
         {% elseif currentTab == 'nouveaux-fm' %}
-            {% if nouveauxFaitsMarquants is not empty %}
-                {% for suivi in nouveauxFaitsMarquants %}
-                    {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-light text-center" role="alert">
-                    Aucun nouveau fait marquant pour cette réunion.
-                </div>
-            {% endif %}
+
+            {# Card des signaux prévus à cette date #}
+            {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                'suiviLies': nouveauxFaitsMarquants,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+            } %}
+
         {% elseif currentTab == 'suivis-fm' %}
-            {% if suivisFaitsMarquants is not empty %}
-                {% for suivi in suivisFaitsMarquants %}
-                    {% include 'reunion_signal_detail/_suivi_card.html.twig' with { 'suivi': suivi } %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-light text-center" role="alert">
-                    Aucun suivi de fait marquant pour cette réunion.
-                </div>
-            {% endif %}
 
+            {# Card des signaux prévus à cette date #}
+            {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                'suiviLies': suivisFaitsMarquants,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+            } %}            
 
-{% include 'reunion_signal_detail/_signauxAnterieurs_card.html.twig' with {
-    'signauxAnterieurs': faitsMarquantsAnterieurs,
-    'currentTab': currentTab,
-    'reunionSignal': reunionSignal,
-    'libelleCard': 'Autres faits marquants non-cloturés et non-prévus à cette date'
-} %}
-
-            {# {% if faitsMarquantsAnterieurs is not empty %}
-                <div class="card mt-5 border-secondary">
-                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-archive me-2"></i>Autres faits marquants non-cloturés et non-prévus à cette date
-                        </h5>
-                        <span class="badge bg-light text-dark">{{ faitsMarquantsAnterieurs|length }}</span>
-                    </div>
-                    <div class="card-body bg-light">
-                        {% for fmAnterieur in faitsMarquantsAnterieurs %}
-                            {% set status = get_signal_status(fmAnterieur) %}
-                            {% set badge_class = 'secondary' %}
-                            {% if status == 'presente' %}
-                                {% set badge_class = 'success' %}
-                            {% elseif status == 'prevu' or status == 'en_cours_de_creation' %}
-                                {% set badge_class = 'info' %}
-                            {% elseif status == 'en_cours' %}
-                                {% set badge_class = 'primary' %}
-                            {% elseif status == 'cloture' %}
-                                {% set badge_class = 'dark' %}
-                            {% endif %}
-
-                            <div class="card mb-3 shadow-sm">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">
-                                        <a href="{{ path('app_signal_modif', {'signalId': fmAnterieur.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': reunionSignal.id, 'tab': currentTab }) }}" class="text-decoration-none text-dark">
-                                            Fait Marquant n°{{ fmAnterieur.id }} : {{ fmAnterieur.Titre }}
-                                        </a>
-                                    </h6>
-                                    <div>
-                                        <span class="badge bg-{{ badge_class }} me-2">{{ status|humanize_status }}</span>
-                                        <a href="{{ path('app_reunion_create_suivi', {'reunionId': reunionSignal.id, 'signalId': fmAnterieur.id, 'tab': currentTab}) }}" class="btn btn-sm btn-outline-primary" title="Ajouter ce fait marquant à la réunion en cours">
-                                            <i class="bi bi-plus-circle"></i> Traiter
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <strong>Description :</strong><br>
-                                        {{ fmAnterieur.DescriptionSignal|slice(0, 300) }}{% if fmAnterieur.DescriptionSignal|length > 300 %}...{% endif %}
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <small class="text-muted text-uppercase fw-bold">Derniers Suivis</small>
-                                            <ul class="list-unstyled small mt-1">
-                                                {% for suivi in fmAnterieur.getSuivis()|slice(0, 3) %}
-                                                    <li class="mb-1">
-                                                        <span class="fw-bold">#{{ suivi.NumeroSuivi }}</span> 
-                                                        {% if suivi.reunionSignal %}({{ suivi.reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }}){% endif %}
-                                                        : {{ suivi.DescriptionSuivi|slice(0, 100) }}...
-                                                    </li>
-                                                {% else %}
-                                                    <li class="text-muted fst-italic">Aucun suivi.</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <small class="text-muted text-uppercase fw-bold">Derniers RDD</small>
-                                            <ul class="list-unstyled small mt-1">
-                                                {% for rdd in fmAnterieur.getReleveDeDecision()|slice(0, 3) %}
-                                                    <li class="mb-1">
-                                                        {{ rdd.DescriptionRDD|slice(0, 100) }}...
-                                                    </li>
-                                                {% else %}
-                                                    <li class="text-muted fst-italic">Aucun RDD.</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %} #}
-
-
-
-
+            {# Card des signaux antérieurs non-cloturés et non-prévus à cette date #}
+            {% include 'reunion_signal_detail/_signauxAnterieurs_card.html.twig' with {
+                'signauxAnterieurs': faitsMarquantsAnterieurs,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+                'typeSignal': 'fait_marquant',
+            } %}
 
 
         {% endif %}

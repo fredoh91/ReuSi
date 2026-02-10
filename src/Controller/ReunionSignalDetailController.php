@@ -66,8 +66,8 @@ final class ReunionSignalDetailController extends AbstractController
         //      - la date de suivi initial est strictement inférieure a la date de la réunion en cours
         //      ET aucun suivi n'est lié a la réunion en cours
         //      ET non-cloturé
-        $signauxAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonTraites('signal', $reunionSignal);
-        $faitsMarquantsAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonTraites('fait_marquant', $reunionSignal);
+        $signauxAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('signal', $reunionSignal);
+        $faitsMarquantsAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('fait_marquant', $reunionSignal);
 
         return $this->render('reunion_signal_detail/reunion_signal_detail.html.twig', [
             'currentTab' => $tab,

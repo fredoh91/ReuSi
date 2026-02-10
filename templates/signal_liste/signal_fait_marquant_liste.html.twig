@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Signaux et faits marquant non-clôturés{% endblock %}
+
+{% block body %}
+
+
+<div class="container-fluid mt-4">
+    <h1>Signaux et faits marquant non-clôturés</h1>
+    
+    <ul class="nav nav-tabs" id="signalTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="signaux-tab" data-bs-toggle="tab" data-bs-target="#signaux" type="button" role="tab" aria-controls="signaux" aria-selected="true">
+                Signaux <span class="badge bg-secondary">{{ pagination_signal.getTotalItemCount }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="faits-marquants-tab" data-bs-toggle="tab" data-bs-target="#faits-marquants" type="button" role="tab" aria-controls="faits-marquants" aria-selected="false">
+                Faits Marquants <span class="badge bg-secondary">{{ pagination_fait_marquant.getTotalItemCount }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="signalTabContent">
+        <div class="tab-pane fade show active" id="signaux" role="tabpanel" aria-labelledby="signaux-tab">
+            {{ _self.render_table(pagination_signal, 'signal') }}
+        </div>
+        <div class="tab-pane fade" id="faits-marquants" role="tabpanel" aria-labelledby="faits-marquants-tab">
+            {{ _self.render_table(pagination_fait_marquant, 'fait_marquant') }}
+        </div>
+    </div>
+</div>
+
+{% macro render_table(pagination, typeSignal) %}
+    <div class="card border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Statut</th>
+                        <th>Suivis</th>
+                        <th>Relevé de décision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in pagination %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_signal_modif', {
+                                    'signalId': signal.id, 
+                                    'routeSource': 'app_signal_fait_marquant_liste'
+                                }) }}">
+                                    {{ signal.id }}
+                                </a>
+                            </td>
+                            <td>{{ signal.titre }}</td>
+                            <td>
+                                {{ signal.DescriptionSignal|slice(0, 500) }}{% if signal.DescriptionSignal|length > 500 %}...{% endif %}
+                            </td>
+                            <td>
+                                {% set status = get_signal_status(signal) %}
+                                {% set badge_class = 'secondary' %}
+                                {% if status == 'presente' %}
+                                    {% set badge_class = 'success' %}
+                                {% elseif status == 'prevu' or status == 'en_cours_de_creation' %}
+                                    {% set badge_class = 'info' %}
+                                {% elseif status == 'en_cours' %}
+                                    {% set badge_class = 'primary' %}
+                                {% elseif status == 'cloture' %}
+                                    {% set badge_class = 'danger' %}
+                                {% endif %}
+
+                                <span class="badge bg-{{ badge_class }}">{{ status|humanize_status }}</span>
+
+                            </td>
+                            <td>
+                                {% if signal.getSuivis() is not empty %}
+                                    {% for suivi in signal.getSuivis() %}
+                                        <div class="mb-1 small">
+                                            <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id, 'routeSource': 'app_signal_fait_marquant_liste'}) }}">#{{ suivi.NumeroSuivi }}</a>
+                                            {% if suivi.reunionSignal %}
+                                                ({{ suivi.reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }})
+                                            {% endif %}
+                                            :
+                                            {% if suivi.DescriptionSuivi %}
+                                                {{ suivi.DescriptionSuivi|slice(0, 100) }}...
+                                            {% else %}
+                                                <span class="text-muted fst-italic">Pas de description</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted fst-italic">Pas de suivi</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if signal.getReleveDeDecision() is not empty %}
+                                    {% for rdd in signal.getReleveDeDecision() %}
+                                        <div class="mb-1 small">
+                                            {% if rdd.DescriptionRDD %}
+                                                {{ rdd.DescriptionRDD|slice(0, 100) }}...
+                                            {% else %}
+                                                <span class="text-muted fst-italic">Pas de description</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted fst-italic">Pas de relevé de décision</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun élément trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="navigation d-flex justify-content-center">
+                {{ knp_pagination_render(pagination) }}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+{% endblock %}

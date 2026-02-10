@@ -60,3 +60,10 @@ $fait-marquant-table-striped-bg: #e8f5f7; // Un bleu très clair, dérivé de $F
 // Couleurs pour le striping des tableaux de la page liste des réunions
 $reunion-signal-table-striped-bg: #eea5c3;
 $reunion-signal-page-bg: $reunion-signal-table-striped-bg; // Fond pour la page de la liste des réunions
+
+// Couleurs pour la page détail des réunions
+$reunion-signal-tab-bg: #F79F9F;
+$reunion-signal-tab-actif: #F79F9F;
+$reunion-signal-tab-inactif: #FFB6C1;
+$reunion-signal-card-sig-lie-bg: #b9ffb6;
+$reunion-signal-card-sig-non-lie-bg: #9e9e9e;

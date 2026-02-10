@@ -169,20 +169,26 @@ class SignalRepository extends ServiceEntityRepository
      * - Pas de suivi pour cette réunion
      * - Non clôturé
      */
-    public function findSignauxAnterieursNonTraites(string $typeSignal, ReunionSignal $reunion): array
+    public function findSignauxAnterieursNonClotures(?string $typeSignal, ?ReunionSignal $reunion = null): array
     {
-        $qb = $this->createQueryBuilder('s')
-            ->andWhere('s.TypeSignal = :typeSignal')
-            ->setParameter('typeSignal', $typeSignal);
+        $qb = $this->createQueryBuilder('s');
 
-        // 1. Date de suivi initial (création) strictement inférieure à la date de la réunion
-        $qb->andWhere('s.CreatedAt < :dateReunion')
-           ->setParameter('dateReunion', $reunion->getDateReunion());
+        if ($typeSignal) {            
+            $qb->andWhere('s.TypeSignal = :typeSignal')
+                ->setParameter('typeSignal', $typeSignal);
+        }
 
-        // 2. Aucun suivi n'est lié à la réunion en cours
-        $qb->leftJoin('s.suivis', 'su_current', \Doctrine\ORM\Query\Expr\Join::WITH, 'su_current.reunionSignal = :reunion')
-           ->andWhere('su_current.id IS NULL')
-           ->setParameter('reunion', $reunion);
+
+        if ($reunion) {
+            // 1. Date de suivi initial (création) strictement inférieure à la date de la réunion
+            $qb->andWhere('s.CreatedAt < :dateReunion')
+            ->setParameter('dateReunion', $reunion->getDateReunion());
+
+            // 2. Aucun suivi n'est lié à la réunion en cours
+            $qb->leftJoin('s.suivis', 'su_current', \Doctrine\ORM\Query\Expr\Join::WITH, 'su_current.reunionSignal = :reunion')
+            ->andWhere('su_current.id IS NULL')
+            ->setParameter('reunion', $reunion);
+        }
 
         // 3. Non-clôturé
         $qb->leftJoin('s.statutSignals', 'ss', \Doctrine\ORM\Query\Expr\Join::WITH, 'ss.StatutActif = true')
