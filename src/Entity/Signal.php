@@ -122,6 +122,12 @@ class Signal
     #[ORM\ManyToMany(targetEntity: Gamme::class, inversedBy: 'signals')]
     private Collection $gammes;
 
+    /**
+     * @var Collection<int, FichiersSignaux>
+     */
+    #[ORM\OneToMany(targetEntity: FichiersSignaux::class, mappedBy: 'signalLie')]
+    private Collection $fichiersSignaux;
+
     // #[ORM\Column(length: 255, nullable: true)]
     // private ?string $TypeSignal = null;
 
@@ -145,6 +151,7 @@ class Signal
         $this->suivis = new ArrayCollection();
         $this->directionPoleConcernes = new ArrayCollection();
         $this->gammes = new ArrayCollection();
+        $this->fichiersSignaux = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -592,6 +599,36 @@ class Signal
     public function removeGamme(Gamme $gamme): static
     {
         $this->gammes->removeElement($gamme);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FichiersSignaux>
+     */
+    public function getFichiersSignaux(): Collection
+    {
+        return $this->fichiersSignaux;
+    }
+
+    public function addFichiersSignaux(FichiersSignaux $fichiersSignaux): static
+    {
+        if (!$this->fichiersSignaux->contains($fichiersSignaux)) {
+            $this->fichiersSignaux->add($fichiersSignaux);
+            $fichiersSignaux->setSignalLie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichiersSignaux(FichiersSignaux $fichiersSignaux): static
+    {
+        if ($this->fichiersSignaux->removeElement($fichiersSignaux)) {
+            // set the owning side to null (unless already changed)
+            if ($fichiersSignaux->getSignalLie() === $this) {
+                $fichiersSignaux->setSignalLie(null);
+            }
+        }
 
         return $this;
     }

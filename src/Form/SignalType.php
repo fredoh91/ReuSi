@@ -4,16 +4,17 @@ namespace App\Form;
 
 use App\Entity\Gamme;
 use App\Entity\Signal;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 // use Symfony\Bridge\Doctrine\Form\Type\EntityType; // Commenté car n'est plus directement utilisé
-use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 // use App\Entity\DirectionPoleConcerne; // Commenté car le champ directionPoleConcernes est remplacé
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use App\Form\GammeAutocompleteType; // Ajouté pour le champ Gammes
 // use Symfony\UX\Autocomplete\Form\BaseEntityAutocompleteType; // Commenté car GammeAutocompleteType est utilisé à la place
 
@@ -154,8 +155,13 @@ class SignalType extends AbstractType
                 'label' => 'Gamme(s) concernée(s)',
                 'label_attr' => ['class' => 'fw-bold'],
                 // Les options query_builder, choice_label, group_by sont maintenant dans GammeAutocompleteType
+            ])
+            ->add('fichiers', FileType::class, [
+                'label' => 'Ajouter des fichiers',
+                'multiple' => true,
+                'mapped' => false, // Important : ce champ n'est pas lié directement à une propriété de l'entité Signal
+                'required' => false,
             ]);
-
         // Ajout des boutons conditionnels
         if ($options['add_produit_button'] ?? false) {
             $builder->add('ajout_produit', SubmitType::class, [

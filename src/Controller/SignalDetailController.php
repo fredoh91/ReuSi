@@ -11,11 +11,14 @@ use App\Entity\ReunionSignal;
 use App\Entity\ReleveDeDecision;
 use App\Service\SuiviStatusService;
 use App\Service\SignalStatusService;
+use App\Service\FileUploaderService; // Ajouté
+use Symfony\Bundle\SecurityBundle\Security; // Ajouté
 use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\Model\SignalAvecSuiviInitialDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse; // Ajouté ici
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,11 +27,19 @@ final class SignalDetailController extends AbstractController
 {
     private $logger;
     private $kernel;
+    private readonly FileUploaderService $fileUploaderService; // Ajouté
+    private readonly Security $security; // Ajouté
     
-    public function __construct(LoggerInterface $logger, KernelInterface $kernel)
-    {
+    public function __construct(
+        LoggerInterface $logger, 
+        KernelInterface $kernel,
+        FileUploaderService $fileUploaderService, // Ajouté
+        Security $security // Ajouté
+    ) {
         $this->logger = $logger;
         $this->kernel = $kernel;
+        $this->fileUploaderService = $fileUploaderService; // Ajouté
+        $this->security = $security; // Ajouté
     }
 
     #[Route('/signal_new', name: 'app_signal_new', defaults: ['typeSignal' => 'signal'])]
@@ -191,7 +202,29 @@ final class SignalDetailController extends AbstractController
                 $em->persist($signal);
                 $em->persist($suivi);
                 $em->persist($rdd);
-                $em->flush();
+                $em->flush(); // Flush ici pour que $signal->getId() soit disponible
+
+                // --- DÉBUT DE LA LOGIQUE D'UPLOAD DES FICHIERS ---
+
+                $uploadedFiles = $signalForm->get('fichiers')->getData(); // Récupère les fichiers du champ 'fichiers'
+
+                foreach ($uploadedFiles as $uploadedFile) {
+                    if ($uploadedFile) { // S'assurer qu'un fichier a bien été uploadé
+                        try {
+                            $fichierSignal = $this->fileUploaderService->uploadFile(
+                                $uploadedFile,
+                                $signal,
+                                $userName
+                            );
+                            $em->persist($fichierSignal); // Persiste la nouvelle entité FichiersSignaux
+                        } catch (\Exception $e) {
+                            $this->addFlash('error', sprintf('Erreur lors de l\'upload du fichier "%s" : %s', $uploadedFile->getClientOriginalName(), $e->getMessage()));
+                            $this->logger->error(sprintf('Erreur upload fichier pour Signal ID %s : %s', $signal->getId(), $e->getMessage()));
+                            // On peut choisir d'interrompre ou de continuer ici. Pour l'instant, on log et on continue.
+                        }
+                    }
+                }
+                // --- FIN DE LA LOGIQUE D'UPLOAD DES FICHIERS ---
 
                 // Now handle the specific button's action
                 if ($signalForm->get('validation')->isClicked()) {
@@ -364,6 +397,32 @@ final class SignalDetailController extends AbstractController
             }
             $em->flush();
             
+            // --- DÉBUT DE LA LOGIQUE D'UPLOAD DES FICHIERS ---
+
+
+            // Récupère les fichiers du champ 'fichiers' qui se trouve dans le sous-formulaire 'signal'
+            $uploadedFiles = $signalForm->get('fichiers')->getData(); 
+
+            foreach ($uploadedFiles as $uploadedFile) {
+                if ($uploadedFile) { // S'assurer qu'un fichier a bien été uploadé
+                    try {
+                        $fichierSignal = $this->fileUploaderService->uploadFile(
+                            $uploadedFile,
+                            $signal,
+                            $userName
+                        );
+                        $em->persist($fichierSignal); // Persiste la nouvelle entité FichiersSignaux
+                    } catch (\Exception $e) {
+                        $this->addFlash('error', sprintf('Erreur lors de l\'upload du fichier "%s" : %s', $uploadedFile->getClientOriginalName(), $e->getMessage()));
+                        $this->logger->error(sprintf('Erreur upload fichier pour Signal ID %s : %s', $signal->getId(), $e->getMessage()));
+                        // On peut choisir d'interrompre ou de continuer ici. Pour l'instant, on log et on continue.
+                    }
+                }
+            }
+            $em->flush(); // Flush final pour les entités FichiersSignaux
+
+            // --- FIN DE LA LOGIQUE D'UPLOAD DES FICHIERS ---
+
             // action sur les différents boutons
             if ($signalForm->get('validation')->isClicked()) {
                 $this->addFlash('success', 'Signal ' . $signalId . ' modifié.');
@@ -492,4 +551,43 @@ final class SignalDetailController extends AbstractController
             'lstRDD' => $signal->getReleveDeDecision(),
         ]);
     }
+
+    #[Route('/signal/fichier/{id}/download', name: 'app_signal_fichier_download')]
+    public function downloadFichier(\App\Entity\FichiersSignaux $fichierSignal): BinaryFileResponse
+    {
+        $filePath = $this->fileUploaderService->getTargetDirectory() . '/' . $fichierSignal->getNomFichier();
+
+        if (!file_exists($filePath)) {
+            throw $this->createNotFoundException('Le fichier n\'existe pas.');
+        }
+
+        return $this->file($filePath, $fichierSignal->getNomOriginal());
+    }
+
+    #[Route('/signal/fichier/{id}/delete', name: 'app_signal_fichier_delete', methods: ['POST'])]
+    public function deleteFichier(Request $request, EntityManagerInterface $em, \App\Entity\FichiersSignaux $fichierSignal): Response
+    {
+        // Vérifier le jeton CSRF
+        if (!$this->isCsrfTokenValid('delete' . $fichierSignal->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_signal_modif', ['signalId' => $fichierSignal->getSignal()->getId()]);
+        }
+
+        try {
+            // Supprimer le fichier physique
+            $this->fileUploaderService->deleteFile($fichierSignal->getNomFichier());
+
+            // Supprimer l'entité de la base de données
+            $em->remove($fichierSignal);
+            $em->flush();
+
+            $this->addFlash('success', 'Fichier supprimé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression du fichier : ' . $e->getMessage());
+            $this->logger->error(sprintf('Erreur suppression fichier ID %s : %s', $fichierSignal->getId(), $e->getMessage()));
+        }
+
+        return $this->redirectToRoute('app_signal_modif', ['signalId' => $fichierSignal->getSignalLie()->getId()]);
+    }
 }
+
