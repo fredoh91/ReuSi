@@ -13,14 +13,17 @@
     </h1>
 
     {{ form_start(form) }}
-        <div class="my-3">
-            {{ form_row(form.DateReunion) }}
-        </div>
-        <div class="my-3">
-            {{ form_row(form.ReunionAnnulee) }}
+
+        <div class="row">
+            <div class="col-6">
+                {{ form_row(form.DateReunion) }}
+            </div> 
+            <div class="col-6"> 
+                {{ form_row(form.statutReunion) }}
+            </div>
         </div>
 
-        <div class="d-flex justify-content-start gap-2 mt-4">
+        <div class="d-flex justify-content-center gap-2 mt-4">
             {{ form_widget(form.save) }}
             <a href="{{ path('app_reunion_signal_date') }}" class="btn btn-secondary">Retour à la liste</a>
         </div>

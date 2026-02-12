@@ -22,14 +22,6 @@ class SuiviDetailType extends SuiviType
                 'label_attr' => ['class' => 'form-label fw-bold'],
                 'disabled' => $options['disabled_fields']['NumeroSuivi'] ?? false,
             ])
-            // ->add('UserCreate')
-            // ->add('UserModif')
-            // ->add('CreatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('UpdatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
             ->add('validation', SubmitType::class, [
                 'label' => 'Valider',
                 'attr' => ['class' => 'btn btn-primary m-2'],

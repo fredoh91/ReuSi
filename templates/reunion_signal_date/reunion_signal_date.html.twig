@@ -62,10 +62,12 @@
                             {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(pattern="EEEE", timeFormat='none', locale='fr')|capitalize : '---' }}
                         </td>
                         <td>
-                            {% if reunionSignal.ReunionAnnulee %}
+                            {% if reunionSignal.statutReunion == 'annulee' %}
                                 <span class="badge bg-danger">Annulée</span>
-                            {% else %}
+                            {% elseif reunionSignal.statutReunion == 'prevue' %}
                                 <span class="badge bg-success">Prévue</span>
+                            {% elseif reunionSignal.statutReunion == 'realisee' %}
+                                <span class="badge bg-info">Réalisée</span>
                             {% endif %}
                         </td>
                         <td class="text-end">

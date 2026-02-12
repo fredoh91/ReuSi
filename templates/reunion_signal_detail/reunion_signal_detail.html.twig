@@ -69,6 +69,11 @@
                 Suivis de Faits Marquants <span class="badge rounded-pill bg-secondary badge-count">{{ suivisFaitsMarquants|length }}</span>
             </a>
         </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if currentTab == 'details-reunion' %}active{% endif %}" href="{{ path('app_reunion_signal_detail', {'reuSiId': reunionSignal.id, 'tab': 'details-reunion'}) }}">
+                Détails de la réunion
+            </a>
+        </li>
     </ul>
 
     <!-- Tab panes -->
@@ -126,6 +131,14 @@
                 'typeSignal': 'fait_marquant',
             } %}
 
+        {% elseif currentTab == 'details-reunion' %}
+
+            {# Card des signaux prévus à cette date #}
+            {% include 'reunion_signal_detail/_details-reunion.html.twig' with {
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+                'form': form,
+            } %}
 
         {% endif %}
     </div>

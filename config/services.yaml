@@ -15,6 +15,10 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
@@ -22,3 +26,18 @@ services:
     App\EventListener\UserLoginListener:
         tags:
             - { name: kernel.event_listener, event: security.authentication.success, method: onLoginSuccess }
+
+    App\Service\FileUploaderService:
+        arguments:
+            $configurations:
+                signal:
+                    directory: '%env(FICHIERS_SIGNAUX_DIRECTORY)%'
+                    file_entity_class: App\Entity\FichiersSignaux
+                    related_entity_class: App\Entity\Signal
+                    setter: 'setSignalLie'
+                reunion_signal:
+                    directory: '%env(FICHIERS_REUNION_DIRECTORY)%'
+                    file_entity_class: App\Entity\FichiersReunionsSignal
+                    related_entity_class: App\Entity\ReunionSignal
+                    setter: 'setReunionSignalLiee'
+

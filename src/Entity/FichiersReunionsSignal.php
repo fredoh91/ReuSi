@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\FichiersSignauxRepository;
+use App\Repository\FichiersReunionsSignalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: FichiersSignauxRepository::class)]
-class FichiersSignaux
+#[ORM\Entity(repositoryClass: FichiersReunionsSignalRepository::class)]
+class FichiersReunionsSignal
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,8 +25,8 @@ class FichiersSignaux
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $mimeType = null;
 
-    #[ORM\ManyToOne(inversedBy: 'fichiersSignaux')]
-    private ?Signal $signalLie = null;
+    #[ORM\ManyToOne(inversedBy: 'fichiersReunionsSignals')]
+    private ?ReunionSignal $reunionSignalLiee = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $UserCreate = null;
@@ -93,14 +93,14 @@ class FichiersSignaux
         return $this;
     }
 
-    public function getSignalLie(): ?Signal
+    public function getReunionSignalLiee(): ?ReunionSignal
     {
-        return $this->signalLie;
+        return $this->reunionSignalLiee;
     }
 
-    public function setSignalLie(?Signal $signalLie): static
+    public function setReunionSignalLiee(?ReunionSignal $reunionSignalLiee): static
     {
-        $this->signalLie = $signalLie;
+        $this->reunionSignalLiee = $reunionSignalLiee;
 
         return $this;
     }

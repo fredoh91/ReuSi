@@ -2,89 +2,105 @@
 
 namespace App\Service;
 
-use App\Entity\FichiersSignaux;
-use App\Entity\Signal;
-use App\Entity\User;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Filesystem\Filesystem;
 
 class FileUploaderService
 {
-    private readonly string $targetDirectory;
+    private readonly string $projectDir;
+    private readonly array $configurations;
+    private readonly SluggerInterface $slugger;
+    private readonly Filesystem $filesystem;
 
     public function __construct(
         #[Autowire('%kernel.project_dir%')] string $projectDir,
-        #[Autowire('%env(FICHIERS_SIGNAUX_DIRECTORY)%')] string $relativeTargetDirectory,
-        private readonly SluggerInterface $slugger,
-        private readonly Filesystem $filesystem
+        array $configurations,
+        SluggerInterface $slugger,
+        Filesystem $filesystem
     ) {
-        $this->targetDirectory = $projectDir . '/' . $relativeTargetDirectory;
+        $this->projectDir = $projectDir;
+        $this->configurations = $configurations;
+        $this->slugger = $slugger;
+        $this->filesystem = $filesystem;
     }
 
     /**
-     * Gère l'upload d'un fichier, le déplace et retourne l'entité FichiersSignaux configurée.
-     *
-     * @param UploadedFile $file Le fichier uploadé depuis le formulaire.
-     * @param Signal $signal Le signal auquel attacher le fichier.
-     * @param string $userName L'utilisateur qui réalise l'upload.
-     * @return FichiersSignaux L'entité configurée, prête à être persistée.
+     * @param string $type The configuration key for the upload type (e.g., 'signal', 'reunion_signal').
+     * @param UploadedFile $file The uploaded file.
+     * @param object $relatedEntity The entity to which the file is attached.
+     * @param string $userName The name of the user performing the upload.
+     * @return object The configured file entity, ready to be persisted.
      */
-    public function uploadFile(UploadedFile $file, Signal $signal, string $userName): FichiersSignaux
+    public function upload(string $type, UploadedFile $file, object $relatedEntity, string $userName): object
     {
+        $config = $this->getConfig($type);
 
+        // Verify the type of the related entity
+        if (!$relatedEntity instanceof $config['related_entity_class']) {
+            throw new \InvalidArgumentException(sprintf('L\'entité associée doit être de type "%s" pour le type d\'upload "%s".', $config['related_entity_class'], $type));
+        }
 
+        $targetDirectory = $this->projectDir . '/' . $config['directory'];
+        
         $originalClientFilename = $file->getClientOriginalName();
         $fileSize = $file->getSize();
         $fileMimeType = $file->getMimeType() ?? 'application/octet-stream';
 
-        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        // "slug" le nom du fichier pour le sécuriser
+        $originalFilename = pathinfo($originalClientFilename, PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
         $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
-        $now = new \DateTimeImmutable();
-        // Déplace le fichier dans le répertoire de destination
 
         try {
-            $file->move($this->getTargetDirectory(), $newFilename);
+            $file->move($targetDirectory, $newFilename);
         } catch (FileException $e) {
-            // Gérer l'exception si quelque chose se passe mal pendant le déplacement
-            // par exemple, logger l'erreur, afficher un message, etc.
             throw new \Exception(sprintf('Une erreur est survenue lors de l\'upload du fichier : %s', $e->getMessage()), 0, $e);
         }
 
-        // Crée et configure l'entité
-        $fichierSignal = new FichiersSignaux();
-        $fichierSignal->setsignalLie($signal);
-        $fichierSignal->setUserCreate($userName);
-        $fichierSignal->setUserModif($userName);
-        $fichierSignal->setCreatedAt($now);
-        $fichierSignal->setUpdatedAt($now);
-        $fichierSignal->setNomFichier($newFilename);
-        $fichierSignal->setNomOriginal($originalClientFilename);
-        $fichierSignal->setTaille($fileSize);
-        $fichierSignal->setMimeType($fileMimeType);
+        $fileEntityClass = $config['file_entity_class'];
+        $setter = $config['setter'];
 
-        return $fichierSignal;
+        $fileEntity = new $fileEntityClass();
+        $fileEntity->{$setter}($relatedEntity);
+
+        // Set common properties, assuming they share these setters
+        $now = new \DateTimeImmutable();
+        $fileEntity->setUserCreate($userName);
+        $fileEntity->setUserModif($userName);
+        $fileEntity->setCreatedAt($now);
+        $fileEntity->setUpdatedAt($now);
+        $fileEntity->setNomFichier($newFilename);
+        $fileEntity->setNomOriginal($originalClientFilename);
+        $fileEntity->setTaille($fileSize);
+        $fileEntity->setMimeType($fileMimeType);
+
+        return $fileEntity;
     }
 
-    /**
-     * Supprime un fichier du répertoire d'upload.
-     */
-    public function deleteFile(string $filename): bool
+    public function delete(string $type, string $filename): bool
     {
-        $filePath = $this->getTargetDirectory() . '/' . $filename;
+        $filePath = $this->getTargetDirectory($type) . '/' . $filename;
         if ($this->filesystem->exists($filePath)) {
             $this->filesystem->remove($filePath);
             return true;
         }
         return false;
     }
-    
-    public function getTargetDirectory(): string
+
+    public function getTargetDirectory(string $type): string
     {
-        return $this->targetDirectory;
+        $config = $this->getConfig($type);
+        return $this->projectDir . '/' . $config['directory'];
+    }
+
+    private function getConfig(string $type): array
+    {
+        if (!isset($this->configurations[$type])) {
+            throw new \InvalidArgumentException(sprintf('Configuration d\'upload non valide : "%s".', $type));
+        }
+        return $this->configurations[$type];
     }
 }
+

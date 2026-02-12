@@ -203,7 +203,6 @@
 
 
                                             {{ form_label(form.suiviInitial.reunionSignal, 'Date réunion initiale') }}
-                           
 
                                         {% else %}
                                             <label>Date réunion</label>
@@ -321,32 +320,6 @@
                                                                     </button>
                                                                 {% endif %}
                                                             </td>
-                                                            {# <td>
-                                                                {% if isLatestRdd and mesure.id %}
-                                                                    {% if mesure.DesactivateAt is null %}
-                                                                        <a href="{{ path('app_toggle_cloture_mesure', {
-                                                                            'mesureId': mesure.id,
-                                                                            'redirect': 'app_signal_modif',
-                                                                            'params': {'signalId': signal.id}
-                                                                        }) }}" class="btn btn-sm btn-success" style="width: 95px;" title="Clôturer la mesure">
-                                                                            <i class="bi bi-check-square"></i> Clore
-                                                                        </a>
-                                                                    {% else %}
-                                                                        <a href="{{ path('app_toggle_cloture_mesure', {
-                                                                            'mesureId': mesure.id,
-                                                                            'redirect': 'app_signal_modif',
-                                                                            'params': {'signalId': signal.id}
-                                                                        }) }}" class="btn btn-sm btn-warning" style="width: 95px;" title="Rouvrir la mesure">
-                                                                            <i class="bi bi-arrow-counterclockwise"></i> Rouvrir
-                                                                        </a>
-                                                                    {% endif %}
-                                                                {% else %}
-                                                                    {% set disabled_title = not isLatestRdd ? 'Action impossible sur un ancien RDD' : 'Disponible après validation' %}
-                                                                    <button class="btn btn-sm btn-secondary" style="width: 95px;" disabled title="{{ disabled_title }}">
-                                                                        <i class="bi {{ mesure.DesactivateAt is null ? 'bi-check-square' : 'bi-arrow-counterclockwise' }}"></i> {{ mesure.DesactivateAt is null ? 'Clore' : 'Rouvrir' }}
-                                                                    </button>
-                                                                {% endif %}
-                                                            </td> #}
                                                         </tr>
                                                     {% endfor %}
                                                 </tbody>

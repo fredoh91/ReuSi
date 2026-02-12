@@ -52,6 +52,15 @@ class ReunionSignal
     #[ORM\OneToMany(targetEntity: Suivi::class, mappedBy: 'reunionSignal')]
     private Collection $suivis;
 
+    /**
+     * @var Collection<int, FichiersReunionsSignal>
+     */
+    #[ORM\OneToMany(targetEntity: FichiersReunionsSignal::class, mappedBy: 'reunionSignalLiee')]
+    private Collection $fichiersReunionsSignals;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $statutReunion = null;
+
     public function __construct(?string $userName = null)
     {
         $this->ReleveDeDecision = new ArrayCollection();
@@ -61,6 +70,7 @@ class ReunionSignal
         $this->UserModif = $userName;
         $this->CreatedAt = new \DateTimeImmutable();
         $this->UpdatedAt = new \DateTimeImmutable();
+        $this->fichiersReunionsSignals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -220,6 +230,48 @@ class ReunionSignal
                 $suivi->setReunionSignal(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FichiersReunionsSignal>
+     */
+    public function getFichiersReunionsSignals(): Collection
+    {
+        return $this->fichiersReunionsSignals;
+    }
+
+    public function addFichiersReunionsSignal(FichiersReunionsSignal $fichiersReunionsSignal): static
+    {
+        if (!$this->fichiersReunionsSignals->contains($fichiersReunionsSignal)) {
+            $this->fichiersReunionsSignals->add($fichiersReunionsSignal);
+            $fichiersReunionsSignal->setReunionSignalLiee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichiersReunionsSignal(FichiersReunionsSignal $fichiersReunionsSignal): static
+    {
+        if ($this->fichiersReunionsSignals->removeElement($fichiersReunionsSignal)) {
+            // set the owning side to null (unless already changed)
+            if ($fichiersReunionsSignal->getReunionSignalLiee() === $this) {
+                $fichiersReunionsSignal->setReunionSignalLiee(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getStatutReunion(): ?string
+    {
+        return $this->statutReunion;
+    }
+
+    public function setStatutReunion(?string $statutReunion): static
+    {
+        $this->statutReunion = $statutReunion;
 
         return $this;
     }

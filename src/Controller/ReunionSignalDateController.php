@@ -62,6 +62,7 @@ final class ReunionSignalDateController extends AbstractController
         }
 
         $reunionSignal = new ReunionSignal($userName);
+        $reunionSignal->setStatutReunion('prevue');
         $form = $this->createForm(ReunionSignalType::class, $reunionSignal, [
             'save_button_label' => 'Ajouter la réunion'
         ]);

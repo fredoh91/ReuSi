@@ -4,27 +4,19 @@ namespace App\Form;
 
 use App\Entity\ReunionSignal;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ReunionSignalType extends AbstractType
+class ReunionSignalDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('DateReunion', DateType::class, [
-                'label' => 'Date de la réunion',
-                'widget' => 'single_text',
-                'attr' => ['class' => 'form-control'],
-            ])
-            // ->add('ReunionAnnulee', CheckboxType::class, [
-            //     'label' => 'Marquer comme annulée',
-            //     'required' => false,
-            //     'attr' => ['class' => 'form-check-input'],
-            // ])
             ->add('statutReunion', ChoiceType::class, [
                 'label' => 'Statut de la réunion',
                 'required' => true,
@@ -34,6 +26,12 @@ class ReunionSignalType extends AbstractType
                     'Réalisée' => 'realisee',
                     'Annulée' => 'annulee',
                 ],
+            ])
+            ->add('fichiers', FileType::class, [
+                'label' => 'Ajouter des fichiers',
+                'multiple' => true,
+                'mapped' => false, // Important : ce champ n'est pas lié directement à une propriété de l'entité Signal
+                'required' => false,
             ])
             ->add('save', SubmitType::class, [
                 'label' => $options['save_button_label'],

@@ -211,7 +211,8 @@ final class SignalDetailController extends AbstractController
                 foreach ($uploadedFiles as $uploadedFile) {
                     if ($uploadedFile) { // S'assurer qu'un fichier a bien été uploadé
                         try {
-                            $fichierSignal = $this->fileUploaderService->uploadFile(
+                            $fichierSignal = $this->fileUploaderService->upload(
+                                'signal',
                                 $uploadedFile,
                                 $signal,
                                 $userName
@@ -406,7 +407,8 @@ final class SignalDetailController extends AbstractController
             foreach ($uploadedFiles as $uploadedFile) {
                 if ($uploadedFile) { // S'assurer qu'un fichier a bien été uploadé
                     try {
-                        $fichierSignal = $this->fileUploaderService->uploadFile(
+                        $fichierSignal = $this->fileUploaderService->upload(
+                            'signal',
                             $uploadedFile,
                             $signal,
                             $userName
@@ -555,7 +557,7 @@ final class SignalDetailController extends AbstractController
     #[Route('/signal/fichier/{id}/download', name: 'app_signal_fichier_download')]
     public function downloadFichier(\App\Entity\FichiersSignaux $fichierSignal): BinaryFileResponse
     {
-        $filePath = $this->fileUploaderService->getTargetDirectory() . '/' . $fichierSignal->getNomFichier();
+        $filePath = $this->fileUploaderService->getTargetDirectory('signal') . '/' . $fichierSignal->getNomFichier();
 
         if (!file_exists($filePath)) {
             throw $this->createNotFoundException('Le fichier n\'existe pas.');
@@ -575,7 +577,7 @@ final class SignalDetailController extends AbstractController
 
         try {
             // Supprimer le fichier physique
-            $this->fileUploaderService->deleteFile($fichierSignal->getNomFichier());
+            $this->fileUploaderService->delete('signal', $fichierSignal->getNomFichier());
 
             // Supprimer l'entité de la base de données
             $em->remove($fichierSignal);
