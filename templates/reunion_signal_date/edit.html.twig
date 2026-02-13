@@ -3,6 +3,24 @@
 {% block title %}Modifier la réunion{% endblock %}
 
 {% block body %}
+
+
+
+	{# Affichage des messages flash #}
+	{% for type, messages in app.flashes %}
+		{% for message in messages %}
+			{% if type == 'error' %}
+				<div class="alert alert-danger">{{ message }}</div>
+			{% elseif type == 'success' %}
+				<div class="alert alert-success">{{ message }}</div>
+			{% elseif type == 'warning' %}
+				<div class="alert alert-warning">{{ message }}</div>
+			{% else %}
+				<div class="alert alert-info">{{ message }}</div>
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
 <div class="container mt-4">
     <h1>
         {% if reunion_signal.id is not null %}
@@ -25,7 +43,8 @@
 
         <div class="d-flex justify-content-center gap-2 mt-4">
             {{ form_widget(form.save) }}
-            <a href="{{ path('app_reunion_signal_date') }}" class="btn btn-secondary">Retour à la liste</a>
+            {# <a href="{{ path('app_reunion_signal_date') }}" class="btn btn-secondary">Retour à la liste</a> #}
+            {{ form_widget(form.annulation) }}
         </div>
     {{ form_end(form) }}
 </div>

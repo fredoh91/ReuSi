@@ -17,6 +17,7 @@ class ReunionSignalType extends AbstractType
         $builder
             ->add('DateReunion', DateType::class, [
                 'label' => 'Date de la réunion',
+                // 'required' => true,
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
             ])
@@ -35,10 +36,19 @@ class ReunionSignalType extends AbstractType
                     'Annulée' => 'annulee',
                 ],
             ])
+            ->add('annulation', SubmitType::class, [
+                'label' => $options['annulation_button_label'],
+                'attr' => [
+                    'class' => 'btn btn-secondary',
+                    'formnovalidate' => 'formnovalidate' 
+                ],
+                'validation_groups' => false,
+            ])
             ->add('save', SubmitType::class, [
                 'label' => $options['save_button_label'],
                 'attr' => ['class' => 'btn btn-primary'],
-            ]);
+            ])
+            ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -46,6 +56,7 @@ class ReunionSignalType extends AbstractType
         $resolver->setDefaults([
             'data_class' => ReunionSignal::class,
             'save_button_label' => 'Enregistrer les modifications',
+            'annulation_button_label' => 'Annulation / retour à la liste',
         ]);
     }
 }
