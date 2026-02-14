@@ -26,18 +26,22 @@
                     <ul class="list-group mb-4">
                         {% for fichier in fichiersLies %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{{ path('app_reunion_signal_fichier_download', {'id': fichier.id}) }}" target="_blank">
-                                    <i class="bi bi-file-earmark"></i> {{ fichier.nomOriginal }}
-                                </a>
-
-                                <span class="text-muted small me-2"> {{ (fichier.taille / 1024 / 1024)|number_format(2, '.', ',') }} Mo - Uploadé le {{ fichier.createdAt|date('d/m/Y à H:i') }} par {{ fichier.userCreate }}</span>
+                                <div class="d-flex align-items-center"> {# Nouveau conteneur pour le lien et le texte #}
+                                    <a href="{{ path('app_reunion_signal_fichier_download', {'id': fichier.id}) }}" target="_blank">
+                                        <i class="bi bi-file-earmark"></i> {{ fichier.nomOriginal }}
+                                    </a>
+                                    {# Utilisation de 'ms-2' pour une marge à gauche, séparant du lien #}
+                                    <span class="text-muted small ms-2"> - {{ (fichier.taille / 1024 / 1024)|number_format(2, '.', ',') }} Mo - Uploadé le {{ fichier.createdAt|date('d/m/Y à H:i') }} par {{ fichier.userCreate }}</span>
+                                </div>
                                 
                                 {# Bouton de suppression avec formulaire CSRF #}
                                 <form method="post" action="{{ path('app_reunion_signal_fichier_delete', {'id': fichier.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?');" class="d-inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichier.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Supprimer
-                                    </button>
+                                    {% if is_granted('ROLE_REUSI_ADMIN') %}
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Supprimer
+                                        </button>
+                                    {% endif %}
                                 </form>
                             </li>
                         {% endfor %}
