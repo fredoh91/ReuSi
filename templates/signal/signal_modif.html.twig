@@ -518,7 +518,7 @@
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichier.id) }}">
 
 
-                                        {% if is_granted('ROLE_DMFR_ADMIN') or is_granted('ROLE_SURV_ADMIN') %}
+                                        {% if is_granted('ROLE_REUSI_ADMIN') %}
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="bi bi-trash"></i> Supprimer
                                             </button>

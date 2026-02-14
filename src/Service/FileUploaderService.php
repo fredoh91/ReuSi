@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FileUploaderService
@@ -79,6 +80,9 @@ class FileUploaderService
         return $fileEntity;
     }
 
+    
+    //#[IsGranted(new Expression('is_granted("ROLE_REUSI_ADMIN") or is_granted("ROLE_REUSI_SURV_ADMIN")'))]
+    #[IsGranted('ROLE_REUSI_ADMIN')]
     public function delete(string $type, string $filename): bool
     {
         $filePath = $this->getTargetDirectory($type) . '/' . $filename;
