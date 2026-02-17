@@ -81,7 +81,7 @@
         </ul>
 			{# {% endif %} #}
 
-      {% if is_granted('ROLE_REUSI_SUPER_ADMIN') %}
+      {% if is_granted('ROLE_REUSI_SUPER_ADMIN') or is_granted('ROLE_REUSI_ADMIN')%}
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link" href="{{ path ('app_admin_tbref') }}">Administration</a>

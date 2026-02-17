@@ -32,9 +32,8 @@ class ReunionSignalRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('r')
             ->andWhere('r.DateReunion > :dateLimit')
-            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->andWhere("r.statutReunion != 'annulee'")
             ->setParameter('dateLimit', $dateLimit)
-            ->setParameter('annulee', 0)
             ->getQuery()
             ->getResult();
     }
@@ -53,10 +52,9 @@ class ReunionSignalRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('r')
             ->andWhere('r.DateReunion > :dateLimit')
-            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->andWhere("r.statutReunion != 'annulee'")
             ->orderBy('r.DateReunion', $sensTri)
-            ->setParameter('dateLimit', $dateLimit)
-            ->setParameter('annulee', 0);
+            ->setParameter('dateLimit', $dateLimit);
 
         if ($signalId !== null) {
             $subQuery = $this->getEntityManager()->createQueryBuilder()
@@ -107,10 +105,9 @@ class ReunionSignalRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('r')
             ->andWhere('r.DateReunion > :dateLimit')
-            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->andWhere("r.statutReunion != 'annulee'")
             ->orderBy('r.DateReunion', $sensTri)
-            ->setParameter('dateLimit', $dateLimit)
-            ->setParameter('annulee', 0);
+            ->setParameter('dateLimit', $dateLimit);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->select('IDENTITY(su.reunionSignal)')
@@ -178,11 +175,10 @@ class ReunionSignalRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('r')
             ->andWhere('r.DateReunion > :dateLimit')
-            ->andWhere('r.ReunionAnnulee = :annulee')
+            ->andWhere("r.statutReunion != 'annulee'")
             ->andWhere('r.DateReunion >= :dateSuiviPrecedent')
             ->orderBy('r.DateReunion', $sensTri)
             ->setParameter('dateLimit', $dateLimit)
-            ->setParameter('annulee', 0)
             ->setParameter('dateSuiviPrecedent', $dateSuiviPrecedent);
 
 
