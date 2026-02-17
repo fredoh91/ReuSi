@@ -24,6 +24,7 @@ security:
                 password_parameter: _password    # Sans préfixe
                 csrf_parameter: _token # Doit correspondre à csrf_field_name
                 csrf_token_id: authenticate # Doit correspondre à csrf_token_id
+                default_target_path: app_signal_fait_marquant_liste
             logout:
                 path: app_logout
                 # where to redirect after logout
