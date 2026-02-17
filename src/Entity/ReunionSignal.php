@@ -37,8 +37,8 @@ class ReunionSignal
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $UpdatedAt = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $ReunionAnnulee = null;
+    // #[ORM\Column(nullable: true)]
+    // private ?bool $ReunionAnnulee = null;
 
     /**
      * @var Collection<int, Signal>
@@ -61,6 +61,15 @@ class ReunionSignal
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $statutReunion = null;
 
+    /**
+     * @var Collection<int, LiensReunionsSignal>
+     */
+    #[ORM\OneToMany(targetEntity: LiensReunionsSignal::class, mappedBy: 'reunionSignal', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $liensReunionsSignals;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $Commentaire = null;
+
     public function __construct(?string $userName = null)
     {
         $this->ReleveDeDecision = new ArrayCollection();
@@ -71,6 +80,7 @@ class ReunionSignal
         $this->CreatedAt = new \DateTimeImmutable();
         $this->UpdatedAt = new \DateTimeImmutable();
         $this->fichiersReunionsSignals = new ArrayCollection();
+        $this->liensReunionsSignals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -168,17 +178,17 @@ class ReunionSignal
         return $this;
     }
 
-    public function isReunionAnnulee(): ?bool
-    {
-        return $this->ReunionAnnulee;
-    }
+    // public function isReunionAnnulee(): ?bool
+    // {
+    //     return $this->ReunionAnnulee;
+    // }
 
-    public function setReunionAnnulee(?bool $ReunionAnnulee): static
-    {
-        $this->ReunionAnnulee = $ReunionAnnulee;
+    // public function setReunionAnnulee(?bool $ReunionAnnulee): static
+    // {
+    //     $this->ReunionAnnulee = $ReunionAnnulee;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * @return Collection<int, Signal>
@@ -272,6 +282,48 @@ class ReunionSignal
     public function setStatutReunion(?string $statutReunion): static
     {
         $this->statutReunion = $statutReunion;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LiensReunionsSignal>
+     */
+    public function getLiensReunionsSignals(): Collection
+    {
+        return $this->liensReunionsSignals;
+    }
+
+    public function addLiensReunionsSignal(LiensReunionsSignal $liensReunionsSignal): static
+    {
+        if (!$this->liensReunionsSignals->contains($liensReunionsSignal)) {
+            $this->liensReunionsSignals->add($liensReunionsSignal);
+            $liensReunionsSignal->setReunionSignal($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLiensReunionsSignal(LiensReunionsSignal $liensReunionsSignal): static
+    {
+        if ($this->liensReunionsSignals->removeElement($liensReunionsSignal)) {
+            // set the owning side to null (unless already changed)
+            if ($liensReunionsSignal->getReunionSignal() === $this) {
+                $liensReunionsSignal->setReunionSignal(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCommentaire(): ?string
+    {
+        return $this->Commentaire;
+    }
+
+    public function setCommentaire(?string $Commentaire): static
+    {
+        $this->Commentaire = $Commentaire;
 
         return $this;
     }

@@ -6,6 +6,7 @@ use App\Entity\FichiersReunionsSignal;
 use App\Entity\ReunionSignal;
 use App\Entity\Signal;
 use App\Entity\Suivi;
+use App\Entity\LiensReunionsSignal;
 use App\Form\ReunionSignalDetailType;
 use App\Service\FileUploaderService; // Changé de FileReunionSignalUploaderService
 use Doctrine\ORM\EntityManagerInterface;
@@ -80,6 +81,15 @@ final class ReunionSignalDetailController extends AbstractController
                 }
             }
             // --- FIN LOGIQUE UPLOAD ---
+
+            // // Gérer les liens de réunion (nouvellement ajoutés)
+            // foreach ($reunionSignal->getLiensReunionsSignals() as $lien) {
+            //     if (null === $lien->getId()) {
+            //         // Le setter correct est setReunionSignal()
+            //         $lien->setReunionSignal($reunionSignal);
+            //         $em->persist($lien);
+            //     }
+            // }
 
             $reunionSignal->setUpdatedAt(new \DateTimeImmutable())
                           ->setUserModif($userName);
