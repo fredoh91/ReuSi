@@ -90,7 +90,7 @@ final class GestionSuivisController extends AbstractController
         $date_reunion = $em->getRepository(ReunionSignal::class)->findReunionsNotCancelledAndNotLinkedToSignalAndUpperWithSuivi(200, 'DESC', $suivi);
         // On récupère la réunion actuellement liée au suivi
         $reunionActuelle = $suivi->getReunionSignal();
-        
+
         // Si une réunion est déjà liée, on s'assure qu'elle est dans la liste des choix
         if ($reunionActuelle) {
             $dejaDansLaListe = false;
@@ -578,6 +578,82 @@ final class GestionSuivisController extends AbstractController
         $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
         $suiviStatusService->updateStatutSuivi($suivi, $userName, 'prevu');
 
+        $this->addFlash('success', sprintf(
+            'Le suivi pour le signal "%s" a bien été ajouté à la réunion du %s.',
+            $signal->getTitre(),
+            $reunion->getDateReunion()->format('d/m/Y')
+        ));
+
+        // Récupérer l'onglet de la requête pour la redirection
+        $tab = $request->query->get('tab', 'nouveaux-signaux');
+
+        return $this->redirectToRoute('app_reunion_signal_detail', [
+            'reuSiId' => $reunionId,
+            'tab' => $tab,
+        ]);
+    }
+
+    #[Route('/reunion/{reunionId}/add-suiviInit-for/{signalId}', name: 'app_reunion_add_suiviInit')]
+    public function addSuiviInitForReunion(
+        int $reunionId,
+        int $signalId,
+        EntityManagerInterface $em,
+        SignalRepository $signalRepo,
+        Request $request,
+        SignalStatusService $signalStatusService,
+        SuiviStatusService $suiviStatusService
+    ): Response {
+
+        $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
+        if (!$reunion) {
+            throw $this->createNotFoundException('Réunion non trouvée.');
+        }
+
+        $signal = $signalRepo->find($signalId);
+        if (!$signal) {
+            throw $this->createNotFoundException('Signal non trouvé.');
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+        $userName = $user->getUserName();
+
+        // Validation de la bonne typologie du signal/fait-marquant pour attribution de la réunion signal demandée
+
+        // le signal ne doit pas etre cloturé
+        if ($signal->getStatutSignals() && $signal->getStatutSignals() === 'cloture') {
+            throw $this->createNotFoundException('On ne peut pas attribuer une réunion à un signal cloturé.');
+        }   
+        
+        // le suivi initial ne doit pas avoir de date de réunion signal déjà attribuée
+        $suiviInitial = $em->getRepository(Suivi::class)->findOneBy(['SignalLie' => $signal, 'NumeroSuivi' => 0]);
+        if ($suiviInitial && $suiviInitial->getReunionSignal()) {
+            throw $this->createNotFoundException('Le suivi initial de ce signal a déjà une réunion signal attribuée.');
+        }
+
+
+        // les suivis liés ne doivent pas avoir de date de réunion signal déjà attribuée
+        $suivisLies = $em->getRepository(Suivi::class)->findBy(['SignalLie' => $signal]);
+        foreach ($suivisLies as $suiviLie) {
+            if ($suiviLie->getReunionSignal()) {
+                throw $this->createNotFoundException('Un suivi lié à ce signal a déjà une réunion signal attribuée.');
+            }
+        }
+
+
+        $suiviInitial->setUpdatedAt(new \DateTimeImmutable());
+        $suiviInitial->setUserModif($userName);
+        $suiviInitial->setReunionSignal($reunion);
+        
+        $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
+        $suiviStatusService->updateStatutSuivi($suiviInitial, $userName, 'prevu');
+
+        $em->persist($suiviInitial);
+        $em->persist($signal);
+        $em->flush();
+        
         $this->addFlash('success', sprintf(
             'Le suivi pour le signal "%s" a bien été ajouté à la réunion du %s.',
             $signal->getTitre(),

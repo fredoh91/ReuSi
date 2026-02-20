@@ -145,6 +145,11 @@ final class ReunionSignalDetailController extends AbstractController
         $signauxAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('signal', $reunionSignal);
         $faitsMarquantsAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('fait_marquant', $reunionSignal);
 
+        $signauxNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('signal');
+        $faitsMarquantsNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('fait_marquant');
+
+// dump($signauxNouveauxSansDateSuiviInit, $faitsMarquantsNouveauxSansDateSuiviInit);
+
         return $this->render('reunion_signal_detail/reunion_signal_detail.html.twig', [
             'currentTab' => $tab,
             'reunionSignal' => $reunionSignal,
@@ -154,6 +159,8 @@ final class ReunionSignalDetailController extends AbstractController
             'suivisFaitsMarquants' => $suivisFaitsMarquants,
             'signauxAnterieurs' => $signauxAnterieurs,
             'faitsMarquantsAnterieurs' => $faitsMarquantsAnterieurs,
+            'signauxNouveauxSansDateSuiviInit' => $signauxNouveauxSansDateSuiviInit,
+            'faitsMarquantsNouveauxSansDateSuiviInit' => $faitsMarquantsNouveauxSansDateSuiviInit,
             'form' => $form->createView(),
             'fichiersLies' => $fichiersLies,
         ]);

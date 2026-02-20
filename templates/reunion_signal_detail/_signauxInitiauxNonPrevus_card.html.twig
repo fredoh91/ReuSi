@@ -4,20 +4,20 @@
             <h5 class="mb-0">
 
                 {% if typeSignal == 'signal' %}
-                    {% set libelleCard = 'Autres signaux non-cloturés et non-prévus à cette date' %}
+                    {% set libelleCard = 'Autres NOUVEAUX signaux non-clôturés et non-prévus' %}
                     {% set libelleSignal = 'signal' %}
                 {% elseif typeSignal == 'fait_marquant' %}
-                    {% set libelleCard = 'Autres faits marquants non-cloturés et non-prévus à cette date' %}
+                    {% set libelleCard = 'Autres NOUVEAUX faits marquants non-clôturés et non-prévus' %}
                     {% set libelleSignal = 'fait marquant' %}
                 {% endif %}
 
                 <i class="bi bi-archive me-2"></i>{{ libelleCard }}
             </h5>
-            <span class="badge bg-light text-dark">{{ signauxAnterieurs|length }}</span>
+            <span class="badge bg-light text-dark">{{ signauxInit|length }}</span>
         </div>
         <div class="card-body card-sig-non-lie-bg">
-            {% for signalAnterieur in signauxAnterieurs %}
-                {% set status = get_signal_status(signalAnterieur) %}
+            {% for signalInit in signauxInit %}
+                {% set status = get_signal_status(signalInit) %}
                 {% set badge_class = 'secondary' %}
                 {% if status == 'presente' %}
                     {% set badge_class = 'success' %}
@@ -32,29 +32,29 @@
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
-                            <a href="{{ path('app_signal_modif', {'signalId': signalAnterieur.id, 
+                            <a href="{{ path('app_signal_modif', {'signalId': signalInit.id, 
                                                                 'routeSource': 'app_reunion_signal_detail', 
                                                                 'reuSiId': reunionSignal.id, 
                                                                 'tab': currentTab }) }}" class="text-decoration-none text-dark">
-                                Signal n°{{ signalAnterieur.id }} : {{ signalAnterieur.Titre }}
+                                Signal n°{{ signalInit.id }} : {{ signalInit.Titre }}
                             </a>
                         </h6>
                         <div>
                             <span class="badge bg-{{ badge_class }} me-2">{{ status|humanize_status }}</span>
-                            <a href="{{ path('app_reunion_create_suivi', {'reunionId': reunionSignal.id, 
-                                                                        'signalId': signalAnterieur.id, 
+                            <a href="{{ path('app_reunion_add_suiviInit', {'reunionId': reunionSignal.id, 
+                                                                        'signalId': signalInit.id, 
                                                                         'tab': currentTab}) }}" class="btn btn-sm btn-outline-primary" title="Ajouter ce signal à la réunion en cours">
-                                <i class="bi bi-plus-circle"></i> Ajouter un suivi à la réunion du {{ reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }}
+                                <i class="bi bi-plus-circle"></i> Ajouter le suivi initial à la réunion du {{ reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }}
                             </a>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <strong>Description du {{ libelleSignal }}:</strong><br>
-                            {{ signalAnterieur.DescriptionSignal|slice(0, 300) }}{% if signalAnterieur.DescriptionSignal|length > 300 %}...{% endif %}
+                            {{ signalInit.DescriptionSignal|slice(0, 300) }}{% if signalInit.DescriptionSignal|length > 300 %}...{% endif %}
                         </div>
                         
-                        {% set latest_suivis = signalAnterieur.getSuivis()|sort((a, b) => b.numeroSuivi <=> a.numeroSuivi)|slice(0, 3) %}
+                        {% set latest_suivis = signalInit.getSuivis()|sort((a, b) => b.numeroSuivi <=> a.numeroSuivi)|slice(0, 3) %}
                         {% if latest_suivis is not empty %}
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover table-sm small">

@@ -58,20 +58,35 @@ class SuiviType extends AbstractType
             ]);
 
         // Ajout conditionnel du champ de réunion si des réunions sont fournies
-        if (!empty($reunions)) {
-            $builder->add('reunionSignal', EntityType::class, [
-                'class' => ReunionSignal::class,
-                'choices' => $reunions,
-                'choice_label' => function ($reunion) {
-                    return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
-                },
-                'placeholder' => '-- Sélectionner une réunion --',
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'required' => $options['required_fields']['reunionSignal'] ?? false,
-                'disabled' => $options['disabled_fields']['reunionSignal'] ?? false,
-                'attr' => ['class' => 'form-select'],
-            ]);
-        }
+        // if (!empty($reunions)) {
+        //     $builder->add('reunionSignal', EntityType::class, [
+        //         'class' => ReunionSignal::class,
+        //         'choices' => $reunions,
+        //         'choice_label' => function ($reunion) {
+        //             return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
+        //         },
+        //         'placeholder' => '-- Sélectionner une réunion --',
+        //         'label_attr' => ['class' => 'form-label fw-bold'],
+        //         'required' => $options['required_fields']['reunionSignal'] ?? false,
+        //         'disabled' => $options['disabled_fields']['reunionSignal'] ?? false,
+        //         'attr' => ['class' => 'form-select'],
+        //     ]);
+        // }
+
+
+        // Ajout du champ de réunion
+        $builder->add('reunionSignal', EntityType::class, [
+            'class' => ReunionSignal::class,
+            'choices' => $reunions,
+            'choice_label' => function ($reunion) {
+                return $reunion->getDateReunion() ? $reunion->getDateReunion()->format('d/m/Y') : 'Date inconnue';
+            },
+            'placeholder' => '-- Sélectionner une réunion --',
+            'label_attr' => ['class' => 'form-label fw-bold'],
+            'required' => $options['required_fields']['reunionSignal'] ?? false,
+            'disabled' => $options['disabled_fields']['reunionSignal'] ?? false,
+            'attr' => ['class' => 'form-select'],
+        ]);
 
         $builder->add('EmetteurSuivi', ChoiceType::class, [
             'choices' => [

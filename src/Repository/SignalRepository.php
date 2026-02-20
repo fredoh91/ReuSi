@@ -197,4 +197,51 @@ class SignalRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    
+    /**
+     * Trouve les signaux/faits marquants antérieurs à la réunion mais non traités dans celle-ci.
+     * Critères :
+     * - Date de création (correspondant au suivi initial) < date réunion
+     * - Pas de suivi pour cette réunion
+     * - Non clôturé
+     */
+    public function findSignauxNouveauxSansDateSuiviInitialNonClotures(?string $typeSignal): array
+    {
+        $qb = $this->createQueryBuilder('s');
+
+        if ($typeSignal) {            
+            $qb->andWhere('s.TypeSignal = :typeSignal')
+                ->setParameter('typeSignal', $typeSignal);
+        }
+
+        // Critère : Aucun des suivis du signal (initial ou autre) ne doit avoir de réunion liée.
+        // Pour ce faire, on crée une sous-requête qui liste les ID des signaux
+        // qui ont AU MOINS UN suivi avec une réunion.
+        $subQuery = $this->getEntityManager()->createQueryBuilder()
+            ->select('IDENTITY(su_with_date.SignalLie)') // On sélectionne l'ID du signal lié
+            ->from('App\Entity\Suivi', 'su_with_date')
+            ->where('su_with_date.reunionSignal IS NOT NULL') // Si une réunion est liée
+            ->distinct(); // Pour éviter les doublons
+
+        // On exclut ensuite de notre requête principale tous les signaux dont l'ID est dans cette liste.
+        $qb->andWhere($qb->expr()->notIn('s.id', $subQuery->getDQL()));
+
+
+        // Critère : Le signal ne doit pas être clôturé.
+        // On joint sur le statut actif.
+        $qb->leftJoin('s.statutSignals', 'ss', \Doctrine\ORM\Query\Expr\Join::WITH, 'ss.StatutActif = true');
+        // Un signal est considéré "non clôturé" si :
+        // - Il n'a pas encore de statut actif (ss.id IS NULL), OU
+        // - Son statut actif est différent de 'cloture'.
+        $qb->andWhere(
+            $qb->expr()->orX(
+                'ss.id IS NULL',
+                'ss.LibStatut != :cloture'
+            )
+        )
+        ->setParameter('cloture', 'cloture');
+
+        return $qb->getQuery()->getResult();
+    }
 }

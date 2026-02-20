@@ -164,23 +164,40 @@ class ReunionSignalRepository extends ServiceEntityRepository
      */
     public function findReunionsNotCancelledAndNotLinkedToSignalAndUpperWithSuivi(int $days = 100, string $sensTri = 'ASC', Suivi $suiviEnCours): array
     {
-
+        // dd('findReunionsNotCancelledAndNotLinkedToSignalAndUpperWithSuivi : ', $suiviEnCours);
         $signalId = $suiviEnCours->getSignalLie();
 
         $dateLimit = new \DateTime(sprintf('-%d days', $days));
 
+        /*
         $suiviPrecedent = $this->getEntityManager()->getRepository(Suivi::class)->findSuiviByIdSignalAndNumeroSuivi($signalId, $suiviEnCours->getNumeroSuivi() - 1);
 
         $dateSuiviPrecedent = $suiviPrecedent && $suiviPrecedent->getReunionSignal() ? $suiviPrecedent->getReunionSignal()->getDateReunion() : null;
+        */
 
         $qb = $this->createQueryBuilder('r')
             ->andWhere('r.DateReunion > :dateLimit')
             ->andWhere("r.statutReunion != 'annulee'")
-            ->andWhere('r.DateReunion >= :dateSuiviPrecedent')
+            // ->andWhere('r.DateReunion >= :dateSuiviPrecedent')
             ->orderBy('r.DateReunion', $sensTri)
-            ->setParameter('dateLimit', $dateLimit)
-            ->setParameter('dateSuiviPrecedent', $dateSuiviPrecedent);
+            ->setParameter('dateLimit', $dateLimit);
+            // ->setParameter('dateSuiviPrecedent', $dateSuiviPrecedent);
 
+        // Si le suivi envoyé est le suivi initial et qu'il n'a pas déjà de date de réunion liée
+        if ($suiviEnCours->getNumeroSuivi() === 0 && $suiviEnCours->getReunionSignal() === null) {
+            // La fonction renvoie un array de date de réunion signal en remontant jusqu'au nombre de jour spécifiés ($days) à partir d'aujourd'hui
+            $qb->andWhere('r.DateReunion <= :today')
+               ->setParameter('today', new \DateTime());
+        } else {
+            // Sinon, on cherche les réunions après le suivi précédent (si existant)
+            $suiviPrecedent = $this->getEntityManager()->getRepository(Suivi::class)->findSuiviByIdSignalAndNumeroSuivi($signalId, $suiviEnCours->getNumeroSuivi() - 1);
+            $dateSuiviPrecedent = $suiviPrecedent && $suiviPrecedent->getReunionSignal() ? $suiviPrecedent->getReunionSignal()->getDateReunion() : null;
+
+            if ($dateSuiviPrecedent) {
+                $qb->andWhere('r.DateReunion >= :dateSuiviPrecedent')
+                   ->setParameter('dateSuiviPrecedent', $dateSuiviPrecedent);
+            }
+        }
 
         if ($signalId !== null) {
             $subQuery = $this->getEntityManager()->createQueryBuilder()

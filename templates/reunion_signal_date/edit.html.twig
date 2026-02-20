@@ -24,7 +24,7 @@
 <div class="container mt-4">
     <h1>
         {% if reunion_signal.id is not null %}
-            Modifier la réunion du {{ reunion_signal.DateReunion ? reunion_signal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'N/A' }}
+            Modifier la réunion du {{ reunion_signal.DateReunion ? reunion_signal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'Pas de date de réunion' }}
         {% else %}
             Ajouter une nouvelle réunion
         {% endif %}

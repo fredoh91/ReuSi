@@ -18,7 +18,7 @@
 <div class="container-fluid mt-4 page-reunion-signal-detail">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="mb-0">Réunion du {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'N/A' }}</h1>
+            <h1 class="mb-0">Réunion du {{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(dateFormat='long', timeFormat='none', locale='fr') : 'Pas de date de réunion' }}</h1>
             <span class="text-muted">{{ reunionSignal.DateReunion ? reunionSignal.DateReunion|format_datetime(pattern="EEEE", timeFormat='none', locale='fr')|capitalize : '' }}</span>
         </div>
         <div class="actions-container" style="min-width: 450px;">
@@ -88,6 +88,14 @@
             } %}
 
 
+            {# Card des nouveaux signaux non-clôturés et non-prévus #}
+            {% include 'reunion_signal_detail/_signauxInitiauxNonPrevus_card.html.twig' with {
+                'signauxInit': signauxNouveauxSansDateSuiviInit,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+                'typeSignal': 'signal'
+            } %}
+
         {% elseif currentTab == 'suivis-signaux' %}
 
             {# Card des signaux prévus à cette date #}
@@ -112,6 +120,14 @@
                 'suiviLies': nouveauxFaitsMarquants,
                 'currentTab': currentTab,
                 'reunionSignal': reunionSignal,
+            } %}
+
+            {# Card des nouveaux faits marquants non-clôturés et non-prévus #}
+            {% include 'reunion_signal_detail/_signauxInitiauxNonPrevus_card.html.twig' with {
+                'signauxInit': faitsMarquantsNouveauxSansDateSuiviInit,
+                'currentTab': currentTab,
+                'reunionSignal': reunionSignal,
+                'typeSignal': 'fait_marquant'
             } %}
 
         {% elseif currentTab == 'suivis-fm' %}

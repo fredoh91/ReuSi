@@ -1,11 +1,11 @@
 {# templates/reunion_signal_detail/_lien_reunion_signal_item.html.twig #}
 <div class="lien-item d-flex align-items-center mb-1 p-1 border rounded w-100" data-liens-reunion-signal-target="item">
     <div class="row g-2 flex-grow-1 align-items-center">
-        <div class="col-5">
+        <div class="col-4">
             {{ form_widget(form.libelle, {'attr': {'class': 'form-control', 'placeholder': 'Libellé du lien'}}) }}
             {{ form_errors(form.libelle) }}
         </div>
-        <div class="col-7">
+        <div class="col-8">
             {{ form_widget(form.url, {'attr': {'class': 'form-control', 'placeholder': 'URL'}}) }}
             {{ form_errors(form.url) }}
         </div>
