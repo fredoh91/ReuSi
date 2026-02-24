@@ -83,6 +83,8 @@
                                             <a href="{{ path('app_modif_suivi', {'signalId': signal.id, 'suiviId': suivi.id, 'routeSource': 'app_signal_fait_marquant_liste'}) }}">#{{ suivi.NumeroSuivi }}</a>
                                             {% if suivi.reunionSignal %}
                                                 ({{ suivi.reunionSignal.DateReunion|format_datetime('short', 'none', locale='fr') }})
+                                            {% else %}
+                                                (Pas de date de réunion)
                                             {% endif %}
                                             :
                                             {% if suivi.DescriptionSuivi %}

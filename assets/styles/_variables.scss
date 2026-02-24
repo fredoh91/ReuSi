@@ -1,3 +1,4 @@
+@use "sass:color";
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                  couleurs ANSM                                  //
@@ -67,3 +68,18 @@ $reunion-signal-tab-actif: #F79F9F;
 $reunion-signal-tab-inactif: #FFB6C1;
 $reunion-signal-card-sig-lie-bg: #b9ffb6;
 $reunion-signal-card-sig-non-lie-bg: #9e9e9e;
+
+// Couleurs pour la recherche de produits
+$produit-search-page-bg: #fff1d4; // Un gris très clair pour le fond de page
+
+$produit-item-medic: #81ff87;
+$produit-item-non-medic: #81bcff;
+
+$medic-item-bg-odd: color.scale($produit-item-medic, $lightness: 50%); // Couleur claire pour les médicaments (lignes impaires)
+$medic-item-bg-even: color.scale($produit-item-medic, $lightness: 60%); // Encore plus clair pour les médicaments (lignes paires)
+$medic-item-hover-bg: color.scale($produit-item-medic, $lightness: 40%); // Au survol des médicaments
+
+$non-medic-item-bg-odd: color.scale($produit-item-non-medic, $lightness: 50%); // Couleur claire pour les non-médicaments (lignes impaires)
+$non-medic-item-bg-even: color.scale($produit-item-non-medic, $lightness: 60%); // Encore plus clair pour les non-médicaments (lignes paires)
+$non-medic-item-hover-bg: color.scale($produit-item-non-medic, $lightness: 40%); // Au survol des non-médicaments
+

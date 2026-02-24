@@ -83,6 +83,8 @@ Encore
             // On demande à Sass d'ignorer l'avertissement de dépréciation pour les fonctions globales comme `mix()`.
             silenceDeprecations: ['global-built-ins']
         };
+        // Spécifiez explicitement d'utiliser Dart Sass
+        options.implementation = require('sass');
     }, { resolveUrlLoader: false })
     // uncomment if you use TypeScript
     //.enableTypeScriptLoader()

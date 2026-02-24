@@ -1,131 +1,158 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajout de produit à un signal
-{% endblock %}
+{% block title %}Ajout de produit à un signal{% endblock %}
 
 {% block body %}
+    <div class="produit-search-full-width-bg">
+        {{ encore_entry_link_tags('rechlabo_css') }}
+        <div class="container page_form_medic" data-controller="recherche-labo-spinner">
+            <div class="row justify-content-center">
+                <div class="col-md-6 produit-search-form-card">
+                    {{ form_start(form, {'attr': {'data-recherche-labo-spinner-target': 'form'}}) }}
+                    <div class="row">
+                        <div class="col">
+                            {{ form_label(form.dci) }}
+                            {{ form_widget(form.dci) }}
+                            {{ form_errors(form.dci) }}
+                        </div>
+                        <div class="col">
+                            {{ form_label(form.denomination) }}
+                            {{ form_widget(form.denomination) }}
+                            {{ form_errors(form.denomination) }}
+                        </div>
+                    </div>
 
-	{{ encore_entry_link_tags('rechlabo_css') }}
-	<div class="container mt-5" data-controller="recherche-labo-spinner">
-		<div class="row justify-content-center">
-			<div class="col-md-6">
-				{{ form_start(form, {'attr': {'data-recherche-labo-spinner-target': 'form'}}) }}
-				{# <div class="mb-3"> #}
-				<div class="row">
-					<div class="col">
-						{{ form_label(form.dci) }}
-						{{ form_widget(form.dci) }}
-						{{ form_errors(form.dci) }}
-					</div>
-					<div class="col">
-						{{ form_label(form.denomination) }}
-						{{ form_widget(form.denomination) }}
-						{{ form_errors(form.denomination) }}
-					</div>
-				</div>
-				{# <div class="row">
-					<div class="col">
-						{{ form_label(form.CodeATC) }}
-						{{ form_widget(form.CodeATC) }}
-						{{ form_errors(form.CodeATC) }}
-					</div>
-					<div class="col">
-						{{ form_label(form.LibATC) }}
-						{{ form_widget(form.LibATC) }}
-						{{ form_errors(form.LibATC) }}
-					</div>
-				</div>
-				<div class="row">
-					<div class="col">
-						{{ form_label(form.codeCIS) }}
-						{{ form_widget(form.codeCIS) }}
-						{{ form_errors(form.codeCIS) }}
-					</div>
-					<div class="col">
-						{{ form_label(form.libRechDenomination) }}
-						{{ form_widget(form.libRechDenomination) }}
-						{{ form_errors(form.libRechDenomination) }}
-					</div>
-				</div> #}
-				{# </div> #}
-
-				<div class="row m-3">
-					<div class="col-4">
-							{{ form_widget(form.recherche, {'attr': {
+                    <div class="row m-3">
+                        <div class="col-4">
+                            {{ form_widget(form.recherche, {'attr': {
                                 'data-action': 'click->recherche-labo-spinner#showSpinner',
                                 'data-message': 'Recherche en cours ...'
                             }}) }}
-					</div>
-					<div class="col-4">
-							{{ form_widget(form.reset, {'attr': {
+                        </div>
+                        <div class="col-4">
+                            {{ form_widget(form.reset, {'attr': {
                                 'data-action': 'click->recherche-labo-spinner#showSpinner',
                                 'data-message': 'Réinitialisation en cours ...'
                             }}) }}
-					</div>
-					<div class="col-4">
-							{{ form_widget(form.annulation) }}
-					</div>
-				</div>
+                        </div>
+                        <div class="col-4">
+                            {{ form_widget(form.annulation) }}
+                        </div>
+                    </div>
 
-				{{ form_end(form) }}
-				<div class="text-center mt-3 d-none" data-recherche-labo-spinner-target="spinner">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
-					<div class="mt-2">Recherche en cours ...</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                    {{ form_end(form) }}
+                    <div class="text-center mt-3 d-none" data-recherche-labo-spinner-target="spinner">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2">Recherche en cours ...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-	<div class="page_liste_medic p-3">
-        <div class="row mt-4">
-			<div class="col-md-12">
-				{% if medics is not empty %}
-					<p>Nombre de médicaments trouvés : {{ NbMedics }}</p>
-					<ul class="list-group">
-						{% for medic in medics %}
+        <div class="page_liste_medic p-3">
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    {% if NbMedics is not null %}
+                        <p>Nombre de produits trouvés : {{ NbMedics }}</p>
+                    {% endif %}
 
-							<li class="list-group-item">
-								<strong>{{ medic.nomVU }}</strong>
-								- CodeATC: {{ medic.dbo_ClasseATC_libAbr }}
-								- CodeCIS: 
-								<a href="{{ path('app_ajout_produit', { signalId: signalId, codeCIS: medic.codeCIS }) }}">
-									{{ medic.codeCIS }}
-								</a>
-								- Type procédure : <strong>{{ medic.dbo_Autorisation_libAbr }}</strong>
-								- Statut de commercialisation : <strong>{{ medic.commercialise ? 'Commercialisé' : 'Non commercialisé ou pas d\'information' }}</strong>
-								- Actif/archivé : <strong>{{ medic.dbo_StatutSpeci_libAbr }}</strong>
-								
-								<br>
-								<span class="text-muted">Substances: {{ medic.substances|join(', ') }}</span>
-								<div class="container-fluid ps-1 pe-1">
-									<div class="row">
-										<div class="col-1 fw-bold">Exploitant</div>
-										<div class="col-2">{{ medic.nomActeurLong }}</div>
-										<div class="col-3">{{ medic.adresse }}</div>
-										<div class="col-1">{{ medic.adresseComplExpl }}</div>
-										<div class="col-1">{{ medic.codePostExpl }}</div>
-										<div class="col-2">{{ medic.nomVilleExpl }}</div>
-										<div class="col-1">{{ medic.tel }}</div>
-										<div class="col-1">{{ medic.fax }}</div>
-									</div>
-									<div class="row">
-										<div class="col-1 fw-bold">Titulaire</div>
-										<div class="col-2">{{ medic.nomContactLibra }}</div>
-										<div class="col-3">{{ medic.adresseContact }}</div>
-										<div class="col-1">{{ medic.adresseCompl }}</div>
-										<div class="col-1">{{ medic.codePost }}</div>
-										<div class="col-2">{{ medic.nomVille }}</div>
-										<div class="col-1">{{ medic.telContact }}</div>
-										<div class="col-1">{{ medic.faxContact }}</div>
-									</div>
-								</div>
-							</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-			</div>
-		</div>
-	</div>
+                    {# Section pour les substances médicamenteuses #}
+                    {% if SubMed is not empty %}
+                        <h4 class="mt-4">Substances médicamenteuses</h4>
+                        <ul class="list-group">
+                            {% for medic in SubMed %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ medic.nomVU }}</strong> ({{ medic.substances|join(', ') }})
+                                        </div>
+
+
+                                        <a href="{{ path('app_ajout_produit_med', { signalId: signalId, codeCIS: medic.codeCIS }) }}" class="btn btn-sm btn-success">
+                                            Sélectionner ce produit
+                                        </a>
+                                    </div>
+
+                                    <hr> {# Séparateur pour les détails #}
+
+                                    <p class="mb-1">
+                                        - Code ATC: {{ medic.dbo_ClasseATC_libAbr }}
+                                        - Code CIS: {{ medic.codeCIS }}
+                                        - Type procédure : <strong>{{ medic.dbo_Autorisation_libAbr }}</strong>
+                                    </p>
+                                    <p class="mb-1">
+                                        - Statut de commercialisation : <strong>{{ medic.commercialise ? 'Commercialisé' : 'Non commercialisé ou pas d\'information' }}</strong>
+                                        - Actif/archivé : <strong>{{ medic.dbo_StatutSpeci_libAbr }}</strong>
+                                    </p>
+                                    <div class="container-fluid ps-1 pe-1">
+                                        <div class="row">
+                                            <div class="col-1 fw-bold">Exploitant</div>
+                                            <div class="col-2">{{ medic.nomActeurLong }}</div>
+                                            <div class="col-3">{{ medic.adresse }}</div>
+                                            <div class="col-1">{{ medic.adresseComplExpl }}</div>
+                                            <div class="col-1">{{ medic.codePostExpl }}</div>
+                                            <div class="col-2">{{ medic.nomVilleExpl }}</div>
+                                            <div class="col-1">{{ medic.tel }}</div>
+                                            <div class="col-1">{{ medic.fax }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-1 fw-bold">Titulaire</div>
+                                            <div class="col-2">{{ medic.nomContactLibra }}</div>
+                                            <div class="col-3">{{ medic.adresseContact }}</div>
+                                            <div class="col-1">{{ medic.adresseCompl }}</div>
+                                            <div class="col-1">{{ medic.codePost }}</div>
+                                            <div class="col-2">{{ medic.nomVille }}</div>
+                                            <div class="col-1">{{ medic.telContact }}</div>
+                                            <div class="col-1">{{ medic.faxContact }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {# Section pour les substances non-médicamenteuses #}
+                    {% if SubNonMed is not empty %}
+                        <h4 class="mt-4">Substances non-médicamenteuses</h4>
+                        <ul class="list-group">
+                            {% for nonMedic in SubNonMed %}
+                                <li class="list-group-item list-group-item-info">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ nonMedic.nomVU }}</strong>
+                                        </div>
+                                        <a href="{{ path('app_ajout_produit_non_med', { signalId: signalId, SubSIMADId: nonMedic.id }) }}" class="btn btn-sm btn-success">
+                                            Ajouter cette substance
+                                        </a>
+                                    </div>
+
+                                    <hr> {# Séparateur pour les détails #}
+
+                                    <p class="mb-1">
+                                        - Famille de produit : <strong>{{ nonMedic.productfamily }}</strong>
+                                        - UNII ID : {{ nonMedic.unii_id }}
+                                        - CAS ID: {{ nonMedic.cas_id }}
+                                    </p>
+                                    <p class="mb-1 text-muted">
+                                    {% if nonMedic.allProductName is not empty %}
+                                        Synonymes:
+                                        {% for ProductName in nonMedic.allProductName %}
+                                            {{ ProductName.productName }} ({{ ProductName.topProductName }}){% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if NbMedics is not null and NbMedics == 0 %}
+                        <p class="mt-4">Aucun produit trouvé pour votre recherche.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

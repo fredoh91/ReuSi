@@ -1,3 +1,65 @@
+@use "sass:color";
+// Importation des variables globales définies dans _variables.scss
+@use "variables" as *; 
+
+body {
+  background-color: $produit-search-page-bg;
+}
+
+.produit-search-full-width-bg {
+  // background-color: $produit-search-page-bg; // N'est plus nécessaire ici car appliqué au body
+  padding: 20px; // Ajoute un peu de padding général
+  min-height: 100vh; // Assure que le fond couvre toute la hauteur de la vue
+}
+
+.page_form_medic {
+  // Pas de background-color ici, il est hérité de .produit-search-full-width-bg ou géré par .produit-search-form-card
+  // font-size: 0.8rem; /* Réduit la taille de la police à 90% de la taille par défaut */
+}
+
 .page_liste_medic {
   font-size: 0.8rem; /* Réduit la taille de la police à 90% de la taille par défaut */
+  // background-color: $produit-search-page-bg; // Retiré, le fond est géré par l'élément parent
+  // padding: 20px; // Retiré, le padding est géré par l'élément parent ou sera ajouté spécifiquement si nécessaire
+  // min-height: 100vh; // Retiré, la hauteur est gérée par l'élément parent
+}
+
+.list-group-item {
+  margin-bottom: 5px; // Espacement entre les éléments de la liste
+  border-radius: 5px; // Bords arrondis
+  border: 1px solid #ddd; // Bordure légère
+
+  &.list-group-item { // Spécificité pour cibler .list-group-item
+    &:nth-child(odd) {
+      background-color: $medic-item-bg-odd;
+    }
+    &:nth-child(even) {
+      background-color: $medic-item-bg-even;
+    }
+    &:hover {
+      background-color: $medic-item-hover-bg;
+      transform: translateY(-2px); // Effet de survol subtil
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Ombre au survol
+      transition: all 0.2s ease-in-out; // Transition douce
+    }
+  }
+
+  &.list-group-item-info { // Styles spécifiques pour les non-médicaments
+    &:nth-child(odd) {
+      background-color: $non-medic-item-bg-odd;
+    }
+    &:nth-child(even) {
+      background-color: $non-medic-item-bg-even;
+    }
+    &:hover {
+      background-color: $non-medic-item-hover-bg;
+    }
+  }
+}
+
+.produit-search-form-card {
+  background-color: $produit-search-page-bg; // Conserve ce fond pour le formulaire qui doit se détacher
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Optionnel: ajouter une petite ombre
 }

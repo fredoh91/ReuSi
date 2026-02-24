@@ -88,7 +88,7 @@ class VUUtilRepository extends ServiceEntityRepository
         /* Nom du laboratoire */
 
         $qb = $this->createQueryBuilder('vu')
-            ->select('vu.nomVU, 
+            ->select('vu.id, vu.nomVU, 
                         vu.dbo_Autorisation_libAbr, 
                         vu.dbo_ClasseATC_libAbr, 
                         vu.dbo_ClasseATC_libCourt, 
