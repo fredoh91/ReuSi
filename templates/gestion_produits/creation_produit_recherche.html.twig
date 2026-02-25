@@ -51,7 +51,20 @@
             </div>
         </div>
 
-        <div class="page_liste_medic p-3">
+        <div class="page_liste_medic p-3"
+             data-controller="ajout-sub-en-masse"
+             data-ajout-sub-en-masse-signal-id-value="{{ signalId }}"
+             data-ajout-sub-en-masse-url-value="{{ path('app_ajout_produits_masse', { signalId: signalId }) }}">
+
+            {% if (SubMed is not empty) or (SubNonMed is not empty) %}
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" data-action="click->ajout-sub-en-masse#submit" class="btn btn-primary">
+                    <span data-ajout-sub-en-masse-target="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    Ajout des médicaments/substances cochés
+                </button>
+            </div>
+            {% endif %}
+
             <div class="row mt-4">
                 <div class="col-md-12">
                     {% if NbMedics is not null %}
@@ -65,13 +78,18 @@
                             {% for medic in SubMed %}
                                 <li class="list-group-item">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ medic.nomVU }}</strong> ({{ medic.substances|join(', ') }})
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   value="{{ medic.codeCIS }}"
+                                                   data-ajout-sub-en-masse-target="medCheckbox"
+                                                   id="med-{{ medic.codeCIS }}">
+                                            <label class="form-check-label" for="med-{{ medic.codeCIS }}">
+                                                <strong>{{ medic.nomVU }}</strong> ({{ medic.substances|join(', ') }})
+                                            </label>
                                         </div>
-
-
                                         <a href="{{ path('app_ajout_produit_med', { signalId: signalId, codeCIS: medic.codeCIS }) }}" class="btn btn-sm btn-success">
-                                            Sélectionner ce produit
+                                            Ajouter ce médicament
                                         </a>
                                     </div>
 
@@ -120,8 +138,15 @@
                             {% for nonMedic in SubNonMed %}
                                 <li class="list-group-item list-group-item-info">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ nonMedic.nomVU }}</strong>
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   value="{{ nonMedic.id }}"
+                                                   data-ajout-sub-en-masse-target="nonMedCheckbox"
+                                                   id="nonmed-{{ nonMedic.id }}">
+                                            <label class="form-check-label" for="nonmed-{{ nonMedic.id }}">
+                                                <strong>{{ nonMedic.nomVU }}</strong>
+                                            </label>
                                         </div>
                                         <a href="{{ path('app_ajout_produit_non_med', { signalId: signalId, SubSIMADId: nonMedic.id }) }}" class="btn btn-sm btn-success">
                                             Ajouter cette substance

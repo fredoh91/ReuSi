@@ -8,6 +8,10 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Produits>
+ * @method Produits|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Produits|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Produits[]    findAll()
+ * @method Produits[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ProduitsRepository extends ServiceEntityRepository
 {

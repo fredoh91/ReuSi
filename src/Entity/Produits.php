@@ -131,6 +131,21 @@ class Produits
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $nomProduit = null;
 
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $typeSubstance = null;
+
+    #[ORM\Column(length: 170, nullable: true)]
+    private ?string $productFamily = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $topProductName = null;
+
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $unii_id = null;
+
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $cas_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -600,6 +615,66 @@ class Produits
     public function setNomProduit(?string $nomProduit): static
     {
         $this->nomProduit = $nomProduit;
+
+        return $this;
+    }
+
+    public function getTypeSubstance(): ?string
+    {
+        return $this->typeSubstance;
+    }
+
+    public function setTypeSubstance(?string $typeSubstance): static
+    {
+        $this->typeSubstance = $typeSubstance;
+
+        return $this;
+    }
+
+    public function getProductFamily(): ?string
+    {
+        return $this->productFamily;
+    }
+
+    public function setProductFamily(?string $productFamily): static
+    {
+        $this->productFamily = $productFamily;
+
+        return $this;
+    }
+
+    public function getTopProductName(): ?string
+    {
+        return $this->topProductName;
+    }
+
+    public function setTopProductName(?string $topProductName): static
+    {
+        $this->topProductName = $topProductName;
+
+        return $this;
+    }
+
+    public function getUniiId(): ?string
+    {
+        return $this->unii_id;
+    }
+
+    public function setUniiId(string $unii_id): static
+    {
+        $this->unii_id = $unii_id;
+
+        return $this;
+    }
+
+    public function getCasId(): ?string
+    {
+        return $this->cas_id;
+    }
+
+    public function setCasId(?string $cas_id): static
+    {
+        $this->cas_id = $cas_id;
 
         return $this;
     }

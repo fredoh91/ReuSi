@@ -1,10 +1,48 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-1">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ path ('app_signal_fait_marquant_liste') }}">Réunion signal</a>
+    {# <a class="navbar-brand" href="{{ path ('app_signal_fait_marquant_liste') }}">Réunion signal</a> #}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+
+      {# {% if is_granted('ROLE_DMFR_GEST') %} #}
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Reunion signal
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark">
+              {# {% if is_granted('ROLE_SURV_PILOTEVEC') %} #}
+                {# <li><a class="dropdown-item" href="#">Préparation d'une réunion - sélection des signaux</a></li> #}
+              {# {% endif %} #}
+              {# {% if is_granted('ROLE_SURV_ADMIN') %} #}
+                {# <li><a class="dropdown-item" href="#">Saisie d'information pendant une réunion</a></li> #}
+              {# {% endif %} #}
+                <li><a class="dropdown-item" href="{{ path ('app_reunion_signal_liste') }}">Liste des réunions signal</a></li>
+
+                <li><a class="dropdown-item" href="{{ path ('app_reunion_signal_date')}}">Ajout/modif d'une date de réunion</a></li>
+              {# <li><a class="dropdown-item" href="#">Import d'un fichier CTLL</a></li> #}
+
+              {# {% if is_granted('ROLE_DMFR_REF') %} #}
+                {# <li><a class="dropdown-item" href="#">Bilan des imports des fichiers CTLL</a></li> #}
+              {# {% endif %} #}
+            </ul>
+          </li>
+        </ul>
+			{# {% endif %} #}
+
+      {# {% if is_granted('ROLE_DMFR_GEST') %} #}
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_signal_fait_marquant_liste') }}">
+              Signaux/Faits-marquants non-clôturés
+            </a>
+          </li>
+        </ul>
+      {# {% endif %} #}
+
+
 
       {# {% if is_granted('ROLE_DMM_EVAL') or is_granted('ROLE_SURV_PILOTEVEC') %} #}
         <ul class="navbar-nav">
@@ -36,49 +74,20 @@
         </ul>
 			{# {% endif %} #}
 
-      {# {% if is_granted('ROLE_DMFR_GEST') %} #}
-        <ul class="navbar-nav">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Reunion signal
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark">
-              {# {% if is_granted('ROLE_SURV_PILOTEVEC') %} #}
-                <li><a class="dropdown-item" href="#">Préparation d'une réunion - sélection des signaux</a></li>
-              {# {% endif %} #}
-              {# {% if is_granted('ROLE_SURV_ADMIN') %} #}
-                <li><a class="dropdown-item" href="#">Saisie d'information pendant une réunion</a></li>
-              {# {% endif %} #}
-                <li><a class="dropdown-item" href="{{ path ('app_reunion_signal_liste') }}">Liste des réunions signal</a></li>
 
-                <li><a class="dropdown-item" href="{{ path ('app_reunion_signal_date')}}">Ajout/modif d'une date de réunion</a></li>
-              {# <li><a class="dropdown-item" href="#">Import d'un fichier CTLL</a></li> #}
-
-              {# {% if is_granted('ROLE_DMFR_REF') %} #}
-                {# <li><a class="dropdown-item" href="#">Bilan des imports des fichiers CTLL</a></li> #}
-              {# {% endif %} #}
-            </ul>
-          </li>
-        </ul>
-			{# {% endif %} #}
 
       {# {% if is_granted('ROLE_SURV_PILOTEVEC') %} #}
-        <ul class="navbar-nav">
+        {# <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Actions
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
-
               <li><a class="dropdown-item" href="#">Suivi des actions</a></li>
-              {# <li><a class="dropdown-item" href="#">Exports pilotage</a></li> #}
-
               <li><a class="dropdown-item" href="#">Recherche des actions</a></li>
-
-
             </ul>
           </li>
-        </ul>
+        </ul> #}
 			{# {% endif %} #}
 
       {% if is_granted('ROLE_REUSI_SUPER_ADMIN') or is_granted('ROLE_REUSI_ADMIN')%}

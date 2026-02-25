@@ -2,30 +2,39 @@
 
 namespace App\Controller;
 
-use App\Entity\Signal;
-use App\Entity\Produits;
 use App\Codex\Entity\SAVU;
-use App\Codex\Entity\VUUtil;
 use App\Codex\Entity\SubSIMAD; // Ajout
+use App\Codex\Entity\VUUtil;
+use App\Codex\Repository\CODEXPresentationRepository;
+use App\Codex\Repository\SubSIMADRepository; // Ajout
+use App\Entity\Produits;
+use App\Entity\Signal;
 use App\Form\CodexSearchType;
 use App\Form\ProduitsType;
 use App\Repository\SignalRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Codex\Repository\CODEXPresentationRepository;
-use App\Codex\Repository\SubSIMADRepository; // Ajout
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 
 final class GestionProduitsController extends AbstractController
 {
 
     private $codexPresentationRepository;
+    private $logger;
+    private $kernel;
 
-    public function __construct(CODEXPresentationRepository $codexPresentationRepository)
+    public function __construct(CODEXPresentationRepository $codexPresentationRepository,LoggerInterface $logger, KernelInterface $kernel)
     {
         $this->codexPresentationRepository = $codexPresentationRepository;
+        $this->logger = $logger;
+        $this->kernel = $kernel;
     }
 
     #[Route('/signal/{signalId}/creation_produits', name: 'app_creation_produits')]
@@ -114,6 +123,7 @@ final class GestionProduitsController extends AbstractController
             // dump($vuUtil[0]);
             // dump($DCI);
             $produit = new Produits();
+            $produit->setTypeSubstance('Medic');
             $produit->setSignalLie($signal);
             $produit->setDenomination($vuUtil[0]->getNomVU());
             $produit->setDosage($dosage);
@@ -313,6 +323,160 @@ final class GestionProduitsController extends AbstractController
             'medics' => $medics ?? [],
             'NbMedics' => $NbMedics ?? 0,
             'signalId' => $signalId,
+        ]);
+    }
+
+    #[Route('/signal/{signalId}/produits/ajout_produits_masse', name: 'app_ajout_produits_masse', methods: ['POST'])]
+    public function ajoutProduitsMasse(
+        Request $request,
+        #[MapEntity(id: 'signalId')] Signal $signal, // Le ParamConverter trouve le signal via {signalId}
+        ManagerRegistry $doctrine
+    ): JsonResponse {
+
+        // Gérer le cas où le signal n'existe pas
+        if (!$signal) {
+            throw $this->createNotFoundException('Ce signal n\'existe pas');
+        }
+
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+
+        $content = $request->getContent();
+        $this->logger->info('GestionProduitsController: Données brutes reçues : ' . $content);
+
+        $data = json_decode($content, true);
+        if (!$data) {
+            $this->logger->error('GestionProduitsController: Échec du décodage JSON');
+            return $this->json(['error' => 'Invalid JSON'], 400);
+        }
+
+        $selectedMeds = $data['meds'] ?? [];
+        $selectedNonMeds = $data['nonMeds'] ?? [];
+        $addedCount = 0;
+
+        $this->logger->info(sprintf('GestionProduitsController: Début ajout pour le signal %s (%d meds, %d non-meds)', $signal->getId(), count($selectedMeds), count($selectedNonMeds)));
+
+        $em = $doctrine->getManager();
+
+        // Logique pour ajouter les médicaments (reprendre celle de 'app_ajout_produit_med')
+        foreach ($selectedMeds as $codeCIS) {
+            // TODO: Implémenter la logique de création de produit à partir du codeCIS
+            // 1. Récupérer les données de la base Codex
+            
+            $vuUtil = $doctrine
+                ->getRepository(VUUtil::class, 'codex')
+                ->findByCodeCIS($codeCIS);
+            [$DCI, $dosage] = $doctrine
+                ->getRepository(SAVU::class, 'codex')
+                ->findByCodeCIS_DCI_Dosage($codeCIS);
+            $voieAdmin = $doctrine
+                ->getRepository(SAVU::class, 'codex')
+                ->findByCodeCIS_VoieAdmin($codeCIS);
+
+
+            // 2. Créer une nouvelle entité `Produit`
+            $produit = new Produits();
+            // 3. Remplir l'entité avec les données
+            $produit->setTypeSubstance('Medic');
+            $produit->setSignalLie($signal);
+            $produit->setDenomination($vuUtil[0]->getNomVU());
+            $produit->setDosage($dosage);
+            $produit->setDci($DCI);
+            $produit->setVoie($voieAdmin);
+            $produit->setCodeATC($vuUtil[0]->getDboClasseATCLibAbr());
+            $produit->setLibATC($vuUtil[0]->getDboClasseATCLibCourt());
+            $produit->setTypeProcedure($vuUtil[0]->getDboAutorisationLibAbr());
+            $produit->setCodeCIS($vuUtil[0]->getCodeCIS());
+            $produit->setCodeVU($vuUtil[0]->getCodeVU());
+            $produit->setCodeDossier(trim($vuUtil[0]->getCodeDossier()));
+            $produit->setNomVU($vuUtil[0]->getNomVU());
+            $produit->setNomProduit($vuUtil[0]->getNomProduit());
+            
+            // Titulaire
+            $produit->setIdTitulaire(trim($vuUtil[0]->getCodeContact()));
+            $produit->setTitulaire($vuUtil[0]->getNomContactLibra());
+            $produit->setAdresseContact($vuUtil[0]->getAdresseContact());
+            $produit->setAdresseCompl($vuUtil[0]->getAdresseCompl());
+            $produit->setCodePost($vuUtil[0]->getCodePost());
+            $produit->setNomVille($vuUtil[0]->getNomVille());
+            $produit->setTelContact($vuUtil[0]->getTelContact());
+            $produit->setFaxContact($vuUtil[0]->getFaxContact());
+            $produit->setDboPaysLibAbr($vuUtil[0]->getDboPaysLibAbr());
+
+            // Laboratoire
+            $produit->setIdLaboratoire(trim($vuUtil[0]->getCodeActeur()));
+            $produit->setLaboratoire($vuUtil[0]->getNomActeurLong());
+            $produit->setAdresse($vuUtil[0]->getAdresse());
+            $produit->setAdresseComplExpl($vuUtil[0]->getAdresseComplExpl());
+            $produit->setCodePostExpl($vuUtil[0]->getCodePostExpl());
+            $produit->setNomVilleExpl($vuUtil[0]->getNomVilleExpl());
+
+            $produit->setStatutActifSpecialite($vuUtil[0]->getDboStatutSpeciLibAbr());
+            // dd($produit);
+
+            $produit->setCreatedAt(new \DateTimeImmutable());
+            $produit->setUpdatedAt(new \DateTimeImmutable());
+            $produit->setUserCreate($userName);
+            $produit->setUserModif($userName);
+
+            // 4. Persister l'entité
+            $em->persist($produit);
+            $addedCount++;
+        }
+
+        // Logique pour ajouter les substances non-médicamenteuses
+        foreach ($selectedNonMeds as $subSIMADId) {
+            // TODO: Implémenter la logique de création de produit à partir de SubSIMADId
+            // 1. Récupérer les données de la base Codex
+            $subSIMAD = $doctrine
+                ->getRepository(SubSIMAD::class, 'codex')
+                ->find($subSIMADId);
+            $subSIMAD_PT = $doctrine
+                ->getRepository(SubSIMAD::class, 'codex')
+                ->findOneBy(['UniiId' => $subSIMAD->getUniiId(), 'Topproductname' => 'PT']);
+            // 2. Créer une nouvelle entité `Produit`
+            $produit = new Produits();
+            // 3. Remplir l'entité avec les données
+            $produit->setSignalLie($signal);
+
+            $produit->setTypeSubstance('NonMedic');
+            $produit->setDenomination($subSIMAD->getProductname());  // donnée saisie
+            $produit->setDci($subSIMAD_PT?->getProductname()); // PT
+            $produit->setProductFamily($subSIMAD->getProductfamily());
+            $produit->setTopProductName($subSIMAD->getTopproductname());
+            $produit->setUniiId($subSIMAD->getUniiId());
+            $produit->setCasId($subSIMAD->getCasId());
+            
+            $produit->setCreatedAt(new \DateTimeImmutable());
+            $produit->setUpdatedAt(new \DateTimeImmutable());
+            $produit->setUserCreate($userName);
+            $produit->setUserModif($userName);
+            // 4. Persister l'entité
+            $em->persist($produit);
+            // $newProduit = new Produits();
+            // ...
+            // $newProduit->setSignalLie($signal);
+            // $entityManager->persist($newProduit);
+            $addedCount++;
+        }
+
+        if ($addedCount > 0) {
+            $em->flush();
+            $this->addFlash('success', $addedCount . ' produit(s)/substance(s) ont été ajouté(s) au signal. Pensez à compléter les informations manquantes.');
+            $this->logger->info('GestionProduitsController: ' . $addedCount . ' produits ajoutés.');
+        }
+
+        $redirectUrl = $this->generateUrl('app_signal_modif', ['signalId' => $signal->getId()]);
+        $this->logger->info('GestionProduitsController: Redirection vers ' . $redirectUrl);
+
+        // On renvoie l'URL de redirection au JS
+        return $this->json([
+            'redirectTo' => $redirectUrl
         ]);
     }
 
