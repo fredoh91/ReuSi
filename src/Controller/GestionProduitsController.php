@@ -6,22 +6,23 @@ use App\Codex\Entity\SAVU;
 use App\Codex\Entity\SubSIMAD; // Ajout
 use App\Codex\Entity\VUUtil;
 use App\Codex\Repository\CODEXPresentationRepository;
-use App\Codex\Repository\SubSIMADRepository; // Ajout
+// use App\Codex\Repository\SubSIMADRepository; // Ajout
 use App\Entity\Produits;
 use App\Entity\Signal;
 use App\Form\CodexSearchType;
-use App\Form\ProduitsType;
+use App\Form\ProduitsMedType;
+use App\Form\ProduitsNonMedType;
 use App\Repository\SignalRepository;
-use Doctrine\ORM\EntityManagerInterface;
+// use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 
 final class GestionProduitsController extends AbstractController
 {
@@ -60,9 +61,7 @@ final class GestionProduitsController extends AbstractController
                 if ($form->isValid()) {
 
                     $data = $form->getData();
-                    // dd($data);
                     [$medics, $NbMedics] = $this->getMedics($doctrine, $data);
-                    // dd($medics, $NbMedics);
 
                     $SubMed = $medics['SubMed'];
                     $SubNonMed = $medics['SubNonMed'];
@@ -76,13 +75,92 @@ final class GestionProduitsController extends AbstractController
             }
         }
 
-
-
         return $this->render('gestion_produits/creation_produit_recherche.html.twig', [
             'form' => $form->createView(),
             'SubMed' => $SubMed,
             'SubNonMed' => $SubNonMed,
             'NbMedics' => $NbMedics,
+            'signalId' => $signalId,
+        ]);
+    }
+
+
+    #[Route('/signal/{signalId}/modification_produits/{produitId}', name: 'app_modif_produits')]
+    public function modif_produits(int $signalId, int $produitId, SignalRepository $signalRepo, Request $request, ManagerRegistry $doctrine): Response
+    {
+        $signal = $signalRepo->find($signalId);
+
+        // Gérer le cas où le signal n'existe pas
+        if (!$signal ) {
+            throw $this->createNotFoundException('Le signal avec l\'id ' . $signalId . ' n\'existe pas.');
+        }
+
+        $produit = $doctrine->getRepository(Produits::class)->find($produitId);
+        if (!$produit) {
+            throw $this->createNotFoundException('Le produit avec l\'id ' . $produitId . ' n\'existe pas.');
+        }
+
+        $typeSubstance = $produit->getTypeSubstance();
+
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        if ($user) {
+            $userName = $user->getUserName(); // Appelle la méthode getUserName() de l'entité User
+            // dd($userName); // Affiche le userName pour vérifier
+        } else {
+            throw $this->createAccessDeniedException('Utilisateur non connecté.');
+        }
+        if ($typeSubstance === 'Medic') {
+            $form = $this->createForm(ProduitsMedType::class, $produit,[
+                'show_delete_button' => true, // Affiche le bouton de suppression pour les produits médicinaux
+            ]);
+            $vue = 'gestion_produits/ajout_produit_med_recherche.html.twig';
+        } else if ($typeSubstance === 'NonMedic') {
+            $form = $this->createForm(ProduitsNonMedType::class, $produit,[
+                'show_delete_button' => true, // Affiche le bouton de suppression pour les produits non-médicinaux
+            ]);
+            $vue = 'gestion_produits/ajout_produit_non_med_recherche.html.twig';
+        } else if ($typeSubstance === 'SaisieManu') {
+            $form = $this->createForm(ProduitsMedType::class, $produit,[
+                'show_delete_button' => true, // Affiche le bouton de suppression pour les produits de saisie manuelle
+            ]);
+        } else {
+            throw $this->createNotFoundException('Type de substance inconnu pour le produit avec l\'id ' . $produitId);
+        }
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $data = $form->getData();
+            if ($form->get('validation')->isClicked()) {
+                if ($form->isValid()) {
+                    $produit->setUpdatedAt(new \DateTimeImmutable());
+                    $produit->setUserModif($userName);
+
+                    $em = $doctrine->getManager();
+                    $em->persist($produit);
+                    $em->flush();
+
+                    $this->addFlash('success', 'Le produit ' . $produit->getId() . ' a été modifié avec succès.');
+
+                    return $this->redirectAfterProductModification($request, $signalId);
+                }
+            }
+
+            if ($form->get('delete')->isClicked()) {
+                $em = $doctrine->getManager();
+                $em->remove($produit);
+                $em->flush();
+                $this->addFlash('success', 'Le produit ' . $produit->getId() . ' a été supprimé avec succès.');
+                return $this->redirectAfterProductModification($request, $signalId);
+            }
+
+            if ($form->get('annulation')->isClicked()) {
+                return $this->redirectAfterProductModification($request, $signalId);
+            }
+        }
+
+        return $this->render($vue, [
+            'form' => $form->createView(),
             'signalId' => $signalId,
         ]);
     }
@@ -163,6 +241,7 @@ final class GestionProduitsController extends AbstractController
             // Traitement si codeCIS n'est pas fourni
             $produit = new Produits();
             $produit->setSignalLie($signal);
+            $produit->setTypeSubstance('SaisieManuelle');
         }
 
 
@@ -172,7 +251,11 @@ final class GestionProduitsController extends AbstractController
         $produit->setUserModif($userName);
 
 
-        $form = $this->createForm(ProduitsType::class, $produit);
+        $form = $this->createForm(
+                        ProduitsMedType::class, 
+                        $produit, [
+                            'show_delete_button' => false, // Affiche le bouton de suppression pour les produits de saisie manuelle
+                        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -200,7 +283,7 @@ final class GestionProduitsController extends AbstractController
 
 
 
-        return $this->render('gestion_produits/ajout_produit_recherche.html.twig', [
+        return $this->render('gestion_produits/ajout_produit_med_recherche.html.twig', [
             'form' => $form->createView(),
             'medics' => $medics ?? [],
             'NbMedics' => $NbMedics ?? 0,
@@ -227,98 +310,63 @@ final class GestionProduitsController extends AbstractController
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
 
-        // if ($codeCIS) {
+        if ($SubSIMADId) {
         //     // Traitement si codeCIS est fourni (actuellement, seulement pour les substances médicinales)
         //     // Pour gérer les substances non-médicinales ici, il faudrait modifier la route pour inclure
         //     // un identifiant de type (ex: Medic, NonMedic) et un identifiant générique (ex: codeCIS, cas_id)
-        //     $vuUtil = $doctrine
-        //         ->getRepository(VUUtil::class, 'codex')
-        //         ->findByCodeCIS($codeCIS);
-        //     [$DCI, $dosage] = $doctrine
-        //         ->getRepository(SAVU::class, 'codex')
-        //         ->findByCodeCIS_DCI_Dosage($codeCIS);
-        //     $voieAdmin = $doctrine
-        //         ->getRepository(SAVU::class, 'codex')
-        //         ->findByCodeCIS_VoieAdmin($codeCIS);
+            $subSIMAD = $doctrine
+            ->getRepository(SubSIMAD::class, 'codex')
+            ->find($SubSIMADId);
 
-        //     $produit = new Produits();
-        //     $produit->setSignalLie($signal);
-        //     $produit->setDenomination($vuUtil[0]->getNomVU());
-        //     $produit->setDosage($dosage);
-        //     $produit->setDci($DCI);
-        //     $produit->setVoie($voieAdmin);
-        //     $produit->setCodeATC($vuUtil[0]->getDboClasseATCLibAbr());
-        //     $produit->setLibATC($vuUtil[0]->getDboClasseATCLibCourt());
-        //     $produit->setTypeProcedure($vuUtil[0]->getDboAutorisationLibAbr());
-        //     $produit->setCodeCIS($vuUtil[0]->getCodeCIS());
-        //     $produit->setCodeVU($vuUtil[0]->getCodeVU());
-        //     $produit->setCodeDossier(trim($vuUtil[0]->getCodeDossier()));
-        //     $produit->setNomVU($vuUtil[0]->getNomVU());
-        //     $produit->setNomProduit($vuUtil[0]->getNomProduit());
+            $subSIMAD_PT = $doctrine
+            ->getRepository(SubSIMAD::class, 'codex')
+            ->findOneBy(['unii_id' => $subSIMAD->getUniiId(), 'topproductname' => 'PT']);
+
+            $produit = new Produits();
+            // 3. Remplir l'entité avec les données
+            $produit->setSignalLie($signal);
+
+            $produit->setTypeSubstance('NonMedic');
+            $produit->setDenomination($subSIMAD->getProductname());  // donnée saisie
+            $produit->setDci($subSIMAD_PT?->getProductname()); // PT
+            $produit->setProductFamily($subSIMAD->getProductfamily());
+            $produit->setTopProductName($subSIMAD->getTopproductname());
+            $produit->setUniiId($subSIMAD->getUniiId());
+            $produit->setCasId($subSIMAD->getCasId());
             
-        //     // Titulaire
-        //     $produit->setIdTitulaire(trim($vuUtil[0]->getCodeContact()));
-        //     $produit->setTitulaire($vuUtil[0]->getNomContactLibra());
-        //     $produit->setAdresseContact($vuUtil[0]->getAdresseContact());
-        //     $produit->setAdresseCompl($vuUtil[0]->getAdresseCompl());
-        //     $produit->setCodePost($vuUtil[0]->getCodePost());
-        //     $produit->setNomVille($vuUtil[0]->getNomVille());
-        //     $produit->setTelContact($vuUtil[0]->getTelContact());
-        //     $produit->setFaxContact($vuUtil[0]->getFaxContact());
-        //     $produit->setDboPaysLibAbr($vuUtil[0]->getDboPaysLibAbr());
+            $produit->setCreatedAt(new \DateTimeImmutable());
+            $produit->setUpdatedAt(new \DateTimeImmutable());
+            $produit->setUserCreate($userName);
+            $produit->setUserModif($userName);
 
-        //     // Laboratoire
-        //     $produit->setIdLaboratoire(trim($vuUtil[0]->getCodeActeur()));
-        //     $produit->setLaboratoire($vuUtil[0]->getNomActeurLong());
-        //     $produit->setAdresse($vuUtil[0]->getAdresse());
-        //     $produit->setAdresseComplExpl($vuUtil[0]->getAdresseComplExpl());
-        //     $produit->setCodePostExpl($vuUtil[0]->getCodePostExpl());
-        //     $produit->setNomVilleExpl($vuUtil[0]->getNomVilleExpl());
+        }
 
-        //     $produit->setStatutActifSpecialite($vuUtil[0]->getDboStatutSpeciLibAbr());
-        //     // dd($produit);
-        // } else {
-        //     // Traitement si codeCIS n'est pas fourni
-        //     $produit = new Produits();
-        //     $produit->setSignalLie($signal);
-        // }
+        $form = $this->createForm(
+                        ProduitsNonMedType::class, 
+                        $produit, [
+                            'show_delete_button' => false, // Affiche le bouton de suppression pour les produits de saisie manuelle
+                        ]);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
+            $data = $form->getData();
+            if ($form->get('validation')->isClicked()) {
+                if ($form->isValid()) {
 
-        // $produit->setCreatedAt(new \DateTimeImmutable());
-        // $produit->setUpdatedAt(new \DateTimeImmutable());
-        // $produit->setUserCreate($userName);
-        // $produit->setUserModif($userName);
+                    $data = $form->getData();
+                    $em = $doctrine->getManager();
+                    $em->persist($produit);
+                    $em->flush();
+                    return $this->redirectAfterProductModification($request, $signalId);
+                }
+            }
 
+            if ($form->get('annulation')->isClicked()) {
+                return $this->redirectAfterProductModification($request, $signalId);
+            }
+        }
 
-        // $form = $this->createForm(ProduitsType::class, $produit);
-        // $form->handleRequest($request);
-
-        // if ($form->isSubmitted()) {
-        //     $data = $form->getData();
-        //     if ($form->get('validation')->isClicked()) {
-        //         if ($form->isValid()) {
-
-        //             $data = $form->getData();
-        //             // dd($data);
-        //             // [$medics, $NbMedics] = $this->getMedics($doctrine, $data);
-        //             // dd([$medics, $NbMedics]);
-        //             $em = $doctrine->getManager();
-        //             $em->persist($produit);
-        //             $em->flush();
-        //             return $this->redirectAfterProductModification($request, $signalId);
-        //         }
-        //     }
-        //     // if ($form->get('reset')->isClicked()) {
-        //     //     return $this->redirectToRoute('app_creation_produits', ['signalId' => $signalId]);
-        //     // }
-        //     if ($form->get('annulation')->isClicked()) {
-        //         return $this->redirectAfterProductModification($request, $signalId);
-        //     }
-        // }
-
-
-
-        return $this->render('gestion_produits/ajout_produit_recherche.html.twig', [
+        return $this->render('gestion_produits/ajout_produit_non_med_recherche.html.twig', [
             'form' => $form->createView(),
             'medics' => $medics ?? [],
             'NbMedics' => $NbMedics ?? 0,
@@ -347,7 +395,7 @@ final class GestionProduitsController extends AbstractController
         }
 
         $content = $request->getContent();
-        $this->logger->info('GestionProduitsController: Données brutes reçues : ' . $content);
+        // $this->logger->info('GestionProduitsController: Données brutes reçues : ' . $content);
 
         $data = json_decode($content, true);
         if (!$data) {
@@ -359,8 +407,7 @@ final class GestionProduitsController extends AbstractController
         $selectedNonMeds = $data['nonMeds'] ?? [];
         $addedCount = 0;
 
-        $this->logger->info(sprintf('GestionProduitsController: Début ajout pour le signal %s (%d meds, %d non-meds)', $signal->getId(), count($selectedMeds), count($selectedNonMeds)));
-
+        
         $em = $doctrine->getManager();
 
         // Logique pour ajouter les médicaments (reprendre celle de 'app_ajout_produit_med')
@@ -377,7 +424,6 @@ final class GestionProduitsController extends AbstractController
             $voieAdmin = $doctrine
                 ->getRepository(SAVU::class, 'codex')
                 ->findByCodeCIS_VoieAdmin($codeCIS);
-
 
             // 2. Créer une nouvelle entité `Produit`
             $produit = new Produits();
@@ -407,7 +453,7 @@ final class GestionProduitsController extends AbstractController
             $produit->setTelContact($vuUtil[0]->getTelContact());
             $produit->setFaxContact($vuUtil[0]->getFaxContact());
             $produit->setDboPaysLibAbr($vuUtil[0]->getDboPaysLibAbr());
-
+            
             // Laboratoire
             $produit->setIdLaboratoire(trim($vuUtil[0]->getCodeActeur()));
             $produit->setLaboratoire($vuUtil[0]->getNomActeurLong());
@@ -415,7 +461,7 @@ final class GestionProduitsController extends AbstractController
             $produit->setAdresseComplExpl($vuUtil[0]->getAdresseComplExpl());
             $produit->setCodePostExpl($vuUtil[0]->getCodePostExpl());
             $produit->setNomVilleExpl($vuUtil[0]->getNomVilleExpl());
-
+            
             $produit->setStatutActifSpecialite($vuUtil[0]->getDboStatutSpeciLibAbr());
             // dd($produit);
 
@@ -432,13 +478,30 @@ final class GestionProduitsController extends AbstractController
         // Logique pour ajouter les substances non-médicamenteuses
         foreach ($selectedNonMeds as $subSIMADId) {
             // TODO: Implémenter la logique de création de produit à partir de SubSIMADId
+
+
+            // $this->logger->info(sprintf('ajoutProduitsMasse(): Début ajout pour le signal %s', $signal->getId()));
+
+
             // 1. Récupérer les données de la base Codex
             $subSIMAD = $doctrine
-                ->getRepository(SubSIMAD::class, 'codex')
-                ->find($subSIMADId);
+            ->getRepository(SubSIMAD::class, 'codex')
+            ->find($subSIMADId);
+
+            // $this->logger->info(sprintf('ajoutProduitsMasse(): et pour la substance non-med %s', $subSIMAD->getId()));
+
+            // $this->logger->info(sprintf('ajoutProduitsMasse(): uniid de la substance %s', $subSIMAD->getUniiId()));
+
             $subSIMAD_PT = $doctrine
-                ->getRepository(SubSIMAD::class, 'codex')
-                ->findOneBy(['UniiId' => $subSIMAD->getUniiId(), 'Topproductname' => 'PT']);
+            ->getRepository(SubSIMAD::class, 'codex')
+            ->findOneBy(['unii_id' => $subSIMAD->getUniiId(), 'topproductname' => 'PT']);
+
+
+            // $this->logger->info(sprintf('ajoutProduitsMasse(): Début ajout pour le signal %s et pour la substance non-med  %s', 
+            //                 $signal->getId(), 
+            //                 $subSIMADId));
+            
+            
             // 2. Créer une nouvelle entité `Produit`
             $produit = new Produits();
             // 3. Remplir l'entité avec les données

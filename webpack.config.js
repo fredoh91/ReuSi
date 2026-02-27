@@ -22,7 +22,7 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     .addEntry('app', './assets/app.js')
-    .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
+    // .addEntry('AjoutProduitRecherche', './assets/js/AjoutProduitRecherche.js')
     .addEntry('ReunionSignalDate', './assets/js/ReunionSignalDate.js')
     
     .addStyleEntry('rechlabo_css', './assets/styles/rechlabo.scss')

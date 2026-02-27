@@ -125,7 +125,10 @@ body {
     padding-bottom: 1.25rem; // ~20px
 
     // Bonus : une petite transition pour que ce soit plus doux si la barre Symfony apparaît/disparaît
-    transition: bottom 0.3s ease;
+    transition: bottom 0.3s ease, transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    
+    // S'assurer que le transform initial est bien défini pour la transition
+    transform: translateX(-50%) translateY(0);
     
     // Nouveaux styles pour mieux détacher visuellement la barre
     background-color: #d9dadb;          // Un gris très léger (presque blanc, similaire à bg-light de Bootstrap)

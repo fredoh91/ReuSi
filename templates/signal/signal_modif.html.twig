@@ -38,7 +38,7 @@
 
     {# NOUVELLE BARRE D'ACTIONS COLLANTE EN BAS #}
     {# Utilisation de "sticky-bottom" de Bootstrap pour la faire coller en bas #}
-    <div class="fixed-bottom bg-light p-3 border-top shadow">
+    <div class="fixed-bottom bg-light p-3 border-top shadow" data-controller="trailing-bar">
         <div class="container"> {# Conteneur ajouté pour centrer le contenu de la barre #}
             <div class="row">
                 <div class="col-12 d-flex justify-content-center">
@@ -162,7 +162,15 @@
                                         <tbody>
                                             {% for produit in lstProduits %}
                                                 <tr>
-                                                    <td>{{ produit.id }}</td>
+                                                    <td>                                                    
+                                                        <a href="{{ path('app_modif_produits', 
+                                                                        {
+                                                                            'signalId': signal.id, 
+                                                                            'produitId': produit.id
+                                                                        }) }}">
+                                                            {{ produit.id }}
+                                                        </a>
+                                                    </td>
                                                     <td>{{ produit.Denomination }}</td>
                                                     <td>{{ produit.DCI }}</td>
                                                     <td>{{ produit.Dosage }}</td>

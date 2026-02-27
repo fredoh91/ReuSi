@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajout de substance non-médicamenteuse{% endblock %}
+
+{% block body %}
+	{{ encore_entry_link_tags('ajoutproduit_css') }} 
+    
+    <div class="page-ajout-produit">
+        <div class="container">
+            <div class="row justify-content-center">
+                {{ form_start(form) }}
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Informations substance non-médicamenteuse</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                        		<div class="col-6">
+									{{ form_row(form.Denomination) }}
+									{# {{ form_row(form.Denomination) }} #}
+								</div>
+								<div class="col-6">
+                                    {{ form_row(form.DCI) }}
+									{# {{ form_row(form.DCI) }} #}
+								</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form_row(form.topProductName) }}
+                                    {# {{ form_row(form.nomProduit) }} #}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form_row(form.productFamily) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form_row(form.unii_id) }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form_row(form.cas_id) }}
+                                </div>
+                            </div>
+                            {{ form_row(form.typeSubstance) }} {# Champ masqué #}
+                        </div>
+                    </div>
+
+                <div class="row justify-content-center mt-3 gy-3">
+                    <div class="col-md-3 d-grid">
+                        {{ form_widget(form.validation, {'attr': {'class': 'btn-validation'}}) }}
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        {{ form_widget(form.annulation, {'attr': {'class': 'btn-annulation'}}) }}
+                    </div>
+                    {% if form.delete is defined %}
+                        <div class="col-md-3 d-grid">
+                            {{ form_widget(form.delete) }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

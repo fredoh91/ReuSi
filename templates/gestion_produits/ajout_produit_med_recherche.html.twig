@@ -10,7 +10,8 @@
 	<div class="page-ajout-produit">
 		<div class="container">
 			<div class="row justify-content-center">
-				{{ form_start(form) }}
+				{# {{ form_start(form) }} #}
+                {{ form_start(form, {'attr': {'data-controller': 'format-produit-recherche'}}) }}
 
 					{# On retire les classes bg-primary et text-white, le SCSS s'en occupe #}
                     <div class="card shadow-sm mb-4">
@@ -20,10 +21,12 @@
                         <div class="card-body">
 							<div class="row align-items-end">
 								<div class="col-6">
-									{{ form_row(form.Denomination) }}
+									{{ form_row(form.Denomination, {'attr': {'data-format-produit-recherche-target': 'denomination'}}) }}
+									{# {{ form_row(form.Denomination) }} #}
 								</div>
 								<div class="col-6">
-									{{ form_row(form.DCI) }}
+                                    {{ form_row(form.DCI, {'attr': {'data-format-produit-recherche-target': 'dci'}}) }}
+									{# {{ form_row(form.DCI) }} #}
 								</div>
 							</div>
 
@@ -150,16 +153,20 @@
 					<div class="col-md-3 d-grid">
 						{{ form_widget(form.annulation, {'attr': {'class': 'btn-annulation'}}) }}
 					</div>
-					<div class="col-md-3 d-grid">
-						<button type="button" id="BtnFormatDCI" class="btn btn-formatage-dci m-1">
-							Formatage DCI
-						</button>							
-					</div>
-					<div class="col-md-3 d-grid">
-						<button type="button" id="BtnFormatProduit" class="btn btn-formatage-produit m-1">
-							Formatage Produit
-						</button>							
-					</div>
+
+                    <div class="col-md-3 d-grid">
+                        {{ form_widget(form.formatDCI) }}
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        {{ form_widget(form.formatProduit) }}
+                    </div>
+
+                    {% if form.delete is defined %}
+                        <div class="col-md-3 d-grid">
+                            {{ form_widget(form.delete) }}
+                        </div>
+                    {% endif %}
+
 				</div>
 
 				{{ form_end(form) }}
@@ -169,7 +176,7 @@
 
 {% endblock %}
 
-{% block javascripts %}
+{# {% block javascripts %}
 	{{ parent() }}
 	{{ encore_entry_script_tags('AjoutProduitRecherche') }}
-{% endblock %}
+{% endblock %} #}

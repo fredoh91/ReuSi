@@ -329,9 +329,17 @@ final class SignalDetailController extends AbstractController
 // dd('function signal_modif_2');
 //debug ]
 
+// if ($form->isSubmitted()) {
+//     dump('isSubmitted : ',$form->isSubmitted());
+//     dump('isValid : ',$form->isValid());
+//     // if (!$form->isValid()) {
+//     //     dd($form->getErrors(true)); // Ajout temporaire pour débogage
+//     // }
+// }
 
         if ($form->isSubmitted() && $form->isValid()) {
 
+            
 
             $signalForm = $form->get('signal');
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
@@ -492,6 +500,11 @@ final class SignalDetailController extends AbstractController
             if ($signalForm->has('ajout_produit') && $signalForm->get('ajout_produit')->isClicked()) {
                 $request->getSession()->set('return_to_after_product_creation', $request->getUri());
                 return $this->redirectToRoute('app_creation_produits', ['signalId' => $signal->getId()]);
+            }
+
+            if ($signalForm->has('ajout_produit_saisie_manu') && $signalForm->get('ajout_produit_saisie_manu')->isClicked()) {
+                $request->getSession()->set('return_to_after_product_creation', $request->getUri());
+                return $this->redirectToRoute('app_ajout_produit_med', ['signalId' => $signal->getId()]);
             }
 
 

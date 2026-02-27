@@ -2,31 +2,20 @@
 
 namespace App\Form;
 
-use App\Entity\Signal;
 use App\Entity\Produits;
+use App\Form\ProduitsBaseType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ProduitsType extends AbstractType
+class ProduitsMedType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('Denomination', TextType::class, [
-                'label' => 'Dénomination',
-                'required' => false,
-                // 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
-            ->add('DCI', TextType::class, [
-                'label' => 'DCI',
-                'required' => false,
-                // 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
             ->add('Dosage', TextType::class, [
                 'label' => 'Dosage',
                 'required' => false,
@@ -40,48 +29,11 @@ class ProduitsType extends AbstractType
             ->add('CodeATC', TextType::class, [
                 'label' => 'Code ATC',
                 'required' => false,
-                // 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
             ->add('LibATC', TextType::class, [
                 'label' => 'Libellé ATC',
                 'required' => false,
-                // 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
-            ->add('TypeProcedure', TextType::class, [
-                'label' => 'Type de procédure',
-                'required' => false,
-                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
-            ->add('CodeCIS', TextType::class, [
-                'label' => 'Code CIS',
-                'required' => false,
-                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
-            ->add('nomProduit', TextType::class, [
-                'label' => 'Nom Produit',
-                'required' => false,
-                'attr' => ['class' => 'Chp-a-effacer-dci'],
-            ])
-            // ->add('CodeVU', TextType::class, [
-            //     'label' => 'Code VU',
-            //     'required' => false,
-            //     'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            // ])
-            ->add('CodeDossier', TextType::class, [
-                'label' => 'Code Dossier',
-                'required' => false,
-                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            ])
-            // ->add('NomVU', TextType::class, [
-            //     'label' => 'Nom VU',
-            //     'required' => false,
-            //     'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            // ])
-            // ->add('Codex', TextType::class, [
-            //     'label' => 'Codex',
-            //     'required' => false,
-            //     'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            // ])
             ->add('Laboratoire', TextType::class, [
                 'label' => 'Laboratoire',
                 'required' => false,
@@ -157,11 +109,6 @@ class ProduitsType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
-            // ->add('Complement', TextType::class, [
-            //     'label' => 'Complément',
-            //     'required' => false,
-            //     'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
-            // ])
             ->add('Tel', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
@@ -172,44 +119,47 @@ class ProduitsType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
             ])
-            // ->add('MedicAccesLibre', CheckboxType::class, [
-            //     'label' => 'Médicament en accès libre',
-            //     'required' => false,
-            // ])
-            // ->add('PrescriptionDelivrance', TextType::class, [
-            //     'label' => 'Conditions de prescription et de délivrance',
-            //     'required' => false,
-            // ])
-            // ->add('SignalLie', EntityType::class, [
-            //     'class' => Signal::class,
-            //     'choice_label' => 'id',
-            //     'required' => false,
-            // ])
-            ->add(
-                'validation',
-                SubmitType::class,
-                [
-                    'attr' => ['class' => 'btn btn-primary m-1'],
-                    'label' => 'Validation',
-                    'row_attr' => ['id' => 'validation'],
-                ]
-            )
-            ->add(
-                'annulation',
-                SubmitType::class,
-                [
-                    'attr' => ['class' => 'btn btn-primary m-1'],
-                    'label' => 'Annuler',
-                    'row_attr' => ['id' => 'annulation'],
-                ]
-            )
-        ;
+            ->add('nomProduit', TextType::class, [
+                'label' => 'Nom Produit',
+                'required' => false,
+                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
+            ])
+            ->add('CodeDossier', TextType::class, [
+                'label' => 'Code Dossier',
+                'required' => false,
+                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
+            ])
+            ->add('TypeProcedure', TextType::class, [
+                'label' => 'Type de procédure',
+                'required' => false,
+                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
+            ])
+            ->add('CodeCIS', TextType::class, [
+                'label' => 'Code CIS',
+                'required' => false,
+                'attr' => ['class' => 'Chp-a-effacer-dci Chp-a-effacer-prod'],
+            ])
+            ->add('formatDCI', ButtonType::class, [
+                'label' => 'Formatage DCI',
+                'attr' => [
+                    'class' => 'btn btn-formatage-dci m-1',
+                    // Action Stimulus pour le formatage DCI 
+                    'data-action' => 'click->format-produit-recherche#formatDCI'
+                ],
+            ])
+            ->add('formatProduit', ButtonType::class, [
+                'label' => 'Formatage Produit',
+                'attr' => [
+                    'class' => 'btn btn-formatage-produit m-1',
+                    // Action Stimulus pour le formatage Produit
+                    'data-action' => 'click->format-produit-recherche#formatProduit'
+                ],
+            ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    public function getParent(): string
     {
-        $resolver->setDefaults([
-            'data_class' => Produits::class,
-        ]);
+        return ProduitsBaseType::class;
     }
+
 }
