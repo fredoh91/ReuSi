@@ -507,17 +507,12 @@
                                         <span class="text-muted small ms-2"> - {{ (fichier.taille / 1024 / 1024)|number_format(2, '.', ',') }} Mo - Uploadé le {{ fichier.createdAt|date('d/m/Y à H:i') }} par {{ fichier.userCreate }}</span>
                                     </div>
                                     
-                                    {# Bouton de suppression avec formulaire CSRF #}
-                                    <form method="post" action="{{ path('app_signal_fichier_delete', {'id': fichier.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?');" class="d-inline">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichier.id) }}">
-
-
-                                        {% if is_granted('ROLE_REUSI_ADMIN') %}
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i> Supprimer
-                                            </button>
-                                        {% endif %}
-                                    </form>
+                                    {# Bouton de suppression lié au formulaire défini plus bas (évite l'imbrication de balises <form>) #}
+                                    {% if is_granted('ROLE_REUSI_ADMIN') %}
+                                        <button type="submit" form="delete_fichier_{{ fichier.id }}" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Supprimer
+                                        </button>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
@@ -531,5 +526,12 @@
     </div>
 
     {{ form_end(form) }}
+
+    {# Formulaires de suppression des fichiers (sortis du formulaire principal pour respecter les standards HTML) #}
+    {% for fichier in signal.fichiersSignaux %}
+        <form id="delete_fichier_{{ fichier.id }}" method="post" action="{{ path('app_signal_fichier_delete', {'id': fichier.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?');" style="display:none;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichier.id) }}">
+        </form>
+    {% endfor %}
 </div>
 {% endblock %}

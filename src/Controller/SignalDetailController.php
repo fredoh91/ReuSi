@@ -332,9 +332,9 @@ final class SignalDetailController extends AbstractController
 // if ($form->isSubmitted()) {
 //     dump('isSubmitted : ',$form->isSubmitted());
 //     dump('isValid : ',$form->isValid());
-//     // if (!$form->isValid()) {
-//     //     dd($form->getErrors(true)); // Ajout temporaire pour débogage
-//     // }
+//     if (!$form->isValid()) {
+//         dump($form->getErrors(true)); // Ajout temporaire pour débogage
+//     }
 // }
 
         if ($form->isSubmitted() && $form->isValid()) {
