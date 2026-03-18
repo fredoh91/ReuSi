@@ -39,7 +39,7 @@ class SignalType extends AbstractType
                 'disabled' => is_array($disabledFields) ? ($disabledFields['DescriptionSignal'] ?? false) : false,
                 'attr' => [
                     'class' => 'form-control',
-                    'rows' => 10,
+                    'rows' => 8,
                 ],
             ])
             ->add('Indication', TextareaType::class, [

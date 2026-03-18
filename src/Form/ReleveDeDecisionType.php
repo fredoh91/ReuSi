@@ -44,7 +44,7 @@ class ReleveDeDecisionType extends AbstractType
                 'disabled' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'rows' => 10,
+                    'rows' => 8,
                 ],
                 
             ])

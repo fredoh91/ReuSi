@@ -42,6 +42,7 @@
         <div class="container"> {# Conteneur ajouté pour centrer le contenu de la barre #}
             <div class="row">
                 <div class="col-12 d-flex justify-content-center">
+                    {{ form_widget(form.signal.ajout_suivi, {'attr': {'class': 'btn-warning'}}) }}
                     {{ form_widget(form.signal.annulation, {'attr': {'class': 'btn-secondary'}}) }}
                     {{ form_widget(form.signal.validation, {'attr': {'class': 'btn-primary'}}) }}
                 </div>
@@ -466,11 +467,11 @@
 
                     {# Boutons Suivi #}
 
-                    <div class="row">
+                    {# <div class="row">
                         <div class="col-12 d-flex justify-content-center">
                             {{ form_widget(form.signal.ajout_suivi) }}
                         </div>
-                    </div>
+                    </div> #}
 
                 </div>
             </div>
