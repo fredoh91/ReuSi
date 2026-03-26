@@ -465,27 +465,55 @@ final class GestionSuivisController extends AbstractController
         $form = $this->createForm(SignalSearchType::class, null, [
             'method' => 'GET',
             'csrf_protection' => false,
+            'ModeForm' => 'rech_ajout_reunion',
         ]);
         $form->handleRequest($request);
 
-        $criteria = $form->isSubmitted() && $form->isValid() ? $form->getData() : [];
+        $currentTab = $request->query->get('tab', 'nouveaux-signaux');
+        $pagination = null;
 
-        $queryBuilder = $signalRepository->findForSuiviAddition($type, $criteria, $reunion);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion du bouton Annuler
+            if ($form->get('annulation')->isClicked()) {
+                return $this->redirectToRoute('app_reunion_signal_detail', [
+                    'reuSiId' => $reunionId,
+                    'tab' => $currentTab,
+                ]);
+            }
 
-        $pagination = $paginator->paginate(
-            $queryBuilder,
-            $request->query->getInt('page', 1),
-            10 // Nombre d'éléments par page
-        );
+            // Gestion du bouton Réinitialiser (Reset)
+            if ($form->get('reset')->isClicked()) {
+                return $this->redirectToRoute('app_reunion_search_for_suivi', [
+                    'reunionId' => $reunionId,
+                    'type' => $type,
+                    'tab' => $currentTab,
+                ]);
+            }
 
-        $currentTab = $request->query->get('tab', 'nouveaux-signaux'); // Récupère le paramètre 'tab' de l'URL
+            // La recherche ne s'exécute que si le bouton 'recherche' est cliqué 
+            // ou si on a des paramètres de recherche dans l'URL (cas de la pagination)
+            $queryParams = $request->query->all();
+            // On exclut les paramètres techniques pour savoir si une recherche est active
+            unset($queryParams['tab'], $queryParams['page']);
+
+            if ($form->get('recherche')->isClicked() || !empty($queryParams)) {
+                $criteria = $form->getData();
+                $queryBuilder = $signalRepository->findForSuiviAddition($type, $criteria, $reunion);
+
+                $pagination = $paginator->paginate(
+                    $queryBuilder,
+                    $request->query->getInt('page', 1),
+                    10 // Nombre d'éléments par page
+                );
+            }
+        }
 
         return $this->render('gestion_suivis/search_for_suivi.html.twig', [
             'reunion' => $reunion,
             'type' => $type,
             'form' => $form->createView(),
             'signaux' => $pagination,
-            'currentTab' => $currentTab, // Passe le paramètre 'tab' à la vue
+            'currentTab' => $currentTab,
         ]);
     }
 

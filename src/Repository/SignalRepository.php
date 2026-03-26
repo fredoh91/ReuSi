@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Signal;
+use App\Entity\StatutSignal;
 use App\Entity\ReunionSignal;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -44,9 +45,29 @@ class SignalRepository extends ServiceEntityRepository
 
 
         // Eager Loading pour la performance
-        $qb->leftJoin('s.statutSignals', 'ss')->addSelect('ss')
-        ->leftJoin('s.suivis', 'su')->addSelect('su')
-        ->leftJoin('su.statutSuivis', 'sus')->addSelect('sus');
+        // Jointure sur le dernier statut (celui avec l'ID le plus élevé)
+        $qb->leftJoin('s.statutSignals', 'ss', \Doctrine\ORM\Query\Expr\Join::WITH, 'ss.id = (
+            SELECT MAX(ss2.id)
+            FROM App\Entity\StatutSignal ss2
+            WHERE ss2.SignalLie = s
+        )')
+           ->addSelect('ss')
+           ->leftJoin('s.suivis', 'su')->addSelect('su')
+           ->leftJoin('su.statutSuivis', 'sus')->addSelect('sus');
+
+        // Filtre sur le statutSignal
+        if (!empty($criteria['statutSignal'])) {
+            $qb->andWhere('ss.LibStatut IN (:statuts)')
+               ->setParameter('statuts', $criteria['statutSignal']);
+
+        } else {
+            // Comportement par défaut : exclure les clôturés
+            $qb->andWhere($qb->expr()->orX(
+                'ss.LibStatut != :cloture',
+                'ss.id IS NULL'
+            ))
+            ->setParameter('cloture', 'cloture');
+        }
 
         // Recherche sur le Titre
         if (!empty($criteria['Titre'])) {
@@ -66,16 +87,32 @@ class SignalRepository extends ServiceEntityRepository
                ->setParameter('contexte', '%' . $criteria['Contexte'] . '%');
         }
 
-        // Recherche sur la DCI ou la Dénomination du produit
-        if (!empty($criteria['dci']) || !empty($criteria['denomination'])) {
+        // Recherche sur les produits (DCI, Denomination, ou champ global Medicament)
+        $hasDci = isset($criteria['dci']) && !empty($criteria['dci']);
+        $hasDeno = isset($criteria['denomination']) && !empty($criteria['denomination']);
+        $hasMed = isset($criteria['medicament']) && !empty($criteria['medicament']);
+
+        if ($hasDci || $hasDeno || $hasMed) {
             $qb->leftJoin('s.produits', 'p');
-            if (!empty($criteria['dci'])) {
-                $qb->andWhere('p.DCI LIKE :dci')
-                   ->setParameter('dci', '%' . $criteria['dci'] . '%');
+            
+            if ($hasDci) {
+                $qb->andWhere('p.DCI LIKE :dci_crit')
+                   ->setParameter('dci_crit', '%' . $criteria['dci'] . '%');
             }
-            if (!empty($criteria['denomination'])) {
-                $qb->andWhere('p.Denomination LIKE :denomination')
-                   ->setParameter('denomination', '%' . $criteria['denomination'] . '%');
+            
+            if ($hasDeno) {
+                $qb->andWhere('p.Denomination LIKE :deno_crit')
+                   ->setParameter('deno_crit', '%' . $criteria['denomination'] . '%');
+            }
+            
+            if ($hasMed) {
+                // On utilise andWhere avec un OR interne pour ne pas annuler les autres filtres (TypeSignal, etc.)
+                $qb->andWhere($qb->expr()->orX(
+                    'p.DCI LIKE :med_crit',
+                    'p.Denomination LIKE :med_crit'
+                ))
+                ->setParameter('med_crit', '%' . $criteria['medicament'] . '%');
+
             }
         }
 
