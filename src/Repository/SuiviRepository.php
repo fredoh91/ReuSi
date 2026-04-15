@@ -51,7 +51,7 @@ class SuiviRepository extends ServiceEntityRepository
     public function findLatestForSignal(Signal $signal): ?Suivi
     {
         return $this->createQueryBuilder('s')
-            ->join('s.reunionSignal', 'rs')
+            ->leftJoin('s.reunionSignal', 'rs')
             ->where('s.SignalLie = :signal')
             ->setParameter('signal', $signal)
             ->orderBy('rs.DateReunion', 'DESC')

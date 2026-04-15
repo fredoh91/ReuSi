@@ -22,7 +22,7 @@ class MesureDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Pré-remplir le Statut à la création et le rendre lecture seule
+        // Pré-remplir le Statut à la création
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
             $data = $event->getData();
             if ($data && method_exists($data, 'getId') && $data->getId() === null) {
@@ -81,39 +81,7 @@ class MesureDetailType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'label_attr' => ['class' => 'form-label fw-bold'],
             ])
-            ->add('Statut', ChoiceType::class, [
-                'label' => 'Statut',
-                'required' => false,
-                'choices' => [
-                    'en cours' => 'en_cours',
-                    'effectuée' => 'effectuee',
-                    'annulée' => 'annulee',
-                    'historisée' => 'historisee',
-                ],
-                'placeholder' => '--- Sélectionner ---',
-                'attr' => ['class' => 'form-select'],
-                'label_attr' => ['class' => 'form-label fw-bold'],
-                'disabled' => true,
-            ])
-            // ->add('DesactivateAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('UserCreate')
-            // ->add('UserModif')
-            // ->add('CreatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('UpdatedAt', null, [
-            //     'widget' => 'single_text',
-            // ])
-            // ->add('RddLie', EntityType::class, [
-            //     'class' => ReleveDeDecision::class,
-            //     'choice_label' => 'id',
-            // ])
-            // ->add('SignalLie', EntityType::class, [
-            //     'class' => Signal::class,
-            //     'choice_label' => 'id',
-            // ])
+            // Le champ Statut est ajouté dynamiquement via l'écouteur PRE_SET_DATA ci-dessous
             
             ->add('validation', SubmitType::class, [
                 'attr' => ['class' => 'btn btn-success px-4'],
@@ -134,12 +102,48 @@ class MesureDetailType extends AbstractType
                 'row_attr' => ['id' => 'annulation'],
             ])
         ;
+
+        // Gestion dynamique du champ Statut
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options) {
+            $mesure = $event->getData();
+            $form = $event->getForm();
+            $isLatest = $options['is_latest_suivi'];
+
+            $choices = [
+                'en cours' => 'en_cours',
+                'effectuée' => 'effectuee',
+            ];
+
+            // On inclut 'annulée' et 'historisée' seulement si c'est la valeur actuelle,
+            // car ils sont gérés par le système et ne doivent pas être sélectionnés manuellement sinon.
+            if ($mesure instanceof MesuresRDD && $mesure->getStatut()) {
+                $currentStatut = $mesure->getStatut();
+                if ($currentStatut === 'annulee') {
+                    $choices['annulée'] = 'annulee';
+                } elseif ($currentStatut === 'historisee') {
+                    $choices['historisée'] = 'historisee';
+                }
+            }
+
+            $form->add('Statut', ChoiceType::class, [
+                'label' => 'Statut',
+                'required' => false,
+                'choices' => $choices,
+                'placeholder' => '--- Sélectionner ---',
+                'attr' => ['class' => 'form-select'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
+                'disabled' => !$isLatest,
+            ]);
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => MesuresRDD::class,
+            'is_latest_suivi' => false,
         ]);
+
+        $resolver->setAllowedTypes('is_latest_suivi', 'bool');
     }
 }

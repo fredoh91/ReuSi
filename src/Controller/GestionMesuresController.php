@@ -10,6 +10,7 @@ use App\Repository\MesuresRDDRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
+use App\Repository\SuiviRepository;
 use App\Repository\ReleveDeDecisionRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,6 +35,7 @@ final class GestionMesuresController extends AbstractController
         int $rddId,
         SignalRepository $signalRepo,
         ReleveDeDecisionRepository $RDDRepo,
+        SuiviRepository $suiviRepo,
         Request $request,
         EntityManagerInterface $em
     ): Response
@@ -71,8 +73,12 @@ final class GestionMesuresController extends AbstractController
         $mesure->setUserCreate($userName);
         $mesure->setUserModif($userName);
 
+        $latestSuivi = $suiviRepo->findLatestForSignal($signal);
+        $isLatestSuivi = ($RDD->getSuivi() === $latestSuivi);
 
-        $form = $this->createForm(MesureDetailType::class, $mesure);
+        $form = $this->createForm(MesureDetailType::class, $mesure, [
+            'is_latest_suivi' => $isLatestSuivi
+        ]);
 
         $form->handleRequest($request);
 
@@ -137,6 +143,7 @@ final class GestionMesuresController extends AbstractController
         SignalRepository $signalRepo,
         ReleveDeDecisionRepository $RDDRepo,
         MesuresRDDRepository $mesureRepo,
+        SuiviRepository $suiviRepo,
         Request $request,
         EntityManagerInterface $em
     ): Response
@@ -173,8 +180,12 @@ final class GestionMesuresController extends AbstractController
         $mesure->setUpdatedAt(new \DateTimeImmutable());
         $mesure->setUserModif($userName);
 
+        $latestSuivi = $suiviRepo->findLatestForSignal($signal);
+        $isLatestSuivi = ($RDD->getSuivi() === $latestSuivi);
 
-        $form = $this->createForm(MesureDetailType::class, $mesure);
+        $form = $this->createForm(MesureDetailType::class, $mesure, [
+            'is_latest_suivi' => $isLatestSuivi
+        ]);
 
         // Pré-remplir le champ LibMesure qui n'est pas mappé
         $libelleMesure = $mesure->getLibMesure();

@@ -141,6 +141,7 @@
                                             <th>Détail de la mesure</th>
                                             <th>Date prévisionnelle</th>
                                             <th>Date de mise en œuvre</th>
+                                            <th>Statut</th>
                                             <th style="width: 100px;">Modif.</th>
                                             {# <th style="width: 100px;">Clôture</th> #}
                                         </tr>
@@ -152,6 +153,22 @@
                                                 <td>{{ mesure.DetailCommentaire }}</td>
                                                 <td>{{ mesure.DatePrevisionnelle ? mesure.DatePrevisionnelle|date('d/m/Y') : '' }}</td>
                                                 <td>{{ mesure.DateMiseEnOeuvre ? mesure.DateMiseEnOeuvre|date('d/m/Y') : '' }}</td>
+                                                <td>
+                                                    {% set statut_config = {
+                                                        'en_cours':   {'label': 'en cours',   'badge': 'bg-info text-dark'},
+                                                        'effectuee':  {'label': 'effectuée',  'badge': 'bg-success'},
+                                                        'annulee':    {'label': 'annulée',    'badge': 'bg-danger'},
+                                                        'historisee': {'label': 'historisée', 'badge': 'bg-secondary'}
+                                                    } %}
+                                                    
+                                                    {% if mesure.Statut in statut_config|keys %}
+                                                        <span class="badge {{ statut_config[mesure.Statut].badge }}">
+                                                            {{ statut_config[mesure.Statut].label }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-dark border">{{ mesure.Statut }}</span>
+                                                    {% endif %}
+                                                </td>
                                                 <td>
                                                     {% if isLatest and mesure.id %}
                                                         <a href="{{ path('app_modif_mesure', {'signalId': signal.id, 'rddId': rdd.id, 'mesureId': mesure.id}) }}" class="btn btn-sm btn-primary" style="width: 95px;" title="Modifier la mesure">
