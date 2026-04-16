@@ -580,6 +580,9 @@ final class GestionSuivisController extends AbstractController
             $newMesure->setLibMesure($ancienneMesure->getLibMesure());
             $newMesure->setDetailCommentaire($ancienneMesure->getDetailCommentaire());
             $newMesure->setDateCloturePrev($ancienneMesure->getDateCloturePrev());
+            $newMesure->setDatePrevisionnelle($ancienneMesure->getDatePrevisionnelle());
+            $newMesure->setDateMiseEnOeuvre($ancienneMesure->getDateMiseEnOeuvre());
+            $newMesure->setStatut('en_cours');
             $newMesure->setRddLie($RDD);
             $newMesure->setSignalLie($signal);
             $newMesure->setCreatedAt(new \DateTimeImmutable());
@@ -590,7 +593,8 @@ final class GestionSuivisController extends AbstractController
 
             // Clôture de l'ancienne mesure
             $ancienneMesure->setDesactivateAt(new \DateTimeImmutable());
-            $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunion->getDateReunion()));
+            $ancienneMesure->setStatut('historisee');
+            // $ancienneMesure->setDateClotureEffective(\DateTimeImmutable::createFromMutable($reunion->getDateReunion()));
             $ancienneMesure->setUpdatedAt(new \DateTimeImmutable());
             $ancienneMesure->setUserModif($userName);
             $em->persist($ancienneMesure);

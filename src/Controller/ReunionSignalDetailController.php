@@ -145,8 +145,9 @@ final class ReunionSignalDetailController extends AbstractController
         $signauxAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('signal', $reunionSignal);
         $faitsMarquantsAnterieurs = $em->getRepository(Signal::class)->findSignauxAnterieursNonClotures('fait_marquant', $reunionSignal);
 
-        $signauxNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('signal');
-        $faitsMarquantsNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('fait_marquant');
+        $signauxNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('signal','DESC');
+        $faitsMarquantsNouveauxSansDateSuiviInit = $em->getRepository(Signal::class)->findSignauxNouveauxSansDateSuiviInitialNonClotures('fait_marquant','DESC');
+
 
 // dump($signauxNouveauxSansDateSuiviInit, $faitsMarquantsNouveauxSansDateSuiviInit);
 

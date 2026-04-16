@@ -206,7 +206,7 @@ class SignalRepository extends ServiceEntityRepository
      * - Pas de suivi pour cette réunion
      * - Non clôturé
      */
-    public function findSignauxAnterieursNonClotures(?string $typeSignal, ?ReunionSignal $reunion = null): array
+    public function findSignauxAnterieursNonClotures(?string $typeSignal, ?ReunionSignal $reunion = null, ?string $sensTriIdSignal = 'DESC'): array
     {
         $qb = $this->createQueryBuilder('s');
 
@@ -231,6 +231,12 @@ class SignalRepository extends ServiceEntityRepository
         $qb->leftJoin('s.statutSignals', 'ss', \Doctrine\ORM\Query\Expr\Join::WITH, 'ss.StatutActif = true')
            ->andWhere('ss.LibStatut != :cloture')
            ->setParameter('cloture', 'cloture');
+           
+        if ($sensTriIdSignal === 'DESC') {
+            $qb->orderBy('s.id', 'DESC');
+        } else {
+            $qb->orderBy('s.id', 'ASC');
+        }
 
         return $qb->getQuery()->getResult();
     }
@@ -243,7 +249,7 @@ class SignalRepository extends ServiceEntityRepository
      * - Pas de suivi pour cette réunion
      * - Non clôturé
      */
-    public function findSignauxNouveauxSansDateSuiviInitialNonClotures(?string $typeSignal): array
+    public function findSignauxNouveauxSansDateSuiviInitialNonClotures(?string $typeSignal, ?string $sensTriIdSignal = 'DESC'): array
     {
         $qb = $this->createQueryBuilder('s');
 
@@ -278,6 +284,13 @@ class SignalRepository extends ServiceEntityRepository
             )
         )
         ->setParameter('cloture', 'cloture');
+
+        if ($sensTriIdSignal === 'DESC') {
+            $qb->orderBy('s.id', 'DESC');
+        } else {
+            $qb->orderBy('s.id', 'ASC');
+        }
+
 
         return $qb->getQuery()->getResult();
     }
