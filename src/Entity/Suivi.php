@@ -56,6 +56,18 @@ class Suivi
     #[ORM\OrderBy(["id" => "ASC"])]
     private Collection $statutSuivis;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $import_excel = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $ne_pas_afficher_ecran_reunion = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ref_fic_excel = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $id_liaisons_signaux_fic_excel = null;
+
     public function __construct(?string $userName = null)
     {
         $this->statutSuivis = new ArrayCollection();
@@ -237,6 +249,54 @@ class Suivi
                 $statutSuivi->setSuiviLie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isImportExcel(): ?bool
+    {
+        return $this->import_excel;
+    }
+
+    public function setImportExcel(?bool $import_excel): static
+    {
+        $this->import_excel = $import_excel;
+
+        return $this;
+    }
+
+    public function isNePasAfficherEcranReunion(): ?bool
+    {
+        return $this->ne_pas_afficher_ecran_reunion;
+    }
+
+    public function setNePasAfficherEcranReunion(?bool $ne_pas_afficher_ecran_reunion): static
+    {
+        $this->ne_pas_afficher_ecran_reunion = $ne_pas_afficher_ecran_reunion;
+
+        return $this;
+    }
+
+    public function getRefFicExcel(): ?string
+    {
+        return $this->ref_fic_excel;
+    }
+
+    public function setRefFicExcel(?string $ref_fic_excel): static
+    {
+        $this->ref_fic_excel = $ref_fic_excel;
+
+        return $this;
+    }
+
+    public function getIdLiaisonsSignauxFicExcel(): ?string
+    {
+        return $this->id_liaisons_signaux_fic_excel;
+    }
+
+    public function setIdLiaisonsSignauxFicExcel(?string $id_liaisons_signaux_fic_excel): static
+    {
+        $this->id_liaisons_signaux_fic_excel = $id_liaisons_signaux_fic_excel;
 
         return $this;
     }

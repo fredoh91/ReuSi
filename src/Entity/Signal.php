@@ -128,6 +128,12 @@ class Signal
     #[ORM\OneToMany(targetEntity: FichiersSignaux::class, mappedBy: 'signalLie')]
     private Collection $fichiersSignaux;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $import_excel = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $ne_pas_afficher_ecran_reunion = null;
+
     // #[ORM\Column(length: 255, nullable: true)]
     // private ?string $TypeSignal = null;
 
@@ -629,6 +635,30 @@ class Signal
                 $fichiersSignaux->setSignalLie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isImportExcel(): ?bool
+    {
+        return $this->import_excel;
+    }
+
+    public function setImportExcel(?bool $import_excel): static
+    {
+        $this->import_excel = $import_excel;
+
+        return $this;
+    }
+
+    public function isNePasAfficherEcranReunion(): ?bool
+    {
+        return $this->ne_pas_afficher_ecran_reunion;
+    }
+
+    public function setNePasAfficherEcranReunion(?bool $ne_pas_afficher_ecran_reunion): static
+    {
+        $this->ne_pas_afficher_ecran_reunion = $ne_pas_afficher_ecran_reunion;
 
         return $this;
     }
