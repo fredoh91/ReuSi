@@ -31,26 +31,28 @@ final class SignalListeController extends AbstractController
         
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
             // Bouton "reset" : redirige vers la même page sans paramètres pour vider le formulaire
-            if ($form->get('reset')->isClicked()) {
+            if ($form->isValid() && $form->get('reset')->isClicked()) {
                 return $this->redirectToRoute($request->attributes->get('_route'));
             }
 
-            // Bouton "annulation" : redirige vers la page d'accueil (à adapter si besoin)
-            // if ($form->get('annulation')->isClicked()) {
-            //     return $this->redirectToRoute('app_home');
-            // }
-
-            // Si on arrive ici, c'est que "recherche" a été cliqué. On prend les données.
+            // On prend les données même si le formulaire n'est pas "valide" au sens strict de Symfony
             $criteria = $form->getData();
 
         } else if ($request->query->count() > 0) {
-            // Ce bloc gère le cas où la page est chargée avec des paramètres dans l'URL
-            // (ex: un lien de pagination) sans que le formulaire ait été "soumis".
-            // On remplit le formulaire avec les paramètres de l'URL pour qu'il reste affiché.
-            $criteria = $request->query->all();
-            $form->submit($criteria, false);
+            $queryParams = $request->query->all();
+            $form->submit($queryParams, false);
+
+            // On identifie s'il y a de réels critères de recherche
+            $searchParams = $queryParams;
+            unset($searchParams['tab'], $searchParams['page']);
+
+            if (!empty($searchParams)) {
+                $criteria = $form->getData();
+            } else {
+                $criteria = [];
+            }
         }
 
         // On passe les critères (qu'ils viennent du form ou de l'URL) au repository
@@ -86,30 +88,36 @@ final class SignalListeController extends AbstractController
         $form->handleRequest($request);
         
         $criteria = [];
+if ($form->isSubmitted()) {
+    // Gestion du bouton Réinitialiser (Reset)
+    if ($form->isValid() && $form->get('reset')->isClicked()) {
+        return $this->redirectToRoute('app_signal_fait_marquant_liste');
+    }
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    // On récupère les données du formulaire même si non "valide" (plus souple pour la recherche)
+    $criteria = $form->getData();
 
+    $queryParams = $request->query->all();
+    unset($queryParams['tab'], $queryParams['page']);
 
-            // Gestion du bouton Réinitialiser (Reset)
-            if ($form->get('reset')->isClicked()) {
-                return $this->redirectToRoute('app_signal_fait_marquant_liste');
-            }
+    if ($form->isValid() && !$form->get('recherche')->isClicked() && empty($queryParams)) {
+        $criteria = [];
+    }
+} elseif ($request->query->count() > 0) {
+    // Gestion de la pagination (paramètres dans l'URL)
+    $queryParams = $request->query->all();
+    $form->submit($queryParams, false);
 
-            // La recherche ne s'exécute que si le bouton 'recherche' est cliqué 
-            // ou si on a des paramètres de recherche dans l'URL (cas de la pagination)
-            $queryParams = $request->query->all();
-            // On exclut les paramètres techniques pour savoir si une recherche est active
-            unset($queryParams['tab'], $queryParams['page']);
+    // On n'applique les critères du formulaire que si de réels paramètres de recherche sont présents
+    $searchParams = $queryParams;
+    unset($searchParams['tab'], $searchParams['page']);
 
-            if ($form->get('recherche')->isClicked() || !empty($queryParams)) {
-                $criteria = $form->getData();
-            }
-        } elseif ($request->query->count() > 0) {
-            // Gestion de la pagination (paramètres dans l'URL)
-            $criteria = $request->query->all();
-            // On soumet manuellement pour que le formulaire soit rempli
-            $form->submit($criteria, false);
-        }
+    if (!empty($searchParams)) {
+        $criteria = $form->getData();
+    } else {
+        $criteria = [];
+    }
+}
 
         // On utilise findByTypeSignalWithCriteria qui gère maintenant le "non-cloture" par défaut
         $queryBuilder_signal = $signalRepository->findByTypeSignalWithCriteria('signal', $criteria);
@@ -126,11 +134,14 @@ final class SignalListeController extends AbstractController
             10
         );
 
+        $activeTab = $request->query->get('tab', 'signaux');
+
         return $this->render('signal_liste/signal_fait_marquant_liste.html.twig', [
             // 'searchForm' => $form->createView(),
             'pagination_signal' => $pagination_signal,
             'pagination_fait_marquant' => $pagination_fait_marquant,
             'form' => $form->createView(),
+            'activeTab' => $activeTab,
         ]);
     }    
 }
