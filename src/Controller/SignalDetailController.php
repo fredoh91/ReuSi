@@ -95,6 +95,8 @@ final class SignalDetailController extends AbstractController
 
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
             'reunions' => $date_reunion,
+            'user_is_admin' => $this->isGranted('ROLE_REUSI_ADMIN'),
+            'user_can_change_type' => $this->isGranted('ROLE_REUSI_SURV_EVAL'),
         ]);
 
         $form->handleRequest($request);
@@ -116,12 +118,19 @@ final class SignalDetailController extends AbstractController
             if ($form->isValid()) {
                 // For any valid submission (Validate, Add Product, etc.), we save the signal.
                 $signal = $dto->signal;
+                
+                if ($this->isGranted('ROLE_REUSI_ADMIN')) {
+                    $nePasAfficher = $signalForm->get('nePasAfficherEcranReunion')->getData();
+                    $signal->setNePasAfficherEcranReunion($nePasAfficher);
+                }
+
                 $suivi = $dto->suiviInitial;
                 $rdd = $dto->rddInitial;
                 
                 $now = new \DateTimeImmutable();
                 $signal->setCreatedAt($now)->setUserCreate($userName);
-
+                $signal->setDateCreation($now); 
+                
                 $suiviInitial = $dto->suiviInitial;
 
                 
@@ -318,9 +327,16 @@ final class SignalDetailController extends AbstractController
 
 
 
-        $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [ 'reunions' => $date_reunion, ]);
-// dd($dto);
-// pas de bug reunion signal à ce point 
+        $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
+            'reunions' => $date_reunion,
+            'user_is_admin' => $this->isGranted('ROLE_REUSI_ADMIN'),
+            'user_can_change_type' => $this->isGranted('ROLE_REUSI_SURV_EVAL'),
+        ]);
+
+        if ($this->isGranted('ROLE_REUSI_ADMIN')) {
+            $form->get('signal')->get('nePasAfficherEcranReunion')->setData($signal->isNePasAfficherEcranReunion());
+        }
+
         $form->handleRequest($request);         // le bug reunion signal apparait à ce point 
 
 // debug [
@@ -339,9 +355,12 @@ final class SignalDetailController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            
-
             $signalForm = $form->get('signal');
+
+            if ($this->isGranted('ROLE_REUSI_ADMIN')) {
+                $nePasAfficher = $signalForm->get('nePasAfficherEcranReunion')->getData();
+                $signal->setNePasAfficherEcranReunion($nePasAfficher);
+            }
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
             $reuSiId = $request->query->get('reuSiId', null);
             $tab = $request->query->get('tab', null);

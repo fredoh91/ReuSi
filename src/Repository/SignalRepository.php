@@ -186,7 +186,8 @@ class SignalRepository extends ServiceEntityRepository
             ->from('App\Entity\Signal', 's_created_recent')
             ->leftJoin('s_created_recent.suivis', 'su_created_recent')
             ->leftJoin('su_created_recent.reunionSignal', 'rs_created_recent')
-            ->where('s_created_recent.CreatedAt >= :reunionDate')
+            // ->where('s_created_recent.CreatedAt >= :reunionDate')
+            ->where('s_created_recent.DateCreation >= :reunionDate')
             ->groupBy('s_created_recent.id')
             ->having('COUNT(rs_created_recent.id) = 0');
 
@@ -212,13 +213,15 @@ class SignalRepository extends ServiceEntityRepository
 
         if ($typeSignal) {            
             $qb->andWhere('s.TypeSignal = :typeSignal')
-                ->setParameter('typeSignal', $typeSignal);
+                ->setParameter('typeSignal', $typeSignal)
+                ->andWhere('s.ne_pas_afficher_ecran_reunion = false');
         }
 
 
         if ($reunion) {
             // 1. Date de suivi initial (création) strictement inférieure à la date de la réunion
-            $qb->andWhere('s.CreatedAt < :dateReunion')
+            // $qb->andWhere('s.CreatedAt < :dateReunion')
+            $qb->andWhere('s.DateCreation < :dateReunion')
             ->setParameter('dateReunion', $reunion->getDateReunion());
 
             // 2. Aucun suivi n'est lié à la réunion en cours
@@ -255,7 +258,8 @@ class SignalRepository extends ServiceEntityRepository
 
         if ($typeSignal) {            
             $qb->andWhere('s.TypeSignal = :typeSignal')
-                ->setParameter('typeSignal', $typeSignal);
+                ->setParameter('typeSignal', $typeSignal)
+                ->andWhere('s.ne_pas_afficher_ecran_reunion = false');
         }
 
         // Critère : Aucun des suivis du signal (initial ou autre) ne doit avoir de réunion liée.

@@ -47,7 +47,7 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
     role_hierarchy:
         ROLE_REUSI_SUPER_ADMIN: [ROLE_REUSI_ADMIN, ROLE_REUSI_SURV_ADMIN, ROLE_REUSI_EDITOR] # gestion des utilisateurs
-        ROLE_REUSI_ADMIN: [ROLE_REUSI_SURV_ADMIN, ROLE_REUSI_DMM_EVAL, ROLE_REUSI_EDITOR] # gestion des tables de références mais pas des utilisateurs
+        ROLE_REUSI_ADMIN: [ROLE_REUSI_SURV_ADMIN, ROLE_REUSI_DMM_EVAL, ROLE_REUSI_SURV_EVAL, ROLE_REUSI_EDITOR] # gestion des tables de références mais pas des utilisateurs
         ROLE_REUSI_EDITOR: ROLE_REUSI_MODERATOR
         ROLE_REUSI_MODERATOR: ROLE_REUSI_USER
 

@@ -17,7 +17,7 @@ class SignalDetailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        parent::buildForm($builder, $options);
+        // parent::buildForm($builder, $options); // Commenté car AbstractType::buildForm est vide
         
         // Ajout des champs spécifiques à SignalDetailType
         $builder
@@ -32,7 +32,31 @@ class SignalDetailType extends AbstractType
                 'mapped' => false, // Très important !
                 'attr' => ['class' => 'form-check-input'],
                 'label_attr' => ['class' => 'form-check-label fw-bold text-danger'],
-            ])
+            ]);
+
+        if ($options['user_is_admin']) {
+            $builder->add('nePasAfficherEcranReunion', CheckboxType::class, [
+                'label' => 'Ne pas afficher dans l\'écran des réunions',
+                'required' => false,
+                'mapped' => false,
+                'attr' => ['class' => 'form-check-input'],
+                'label_attr' => ['class' => 'form-check-label fw-bold'],
+            ]);
+        }
+
+        if ($options['user_can_change_type']) {
+            $builder->add('TypeSignal', ChoiceType::class, [
+                'label' => 'Type',
+                'label_attr' => ['class' => 'fw-bold'],
+                'choices' => [
+                    'Signal' => 'signal',
+                    'Fait marquant' => 'fait_marquant',
+                ],
+                'attr' => ['class' => 'form-select'],
+            ]);
+        }
+
+        $builder
             ->add('validation', SubmitType::class, [
                 'label' => 'Valider',
                 'attr' => ['class' => 'btn btn-primary m-2'],
@@ -110,6 +134,8 @@ class SignalDetailType extends AbstractType
             'add_produit_saisie_manu_button' => true,
             'add_suivi_button' => true,
             'add_mesure_button' => true,
+            'user_is_admin' => false,
+            'user_can_change_type' => false,
         ]);
     }
     

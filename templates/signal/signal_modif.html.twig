@@ -80,9 +80,9 @@
 
                     {# Cloture du signal #}
                     <div data-controller="cloture-signal">
-                        <div class="row">
+                        <div class="row align-items-center">
                             {# <div class="col-1">{{ form_label(form.signal.aCloturer) }}</div> #}
-                            <div class="col-3">
+                            <div class="col-md-3">
                                 {# {{ form_widget(form.signal.aCloturer) }} #}
                                 {% set isCloture = (dernierStatutSignal is defined and dernierStatutSignal == 'cloture') %}
                                 {{ form_widget(form.signal.aCloturer, {
@@ -93,6 +93,22 @@
                                         'checked': isCloture
                                     }
                                 }) }}
+                            </div>
+
+                            {# Information d'import Excel #}
+                            <div class="col-md-6">
+                                {% if signal.isImportExcel %}
+                                    <div class="border border-danger rounded-pill px-3 py-1 text-danger d-inline-block small">
+                                        ce signal a été importé le {{ signal.getCreatedAt()|date('d/m/Y') }} à partir du fichier Excel
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Ne pas afficher dans l'écran des réunions #}
+                            <div class="col-md-3 text-end">
+                                {% if is_granted('ROLE_REUSI_ADMIN') and form.signal.nePasAfficherEcranReunion is defined %}
+                                    {{ form_widget(form.signal.nePasAfficherEcranReunion) }}
+                                {% endif %}
                             </div>
                         </div>
 
@@ -119,12 +135,18 @@
                         </div>
                     </div>
 
-                    {# Titre #}
-                    <div class="row">
-                        <div class="col-12">{{ form_label(form.signal.Titre) }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">{{ form_widget(form.signal.Titre) }}</div>
+                    {# Titre et TypeSignal #}
+                    <div class="row align-items-end">
+                        <div class="col-md-10">
+                            {{ form_label(form.signal.Titre) }}
+                            {{ form_widget(form.signal.Titre) }}
+                        </div>
+                        <div class="col-md-2">
+                            {% if form.signal.TypeSignal is defined %}
+                                {{ form_label(form.signal.TypeSignal) }}
+                                {{ form_widget(form.signal.TypeSignal) }}
+                            {% endif %}
+                        </div>
                     </div>
 
                     {# Description #}

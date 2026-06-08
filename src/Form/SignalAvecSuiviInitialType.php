@@ -21,6 +21,8 @@ class SignalAvecSuiviInitialType extends AbstractType
                 'add_produit_saisie_manu_button' => true,
                 'add_suivi_button' => true,
                 'add_mesure_button' => true,
+                'user_is_admin' => $options['user_is_admin'],
+                'user_can_change_type' => $options['user_can_change_type'],
             ])
             ->add('suiviInitial', SuiviInitialDetailType::class, [
                 'label' => 'Suivi Initial (N°0)',
@@ -41,6 +43,8 @@ class SignalAvecSuiviInitialType extends AbstractType
         $resolver->setDefaults([
             'data_class' => SignalAvecSuiviInitialDTO::class,
             'reunions' => [],
+            'user_is_admin' => false,
+            'user_can_change_type' => false,
         ]);
     }
 }
