@@ -13,8 +13,17 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use Symfony\Bundle\SecurityBundle\Security;
+
 class SignalDetailType extends AbstractType
 {
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // parent::buildForm($builder, $options); // Commenté car AbstractType::buildForm est vide
@@ -29,22 +38,22 @@ class SignalDetailType extends AbstractType
             ->add('aCloturer', CheckboxType::class, [
                 'label' => 'Clôturer ce signal',
                 'required' => false,
-                'mapped' => false, // Très important !
+                'mapped' => false, // Très important ! Car logique complexe dans le service
                 'attr' => ['class' => 'form-check-input'],
                 'label_attr' => ['class' => 'form-check-label fw-bold text-danger'],
             ]);
 
-        if ($options['user_is_admin']) {
+        if ($this->security->isGranted('ROLE_REUSI_SURV_EVAL')) {
             $builder->add('nePasAfficherEcranReunion', CheckboxType::class, [
                 'label' => 'Ne pas afficher dans l\'écran des réunions',
                 'required' => false,
-                'mapped' => false,
+                'mapped' => true, // On laisse Symfony gérer le mapping
                 'attr' => ['class' => 'form-check-input'],
                 'label_attr' => ['class' => 'form-check-label fw-bold'],
             ]);
         }
 
-        if ($options['user_can_change_type']) {
+        if ($this->security->isGranted('ROLE_REUSI_SURV_EVAL')) {
             $builder->add('TypeSignal', ChoiceType::class, [
                 'label' => 'Type',
                 'label_attr' => ['class' => 'fw-bold'],
@@ -69,73 +78,40 @@ class SignalDetailType extends AbstractType
                 ],
             ]);
         
-        if ($options['add_produit_button']) {
-            $builder->add('ajout_produit', SubmitType::class, [
-                'label' => 'Rechercher un produit',
-                'attr' => ['class' => 'btn btn-success m-2'],
-            ]);
-        }
+        // On affiche toujours les boutons Submit dans le builder, 
+        // Twig décidera de les afficher ou non si besoin.
+        $builder->add('ajout_produit', SubmitType::class, [
+            'label' => 'Rechercher un produit',
+            'attr' => ['class' => 'btn btn-success m-2'],
+        ]);
 
-        if ($options['add_produit_saisie_manu_button']) {
-            $builder->add('ajout_produit_saisie_manu', SubmitType::class, [
-                'label' => 'Saisir un produit manuellement',
-                'attr' => ['class' => 'btn btn-info m-2'],
-            ]);
-        }
+        $builder->add('ajout_produit_saisie_manu', SubmitType::class, [
+            'label' => 'Saisir un produit manuellement',
+            'attr' => ['class' => 'btn btn-info m-2'],
+        ]);
 
-        if ($options['add_suivi_button']) {
-            $builder->add('ajout_suivi', SubmitType::class, [
-                'label' => 'Ajouter un suivi',
-                'attr' => ['class' => 'btn btn-warning m-2'],
-            ]);
-        }
+        $builder->add('ajout_suivi', SubmitType::class, [
+            'label' => 'Ajouter un suivi',
+            'attr' => ['class' => 'btn btn-warning m-2'],
+        ]);
 
-        if ($options['add_mesure_button']) {
-            $builder->add('ajout_mesure', SubmitType::class, [
-                'label' => 'Ajouter une mesure',
-                'attr' => ['class' => 'btn btn-info m-2'],
-            ]);
-        }
+        $builder->add('ajout_mesure', SubmitType::class, [
+            'label' => 'Ajouter une mesure',
+            'attr' => ['class' => 'btn btn-info m-2'],
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Signal::class,
-            'required_fields' => [
-                'Titre' => false,
-                'DescriptionSignal' => false,
-                'Indication' => false,
-                'Contexte' => false,
-                'SourceSignal' => false,
-                'RefSignal' => false,
-                'IdentifiantSource' => false,
-                'NiveauRisqueInitial' => false,
-                'NiveauRisqueFinal' => false,
-                'directionPoleConcernes' => false,
-            ],
-            'disabled_fields' => [
-                'Titre' => false,
-                'DescriptionSignal' => false,
-                'Indication' => false,
-                'Contexte' => false,
-                'SourceSignal' => false,
-                'RefSignal' => false,
-                'IdentifiantSource' => false,
-                'NiveauRisqueInitial' => false,
-                'NiveauRisqueFinal' => false,
-                'directionPoleConcernes' => false,
-            ],
-            'readonly_fields' => [
-                'NiveauRisqueInitial' => true,
-                'NiveauRisqueFinal' => true,
-            ],
+            'required_fields' => [],
+            'disabled_fields' => [],
+            'readonly_fields' => [],
             'add_produit_button' => true,
             'add_produit_saisie_manu_button' => true,
             'add_suivi_button' => true,
             'add_mesure_button' => true,
-            'user_is_admin' => false,
-            'user_can_change_type' => false,
         ]);
     }
     

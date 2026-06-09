@@ -95,8 +95,6 @@ final class SignalDetailController extends AbstractController
 
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
             'reunions' => $date_reunion,
-            'user_is_admin' => $this->isGranted('ROLE_REUSI_ADMIN'),
-            'user_can_change_type' => $this->isGranted('ROLE_REUSI_SURV_EVAL'),
         ]);
 
         $form->handleRequest($request);
@@ -119,10 +117,7 @@ final class SignalDetailController extends AbstractController
                 // For any valid submission (Validate, Add Product, etc.), we save the signal.
                 $signal = $dto->signal;
                 
-                if ($this->isGranted('ROLE_REUSI_ADMIN')) {
-                    $nePasAfficher = $signalForm->get('nePasAfficherEcranReunion')->getData();
-                    $signal->setNePasAfficherEcranReunion($nePasAfficher);
-                }
+                // Logic for nePasAfficherEcranReunion is now handled by mapped => true in the form type
 
                 $suivi = $dto->suiviInitial;
                 $rdd = $dto->rddInitial;
@@ -329,13 +324,7 @@ final class SignalDetailController extends AbstractController
 
         $form = $this->createForm(SignalAvecSuiviInitialType::class, $dto, [
             'reunions' => $date_reunion,
-            'user_is_admin' => $this->isGranted('ROLE_REUSI_ADMIN'),
-            'user_can_change_type' => $this->isGranted('ROLE_REUSI_SURV_EVAL'),
         ]);
-
-        if ($this->isGranted('ROLE_REUSI_ADMIN')) {
-            $form->get('signal')->get('nePasAfficherEcranReunion')->setData($signal->isNePasAfficherEcranReunion());
-        }
 
         $form->handleRequest($request);         // le bug reunion signal apparait à ce point 
 
@@ -357,10 +346,6 @@ final class SignalDetailController extends AbstractController
 
             $signalForm = $form->get('signal');
 
-            if ($this->isGranted('ROLE_REUSI_ADMIN')) {
-                $nePasAfficher = $signalForm->get('nePasAfficherEcranReunion')->getData();
-                $signal->setNePasAfficherEcranReunion($nePasAfficher);
-            }
             $routeSource = $request->query->get('routeSource', 'app_signal_liste');
             $reuSiId = $request->query->get('reuSiId', null);
             $tab = $request->query->get('tab', null);

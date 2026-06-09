@@ -106,7 +106,7 @@
 
                             {# Ne pas afficher dans l'écran des réunions #}
                             <div class="col-md-3 text-end">
-                                {% if is_granted('ROLE_REUSI_ADMIN') and form.signal.nePasAfficherEcranReunion is defined %}
+                                {% if is_granted('ROLE_REUSI_SURV_EVAL') and form.signal.nePasAfficherEcranReunion is defined %}
                                     {{ form_widget(form.signal.nePasAfficherEcranReunion) }}
                                 {% endif %}
                             </div>

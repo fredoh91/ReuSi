@@ -38,18 +38,26 @@ class UsersAuthenticator extends AbstractLoginFormAuthenticator
         $email = $request->request->get('_email', '');
         $password = $request->request->get('_password', '');
         $csrfToken = $request->request->get('_token', '');
+        $rememberMe = $request->request->get('_remember_me');
 
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
+
+        $badges = [
+            new CsrfTokenBadge('authenticate', $csrfToken),
+        ];
+
+        $rememberMeBadge = new RememberMeBadge();
+        if ($rememberMe) {
+            $rememberMeBadge->enable();
+        }
+        $badges[] = $rememberMeBadge;
 
         return new Passport(
             new UserBadge($email, function ($email) {
                 return $this->userRepository->findUserActifByEmail($email);
             }),
             new PasswordCredentials($password),
-            [
-                new CsrfTokenBadge('authenticate', $csrfToken),
-                new RememberMeBadge(),
-            ]
+            $badges
         );
     }
 

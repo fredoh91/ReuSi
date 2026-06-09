@@ -16,23 +16,19 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
-                username_parameter: _email    # Sans préfixe
-                password_parameter: _password    # Sans préfixe
-                csrf_parameter: _token # Doit correspondre à csrf_field_name
-                csrf_token_id: authenticate # Doit correspondre à csrf_token_id
-                default_target_path: app_signal_fait_marquant_liste
+            
+            custom_authenticators:
+                - App\Security\UsersAuthenticator
+
             logout:
                 path: app_logout
                 # where to redirect after logout
                 target: app_login
 
             remember_me:
+                name: REMEMBERME_REUSI
+                lifetime: 15552000          # 6 mois en secondes
                 secret: '%kernel.secret%'
-                lifetime: 604800
                 path: /
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
