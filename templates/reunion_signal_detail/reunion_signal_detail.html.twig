@@ -79,34 +79,35 @@
     <!-- Tab panes -->
     <div class="tab-content p-3" id="reunionTabContent">
         {% if currentTab in ['nouveaux-signaux', 'suivis-signaux', 'nouveaux-fm', 'suivis-fm'] %}
+            
+            {# 1. Card des signaux prévus à cette date (VERTE) - EXCLUE DU FILTRAGE #}
+            {% if currentTab == 'nouveaux-signaux' %}
+                {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                    'suiviLies': nouveauxSignaux,
+                    'currentTab': currentTab,
+                    'reunionSignal': reunionSignal,
+                } %}
+            {% elseif currentTab == 'suivis-signaux' %}
+                {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                    'suiviLies': suivisSignaux,
+                    'currentTab': currentTab,
+                    'reunionSignal': reunionSignal,
+                } %}
+            {% elseif currentTab == 'nouveaux-fm' %}
+                {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                    'suiviLies': nouveauxFaitsMarquants,
+                    'currentTab': currentTab,
+                    'reunionSignal': reunionSignal,
+                } %}
+            {% elseif currentTab == 'suivis-fm' %}
+                {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
+                    'suiviLies': suivisFaitsMarquants,
+                    'currentTab': currentTab,
+                    'reunionSignal': reunionSignal,
+                } %}
+            {% endif %}
+
             <div data-controller="recherche-signal-reunion">
-                
-                {# 1. Card des signaux prévus à cette date (VERTE) #}
-                {% if currentTab == 'nouveaux-signaux' %}
-                    {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
-                        'suiviLies': nouveauxSignaux,
-                        'currentTab': currentTab,
-                        'reunionSignal': reunionSignal,
-                    } %}
-                {% elseif currentTab == 'suivis-signaux' %}
-                    {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
-                        'suiviLies': suivisSignaux,
-                        'currentTab': currentTab,
-                        'reunionSignal': reunionSignal,
-                    } %}
-                {% elseif currentTab == 'nouveaux-fm' %}
-                    {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
-                        'suiviLies': nouveauxFaitsMarquants,
-                        'currentTab': currentTab,
-                        'reunionSignal': reunionSignal,
-                    } %}
-                {% elseif currentTab == 'suivis-fm' %}
-                    {% include 'reunion_signal_detail/_signaux_card.html.twig' with {
-                        'suiviLies': suivisFaitsMarquants,
-                        'currentTab': currentTab,
-                        'reunionSignal': reunionSignal,
-                    } %}
-                {% endif %}
 
                 {# 2. CHAMP DE RECHERCHE JS #}
                 <div class="my-4">
@@ -125,7 +126,7 @@
                     </div>
                 </div>
 
-                {# 3. Card des signaux non-prévus (GRISE) #}
+                {# 3. Card des signaux non-prévus (GRISE) - INCLUE DANS LE FILTRAGE #}
                 {% if currentTab == 'nouveaux-signaux' %}
                     {% include 'reunion_signal_detail/_signauxInitiauxNonPrevus_card.html.twig' with {
                         'signauxInit': signauxNouveauxSansDateSuiviInit,
