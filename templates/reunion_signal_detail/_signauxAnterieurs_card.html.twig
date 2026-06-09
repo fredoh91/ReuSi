@@ -1,5 +1,5 @@
 {% if signauxAnterieurs is not empty %}
-    <div class="card mt-5 border-secondary">
+    <div class="card mt-5 border-secondary" data-recherche-signal-reunion-target="container">
         <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
 
@@ -18,6 +18,18 @@
         <div class="card-body card-sig-non-lie-bg">
             {% for signalAnterieur in signauxAnterieurs %}
                 {% set status = get_signal_status(signalAnterieur) %}
+                
+                {% set searchableContent = signalAnterieur.Titre ~ ' ' ~ signalAnterieur.DescriptionSignal %}
+                {% for produit in signalAnterieur.produits %}
+                    {% set searchableContent = searchableContent ~ ' ' ~ produit.Denomination ~ ' ' ~ produit.DCI %}
+                {% endfor %}
+                {% for suivi in signalAnterieur.getSuivis() %}
+                    {% set searchableContent = searchableContent ~ ' ' ~ suivi.DescriptionSuivi %}
+                    {% if suivi.RddLie %}
+                        {% set searchableContent = searchableContent ~ ' ' ~ suivi.RddLie.DescriptionRDD %}
+                    {% endif %}
+                {% endfor %}
+
                 {% set badge_class = 'secondary' %}
                 {% if status == 'presente' %}
                     {% set badge_class = 'success' %}
@@ -29,7 +41,9 @@
                     {% set badge_class = 'dark' %}
                 {% endif %}
 
-                <div class="card mb-3 shadow-sm">
+                <div class="card mb-3 shadow-sm" 
+                     data-recherche-signal-reunion-target="item"
+                     data-search-content="{{ searchableContent|e('html_attr') }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
                             <a href="{{ path('app_signal_modif', {'signalId': signalAnterieur.id, 

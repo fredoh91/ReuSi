@@ -15,7 +15,7 @@
 
 
 
-<div class="card mt-5 border-success">
+<div class="card mt-5 border-success" data-recherche-signal-reunion-target="container">
     <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             <i class="bi bi-archive me-2"></i>{{ libelleCard }}
@@ -26,7 +26,21 @@
         {% if suiviLies is not empty %}
             {% for suivi in suiviLies %}
                 {% set signal = suivi.SignalLie %}
-                <div class="card mb-3" id="suivi-{{ suivi.id }}">
+                {% set searchableContent = signal.Titre ~ ' ' ~ suivi.DescriptionSuivi %}
+                {% if suivi.RddLie %}
+                    {% set searchableContent = searchableContent ~ ' ' ~ suivi.RddLie.DescriptionRDD %}
+                    {% for mesure in suivi.RddLie.mesuresRDDs %}
+                        {% set searchableContent = searchableContent ~ ' ' ~ mesure.LibMesure ~ ' ' ~ mesure.DetailCommentaire %}
+                    {% endfor %}
+                {% endif %}
+                {# Ajout des produits plus tard si besoin #}
+                {% for produit in signal.produits %}
+                    {% set searchableContent = searchableContent ~ ' ' ~ produit.Denomination ~ ' ' ~ produit.DCI %}
+                {% endfor %}
+
+                <div class="card mb-3" id="suivi-{{ suivi.id }}" 
+                     data-recherche-signal-reunion-target="item"
+                     data-search-content="{{ searchableContent|e('html_attr') }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
                             <a href="{{ path('app_signal_modif', {'signalId': signal.id, 'routeSource': 'app_reunion_signal_detail', 'reuSiId': suivi.reunionSignal.id, 'tab': currentTab }) }}">
