@@ -13,6 +13,12 @@
 
 				{% include "_partials/_user_registration_edit.html.twig" %}
 
+
+					<div class="col-6">
+						{{ form_label(form.roles, 'rôle(s) :') }}
+						{{ form_widget(form.roles) }}
+					</div>
+
 				<div class="row">
 					<div class="col-3">
 						{{ form_widget(form.Valider) }}

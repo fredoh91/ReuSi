@@ -2,22 +2,23 @@
 
 namespace App\Controller;
 
+use \Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User;
-use App\Form\UserEditType;
+use App\Form\UserEditMyPasswordType;
 use App\Form\UserEditPasswordType;
+use App\Form\UserEditType;
 use App\Form\UserRegistrationType;
 use App\Security\UsersAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use \Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 
-#[IsGranted("ROLE_REUSI_SURV_ADMIN")]
+// #[IsGranted("ROLE_REUSI_SURV_ADMIN")]
 class RegistrationController extends AbstractController
 {
 
@@ -207,7 +208,59 @@ class RegistrationController extends AbstractController
 
         }
 
-        return $this->render('user/edituser_password.html.twig', [
+        return $this->render('user/edituser_mypassword.html.twig', [
+            'form' => $form->createView()
+        ]);
+    }
+
+    #[IsGranted('ROLE_REUSI_USER')]
+    #[Route('/modif_user_my_password', name: 'app_modif_user_my_password')]
+    public function modif_user_my_password(Request $request, 
+                                        UserPasswordHasherInterface $userPasswordHasher, 
+                                        EntityManagerInterface $entityManager): Response
+    {   
+
+        $user = $this->security->getUser();
+        $form = $this->createForm(UserEditMyPasswordType::class, $user);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->get('Annuler')->isClicked()) {
+                return $this->redirectToRoute('app_home'); 
+            } 
+        }
+        if ($form->isSubmitted() && $form->isValid()) {
+            // dump($form->get('plainPassword')->getData());
+
+            if ($form->get('Valider')->isClicked()) {
+                /**
+                 * L'utilisateur a cliqué sur le bouton "Valider", ce qui :
+                 *      - met a jour la mot de passe en BDD
+                 *      - 
+                 */
+
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword(
+                        $user,
+                        $form->get('plainPassword')->getData()
+                    )
+                );
+
+                $entityManager->persist($user);
+                $entityManager->flush();
+                $this->addFlash('success', 'Votre mot de passe a bien été mis à jour.');
+
+            } else if ($form->get('Annuler')->isClicked()) {
+                /**
+                 * L'utilisateur a cliqué sur le bouton "Annuler", on ne fait rien, a part être redirigé vers la liste des utilisateurs
+                 */
+            } else {
+            }
+
+            return $this->redirectToRoute('app_home'); 
+
+        }
+
+        return $this->render('user/edituser_mypassword.html.twig', [
             'form' => $form->createView()
         ]);
     }
