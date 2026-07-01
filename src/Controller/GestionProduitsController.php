@@ -109,6 +109,7 @@ final class GestionProduitsController extends AbstractController
         } else {
             throw $this->createAccessDeniedException('Utilisateur non connecté.');
         }
+
         if ($typeSubstance === 'Medic') {
             $form = $this->createForm(ProduitsMedType::class, $produit,[
                 'show_delete_button' => true, // Affiche le bouton de suppression pour les produits médicinaux
@@ -123,6 +124,7 @@ final class GestionProduitsController extends AbstractController
             $form = $this->createForm(ProduitsMedType::class, $produit,[
                 'show_delete_button' => true, // Affiche le bouton de suppression pour les produits de saisie manuelle
             ]);
+            $vue = 'gestion_produits/ajout_produit_med_recherche.html.twig';
         } else {
             throw $this->createNotFoundException('Type de substance inconnu pour le produit avec l\'id ' . $produitId);
         }
