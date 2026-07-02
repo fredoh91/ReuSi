@@ -298,4 +298,39 @@ class SignalRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    
+    /**
+     * Trouve les signaux pour l'ajout à une réunion, triés par date de première réunion décroissante
+     * @return Signal[]
+     */
+    public function findForSuiviAdditionOrderedByFirstReunionDate(string $typeSignal, array $criteria, \App\Entity\ReunionSignal $reunion): array
+    {
+        $qb = $this->findForSuiviAddition($typeSignal, $criteria, $reunion);
+        $results = $qb->getQuery()->getResult();
+        
+        // Tri en mémoire par date de première réunion décroissante
+        usort($results, function ($a, $b) {
+            $dateA = $this->getFirstReunionDate($a);
+            $dateB = $this->getFirstReunionDate($b);
+            // Comparaison décroissante
+            return $dateB <=> $dateA;
+        });
+        return $results;
+    }
+    
+    /**
+     * Méthode helper pour obtenir la première date de réunion d'un signal
+     */
+    private function getFirstReunionDate($signal)
+    {
+        $reunionSignals = $signal->getReunionSignals();
+        $firstDate = null;
+        foreach ($reunionSignals as $reunionSignal) {
+            $date = $reunionSignal->getDateReunion();
+            if ($date !== null && ($firstDate === null || $date < $firstDate)) {
+                $firstDate = $date;
+            }
+        }
+        return $firstDate;
+    }
 }

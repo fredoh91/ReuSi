@@ -39,7 +39,8 @@
                 <tr>
                     <th>Titre</th>
                     <th>Description</th>
-                    <th>Date Création</th>
+                    <th>Date première réunion</th>
+                    <th>Date dernière réunion</th>
                     <th>Statut</th>
                     <th class="text-center">Action</th>
                 </tr>
@@ -49,7 +50,9 @@
                     <tr>
                         <td>{{ signal.Titre }}</td>
                         <td>{{ signal.DescriptionSignal|u.truncate(150, '...') }}</td>
-                        <td>{{ signal.createdAt|format_datetime('short', 'none', locale='fr') }}</td>
+                        {# <td>{{ signal.createdAt|format_datetime('short', 'none', locale='fr') }}</td> #}
+                        <td>{{ signal.reunionSignals|first_reunion_date|format_datetime('short', 'none', locale='fr') }}</td>
+                        <td>{{ signal.reunionSignals|last_reunion_date|format_datetime('short', 'none', locale='fr') }}</td>
                         <td>
                             {% set statutActif = null %}
                             {% for statut in signal.statutSignals %}

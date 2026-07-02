@@ -471,7 +471,10 @@ final class GestionSuivisController extends AbstractController
 
         $currentTab = $request->query->get('tab', 'nouveaux-signaux');
         $pagination = null;
+        $criteria = [];
+        $shouldSearch = false;
 
+        /*
         if ($form->isSubmitted() && $form->isValid()) {
             // Gestion du bouton Annuler
             if ($form->get('annulation')->isClicked()) {
@@ -498,15 +501,112 @@ final class GestionSuivisController extends AbstractController
 
             if ($form->get('recherche')->isClicked() || !empty($queryParams)) {
                 $criteria = $form->getData();
-                $queryBuilder = $signalRepository->findForSuiviAddition($type, $criteria, $reunion);
-
+                $signaux = $signalRepository->findForSuiviAdditionOrderedByFirstReunionDate($type, $criteria, $reunion);
+                
                 $pagination = $paginator->paginate(
-                    $queryBuilder,
+                    $signaux,
                     $request->query->getInt('page', 1),
                     10 // Nombre d'éléments par page
                 );
             }
         }
+        */
+
+        /*
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                // Gestion du bouton Annuler
+                if ($form->get('annulation')->isClicked()) {
+                    return $this->redirectToRoute('app_reunion_signal_detail', [
+                        'reuSiId' => $reunionId,
+                        'tab' => $currentTab,
+                    ]);
+                }
+
+                // Gestion du bouton Réinitialiser (Reset)
+                if ($form->get('reset')->isClicked()) {
+                    return $this->redirectToRoute('app_reunion_search_for_suivi', [
+                        'reunionId' => $reunionId,
+                        'type' => $type,
+                        'tab' => $currentTab,
+                    ]);
+                }
+
+                $queryParams = $request->query->all();
+                unset($queryParams['tab'], $queryParams['page']);
+
+                if ($form->get('recherche')->isClicked() || !empty($queryParams)) {
+                    $criteria = $form->getData();
+                    $shouldSearch = true;
+                }
+            }
+        } elseif ($request->query->count() > 0) {
+            // Gestion de la pagination (paramètres dans l'URL)
+            $queryParams = $request->query->all();
+            $form->submit($queryParams, false);
+
+            $searchParams = $queryParams;
+            unset($searchParams['tab'], $searchParams['page']);
+
+            $criteria = $form->getData();
+            $shouldSearch = true;
+        }
+
+        if ($shouldSearch) {
+            $signaux = $signalRepository->findForSuiviAdditionOrderedByFirstReunionDate($type, $criteria, $reunion);
+            
+            $pagination = $paginator->paginate(
+                $signaux,
+                $request->query->getInt('page', 1),
+                10 // Nombre d'éléments par page
+            );
+        }
+        */
+
+        if ($form->isSubmitted()) {
+            // Les boutons d'actions spécifiques (Annuler, Reset) ne sont pris en compte que si le formulaire est valide
+            if ($form->isValid()) {
+                // Gestion du bouton Annuler
+                if ($form->get('annulation')->isClicked()) {
+                    return $this->redirectToRoute('app_reunion_signal_detail', [
+                        'reuSiId' => $reunionId,
+                        'tab' => $currentTab,
+                    ]);
+                }
+
+                // Gestion du bouton Réinitialiser (Reset)
+                if ($form->get('reset')->isClicked()) {
+                    return $this->redirectToRoute('app_reunion_search_for_suivi', [
+                        'reunionId' => $reunionId,
+                        'type' => $type,
+                        'tab' => $currentTab,
+                    ]);
+                }
+            }
+
+            // On récupère les critères de recherche même si le formulaire contient des extra-fields (comme 'page') qui le rendent invalide au sens strict de Symfony
+            $criteria = $form->getData();
+            $shouldSearch = true;
+        } elseif ($request->query->count() > 0) {
+            // Gestion de la pagination (paramètres dans l'URL) lorsque le formulaire n'est pas détecté comme soumis
+            $queryParams = $request->query->all();
+            $form->submit($queryParams, false);
+
+            $criteria = $form->getData();
+            $shouldSearch = true;
+        }
+
+        if ($shouldSearch) {
+            $signaux = $signalRepository->findForSuiviAdditionOrderedByFirstReunionDate($type, $criteria, $reunion);
+            
+            $pagination = $paginator->paginate(
+                $signaux,
+                $request->query->getInt('page', 1),
+                10 // Nombre d'éléments par page
+            );
+        }
+
+
 
         return $this->render('gestion_suivis/search_for_suivi.html.twig', [
             'reunion' => $reunion,
