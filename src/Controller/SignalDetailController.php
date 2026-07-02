@@ -12,6 +12,7 @@ use App\Entity\ReleveDeDecision;
 use App\Service\SuiviStatusService;
 use App\Service\SignalStatusService;
 use App\Service\FileUploaderService; // Ajouté
+use App\Service\ReunionSignalSyncService; // Ajouté
 use Symfony\Bundle\SecurityBundle\Security; // Ajouté
 use App\Form\SignalAvecSuiviInitialType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,17 +30,20 @@ final class SignalDetailController extends AbstractController
     private $kernel;
     private readonly FileUploaderService $fileUploaderService; // Ajouté
     private readonly Security $security; // Ajouté
+    private readonly ReunionSignalSyncService $reunionSignalSyncService; // Ajouté
     
     public function __construct(
         LoggerInterface $logger, 
         KernelInterface $kernel,
         FileUploaderService $fileUploaderService, // Ajouté
-        Security $security // Ajouté
+        Security $security, // Ajouté
+        ReunionSignalSyncService $reunionSignalSyncService // Ajouté
     ) {
         $this->logger = $logger;
         $this->kernel = $kernel;
         $this->fileUploaderService = $fileUploaderService; // Ajouté
         $this->security = $security; // Ajouté
+        $this->reunionSignalSyncService = $reunionSignalSyncService; // Ajouté
     }
 
     #[Route('/signal_new', name: 'app_signal_new', defaults: ['typeSignal' => 'signal'])]
@@ -201,7 +205,16 @@ final class SignalDetailController extends AbstractController
                 }
 
                 if($rdd) { $rdd->setUpdatedAt($now)->setUserModif($userName); }
-                if ($suivi && $rdd) { $rdd->setReunionSignal($suivi->getReunionSignal()); }
+                // Code d'origine mis en commentaire :
+                // if ($suivi && $rdd) { $rdd->setReunionSignal($suivi->getReunionSignal()); }
+                if ($suivi && $rdd) {
+                    $this->reunionSignalSyncService->synchronizeReunionSignalLinks(
+                        $signal,
+                        $suivi,
+                        $rdd,
+                        $suivi->getReunionSignal()
+                    );
+                }
 
                 $em->persist($signal);
                 $em->persist($suivi);
@@ -358,12 +371,42 @@ final class SignalDetailController extends AbstractController
                 ]);
             }
 
+            // Récupération des entités du DTO mises à jour par le formulaire
+            $suiviInitial = $dto->suiviInitial;
+            $rddInitial = $dto->rddInitial;
+
             // Pour tous les autres boutons, on sauvegarde les modifications du signal et des entités liées
             $signal->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName);
-            if ($suiviInitial) { $suiviInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName); }
+            
+            // Code d'origine mis en commentaire :
+            // if ($suiviInitial) { $suiviInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName); }
+            // if ($rddInitial) { 
+            //     $rddInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName);
+            //     if ($suiviInitial) { $rddInitial->setReunionSignal($suiviInitial->getReunionSignal()); }
+            // }
+
+            // Nouveau code pour gérer les entités gérées ou potentiellement nouvelles créées par le formulaire
+            if ($suiviInitial) { 
+                $suiviInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName); 
+                if (!$suiviInitial->getSignalLie()) {
+                    $suiviInitial->setSignalLie($signal);
+                }
+                if (!$em->contains($suiviInitial)) {
+                    $em->persist($suiviInitial);
+                }
+            }
             if ($rddInitial) { 
                 $rddInitial->setUpdatedAt(new \DateTimeImmutable())->setUserModif($userName);
-                if ($suiviInitial) { $rddInitial->setReunionSignal($suiviInitial->getReunionSignal()); }
+                if (!$rddInitial->getSignalLie()) {
+                    $rddInitial->setSignalLie($signal);
+                }
+                if ($suiviInitial) { 
+                    $rddInitial->setReunionSignal($suiviInitial->getReunionSignal()); 
+                    $suiviInitial->setRddLie($rddInitial);
+                }
+                if (!$em->contains($rddInitial)) {
+                    $em->persist($rddInitial);
+                }
             }
             
 
@@ -404,6 +447,38 @@ final class SignalDetailController extends AbstractController
                 }
 
 
+                // Synchronisation éventuelle des liaisons :
+                //      signal->suiviInitial->ReunionSignal 
+                //   et signal->ReunionSignal
+                //   et signal->suiviInitial->RDD->ReunionSignal
+
+
+                // recupération de la réunion du suivi initial saisie dans le menu deroulant :
+
+                $reunionSignalValue = $form->get('suiviInitial')->get('reunionSignal')->getData();
+                // Synchroniser les liaisons ReunionSignal
+                
+                // Code d'origine mis en commentaire :
+                // $this->reunionSignalSyncService->synchronizeReunionSignalLinks(
+                //     $signal,
+                //     $suiviInitial,
+                //     $rddInitial,
+                //     $reunionSignalValue
+                // );
+
+                // Synchroniser les liaisons ReunionSignal avec les entités issues du DTO
+                $this->reunionSignalSyncService->synchronizeReunionSignalLinks(
+                    $signal,
+                    $suiviInitial,
+                    $rddInitial,
+                    $reunionSignalValue
+                );
+                // $dateReuSiInitialeMenuDeroulant = ;
+                // if ($dateReuSiInitiale) {
+                //     $signal->setReunionSignal($suiviInitial->getReunionSignal());
+                // } else {
+                //     $signal->setReunionSignal(null);
+                // }
 
             } else {
                 $this->logger->error('Aucun statut signal trouvé pour le signal ID ' . $signal->getId());
@@ -468,12 +543,17 @@ final class SignalDetailController extends AbstractController
                 //     ALORS on met le statut du signal à "presente"
 
                 $dateReuSiInitiale = $suiviInitial?->getReunionSignal()?->getDateReunion();
+
+                
                 if ($dateReuSiInitiale && $dateReuSiInitiale <= new \DateTimeImmutable) {
                     $dateReuSiInitiale_estPassee = true;
                 } else {
                     $dateReuSiInitiale_estPassee = false;
                 }   
 
+
+
+            
 
                 $desciptionRDDInitiale = $rddInitial ? $rddInitial->getDescriptionRDD() : null;
                 $mesuresRDDInitiales = $rddInitial ? $rddInitial->getMesuresRDDs()->toArray() : null;

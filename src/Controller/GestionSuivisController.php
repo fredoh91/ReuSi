@@ -14,6 +14,7 @@ use App\Form\Model\SuiviAvecRddDTO;
 use App\Repository\SignalRepository;
 use App\Service\SignalStatusService;
 use App\Service\SuiviStatusService;
+use App\Service\ReunionSignalSyncService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,7 +34,8 @@ final class GestionSuivisController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         RouterInterface $router,
-        SignalStatusService $signalStatusService
+        SignalStatusService $signalStatusService,
+        ReunionSignalSyncService $reunionSignalSyncService
     ): Response
     {
 
@@ -199,6 +201,13 @@ final class GestionSuivisController extends AbstractController
             }
 
             if ($form->get('suivi')->get('validation')->isClicked()) {
+                // Synchroniser les liaisons ReunionSignal via le service
+                $reunionSignalSyncService->synchronizeReunionSignalLinks(
+                    $signal,
+                    $dto->suivi,
+                    $dto->rddLie,
+                    $dto->suivi->getReunionSignal()
+                );
                 $em->persist($dto->suivi);
                 $em->persist($dto->rddLie);
                 $em->flush();
@@ -257,7 +266,8 @@ final class GestionSuivisController extends AbstractController
         SignalRepository $signalRepo, 
         Request $request, 
         EntityManagerInterface $em,
-        SignalStatusService $signalStatusService
+        SignalStatusService $signalStatusService,
+        ReunionSignalSyncService $reunionSignalSyncService
     ): Response
     {
 
@@ -394,9 +404,18 @@ final class GestionSuivisController extends AbstractController
                         // --- Début de la logique de persistance ---
 
                         // Lier la réunion sélectionnée au Suivi et au RDD
-                        $suivi->setReunionSignal($reunionSelectionnee);
-                        $RDD->setReunionSignal($reunionSelectionnee);
-                        $signal->addReunionSignal($reunionSelectionnee);
+                        // Code d'origine mis en commentaire :
+                        // $suivi->setReunionSignal($reunionSelectionnee);
+                        // $RDD->setReunionSignal($reunionSelectionnee);
+                        // $signal->addReunionSignal($reunionSelectionnee);
+
+                        // Synchroniser les liaisons ReunionSignal via le service
+                        $reunionSignalSyncService->synchronizeReunionSignalLinks(
+                            $signal,
+                            $suivi,
+                            $RDD,
+                            $reunionSelectionnee
+                        );
 
                         // Persistance des nouvelles mesures dupliquées
                         foreach ($nouvellesMesures as $newMesure) {
@@ -625,7 +644,8 @@ final class GestionSuivisController extends AbstractController
         SignalRepository $signalRepo,
         Request $request,
         SignalStatusService $signalStatusService,
-        SuiviStatusService $suiviStatusService
+        SuiviStatusService $suiviStatusService,
+        ReunionSignalSyncService $reunionSignalSyncService
     ): Response {
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
         if (!$reunion) {
@@ -654,7 +674,7 @@ final class GestionSuivisController extends AbstractController
         $suivi->setUpdatedAt(new \DateTimeImmutable());
         $suivi->setUserCreate($userName);
         $suivi->setUserModif($userName);
-        $suivi->setReunionSignal($reunion);
+        // $suivi->setReunionSignal($reunion);
 
         $nextNumeroRDD = $em->getRepository(ReleveDeDecision::class)->donneNextNumeroRDD($signalId);
         $RDD = new ReleveDeDecision();
@@ -664,10 +684,18 @@ final class GestionSuivisController extends AbstractController
         $RDD->setUpdatedAt(new \DateTimeImmutable());
         $RDD->setUserCreate($userName);
         $RDD->setUserModif($userName);
-        $RDD->setReunionSignal($reunion);
+        // $RDD->setReunionSignal($reunion);
 
         $suivi->setRddLie($RDD);
-        $signal->addReunionSignal($reunion);
+        // $signal->addReunionSignal($reunion);
+
+        // Synchroniser les liaisons ReunionSignal via le service
+        $reunionSignalSyncService->synchronizeReunionSignalLinks(
+            $signal,
+            $suivi,
+            $RDD,
+            $reunion
+        );
 
         // Duplication des mesures
         $mesuresNonCloturees = $em->getRepository(\App\Entity\MesuresRDD::class)->findBy([
@@ -733,7 +761,8 @@ final class GestionSuivisController extends AbstractController
         SignalRepository $signalRepo,
         Request $request,
         SignalStatusService $signalStatusService,
-        SuiviStatusService $suiviStatusService
+        SuiviStatusService $suiviStatusService,
+        ReunionSignalSyncService $reunionSignalSyncService
     ): Response {
 
         $reunion = $em->getRepository(ReunionSignal::class)->find($reunionId);
@@ -777,7 +806,20 @@ final class GestionSuivisController extends AbstractController
 
         $suiviInitial->setUpdatedAt(new \DateTimeImmutable());
         $suiviInitial->setUserModif($userName);
-        $suiviInitial->setReunionSignal($reunion);
+        
+        $rddInitial = $em->getRepository(ReleveDeDecision::class)->findOneBy(['SignalLie' => $signal, 'NumeroRDD' => 0]);
+
+        // Code d'origine mis en commentaire :
+        // $suiviInitial->setReunionSignal($reunion);
+        // $signal->addReunionSignal($reunion);
+
+        // Synchroniser les liaisons ReunionSignal via le service
+        $reunionSignalSyncService->synchronizeReunionSignalLinks(
+            $signal,
+            $suiviInitial,
+            $rddInitial,
+            $reunion
+        );
         
         $signalStatusService->updateToPrevuIfNeeded($signal, $userName);
         $suiviStatusService->updateStatutSuivi($suiviInitial, $userName, 'prevu');

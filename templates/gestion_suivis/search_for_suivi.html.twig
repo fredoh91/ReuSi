@@ -51,8 +51,38 @@
                         <td>{{ signal.Titre }}</td>
                         <td>{{ signal.DescriptionSignal|u.truncate(150, '...') }}</td>
                         {# <td>{{ signal.createdAt|format_datetime('short', 'none', locale='fr') }}</td> #}
-                        <td>{{ signal.reunionSignals|first_reunion_date|format_datetime('short', 'none', locale='fr') }}</td>
-                        <td>{{ signal.reunionSignals|last_reunion_date|format_datetime('short', 'none', locale='fr') }}</td>
+                        <td>
+                            {% set firstDate = null %}
+                            {% for reunionSignal in signal.reunionSignals %}
+                                {% set date = reunionSignal.DateReunion %}
+                                {% if date is not null %}
+                                    {% if firstDate is null or date < firstDate %}
+                                        {% set firstDate = date %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if firstDate is not null  %}
+                                {{ firstDate|format_datetime('short', 'none', locale='fr') }}
+                            {% else %}
+                                pas de réunion liée
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set lastDate = null %}
+                            {% for reunionSignal in signal.reunionSignals %}
+                                {% set date = reunionSignal.DateReunion %}
+                                {% if date is not null %}
+                                    {% if lastDate is null or date > lastDate %}
+                                        {% set lastDate = date %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if lastDate is not null %}
+                                {{ lastDate|format_datetime('short', 'none', locale='fr') }}
+                            {% else %}
+                                pas de réunion liée
+                            {% endif %}
+                        </td>
                         <td>
                             {% set statutActif = null %}
                             {% for statut in signal.statutSignals %}

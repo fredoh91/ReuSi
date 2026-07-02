@@ -53,7 +53,9 @@ class SignalRepository extends ServiceEntityRepository
         )')
            ->addSelect('ss')
            ->leftJoin('s.suivis', 'su')->addSelect('su')
-           ->leftJoin('su.statutSuivis', 'sus')->addSelect('sus');
+           ->leftJoin('su.statutSuivis', 'sus')->addSelect('sus')
+           // Ajout de la jointure pour les réunions signal pour le tri
+           ->leftJoin('s.reunionSignals', 'rs')->addSelect('rs');
 
         // Filtre sur le statutSignal
         if (!empty($criteria['statutSignal'])) {
@@ -301,6 +303,7 @@ class SignalRepository extends ServiceEntityRepository
     
     /**
      * Trouve les signaux pour l'ajout à une réunion, triés par date de première réunion décroissante
+     * Les signaux sans date de réunion apparaissent en premier
      * @return Signal[]
      */
     public function findForSuiviAdditionOrderedByFirstReunionDate(string $typeSignal, array $criteria, \App\Entity\ReunionSignal $reunion): array
@@ -308,12 +311,25 @@ class SignalRepository extends ServiceEntityRepository
         $qb = $this->findForSuiviAddition($typeSignal, $criteria, $reunion);
         $results = $qb->getQuery()->getResult();
         
-        // Tri en mémoire par date de première réunion décroissante
+        // Tri en mémoire : les signaux sans date de réunion en premier, puis par date de première réunion décroissante
         usort($results, function ($a, $b) {
             $dateA = $this->getFirstReunionDate($a);
             $dateB = $this->getFirstReunionDate($b);
-            // Comparaison décroissante
-            return $dateB <=> $dateA;
+            
+            // Si A n'a pas de date et B oui, A vient en premier
+            if ($dateA === null && $dateB !== null) {
+                return -1;
+            }
+            // Si B n'a pas de date et A oui, B vient en premier
+            if ($dateA !== null && $dateB === null) {
+                return 1;
+            }
+            // Si les deux ont des dates, tri décroissant
+            if ($dateA !== null && $dateB !== null) {
+                return $dateB <=> $dateA;
+            }
+            // Si les deux n'ont pas de date, tri par ID décroissant pour stabilité
+            return $b->getId() <=> $a->getId();
         });
         return $results;
     }

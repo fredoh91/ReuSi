@@ -12,6 +12,7 @@ use App\Form\ReleveDeDecisionModifType;
 use Doctrine\ORM\EntityManagerInterface;
 // use App\Form\ReleveDeDecisionPourSuiviType;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Service\ReunionSignalSyncService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,7 +35,8 @@ final class GestionRelevesDeDecisionController extends AbstractController
         int $signalId, 
         SignalRepository $signalRepo, 
         Request $request, 
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ReunionSignalSyncService $reunionSignalSyncService
     ): Response
     {
 
@@ -148,8 +150,17 @@ final class GestionRelevesDeDecisionController extends AbstractController
                     } else {
                         
                         
-                        $RDD->setReunionSignal($reunionSelectionnee);
-                        $signal->addReunionSignal($reunionSelectionnee); // Met à jour la relation ManyToMany dans l'entité Signal
+                        // Code d'origine mis en commentaire :
+                        // $RDD->setReunionSignal($reunionSelectionnee);
+                        // $signal->addReunionSignal($reunionSelectionnee); // Met à jour la relation ManyToMany dans l'entité Signal
+
+                        // Synchroniser les liaisons ReunionSignal via le service
+                        $reunionSignalSyncService->synchronizeReunionSignalLinks(
+                            $signal,
+                            null, // pas de Suivi dans ce contexte (création directe de RDD)
+                            $RDD,
+                            $reunionSelectionnee
+                        );
 
                         $StatutSignal_ancien = $em->getRepository(StatutSignal::class)->findOneBySomeIdAndActif($signalId);
                         if ($StatutSignal_ancien) {
